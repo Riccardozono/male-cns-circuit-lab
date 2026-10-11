@@ -1,4 +1,4 @@
-/* Porsche 911 GT3 R (992), reduced planar motorsport model.
+/* Porsche 911 GT3 R (992), reduced ground-contact motorsport model.
  * SI dynamics, four independent rotating tyres, combined-slip forces.
  * No route, sensor, scoring, other-car or renderer dependency.
  * Published dimensions are not a proprietary Porsche/Michelin physics dataset.
@@ -9,7 +9,8 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),G=9.80665,RPM=60/(2*Math.PI);
-  const REVISION='992-gt3r-si-1',SOURCE='https://newsroom.porsche.com/dam/jcr%3A3b5e8287-01fb-481f-9d5c-2add88364f30/250808e_Technical%20Data%20911%20GT3%20R26.pdf';
+  const Terrain=typeof module==='object'&&module.exports?require('./terrain.js'):globalThis.MaleCNSTerrain;
+  const REVISION='992-gt3r-si-2',SOURCE='https://newsroom.porsche.com/dam/jcr%3A3b5e8287-01fb-481f-9d5c-2add88364f30/250808e_Technical%20Data%20911%20GT3%20R26.pdf';
   const SPEC=Object.freeze({id:'porsche-911-gt3-r-992',name:'Porsche 911 GT3 R (992)',modelYear:2026,source:SOURCE,
     baseMassKg:1265,lengthM:4.619,widthM:2.05,wheelbaseM:2.507,displacementCc:4194,
     maxPowerW:416000,maxRpm:9250,gears:6,drive:'RWD',tankLitres:117,
@@ -42,6 +43,7 @@
     track.speedLimit=120*track.pixelsPerMeter;
     track.lapReferenceSpeed=(reference?.referenceMps||35)*track.pixelsPerMeter;
     track.physicsRevision=REVISION;
+    Terrain.attach(track,id);
     return track;
   }
   function tyre(){return {omega:0,slip:0,slipAngle:0,fx:0,fy:0,fz:0,grip:0,temperatureC:MODEL.initialTyreC,wear:0,pressureBar:(MODEL.coldPressureBar+1.01325)*(MODEL.initialTyreC+273.15)/(MODEL.ambientC+273.15)-1.01325,brakeC:MODEL.ambientC,absFactor:1,absActive:false,travelM:0};}
@@ -49,7 +51,8 @@
     fuelL:MODEL.startFuelL,massKg:SPEC.baseMassKg+MODEL.driverKg+MODEL.startFuelL*MODEL.fuelDensity,
     wheels:[tyre(),tyre(),tyre(),tyre()],absEnabled:true,tcEnabled:true,tcFactor:1,tcActive:false,absActive:false,
     brakeBias:MODEL.brakeBias,steeringAngle:0,ax:0,ay:0,engineTorqueNm:0,enginePowerKw:0,clutch:0,limiter:false,
-    dragN:0,downforceN:0,pitch:0,roll:0,pitchRate:0,rollRate:0,distanceM:0,speedMps:0,simulationSeconds:0};}
+    dragN:0,downforceN:0,pitch:0,roll:0,pitchRate:0,rollRate:0,distanceM:0,speedMps:0,simulationSeconds:0,
+    elevationM:0,roadGradePercent:0,roadPitch:0,roadRoll:0,gravityX:0,gravityY:0,gravityNormal:G,supportAcceleration:G,normalG:1,verticalVelocityMps:0};}
   function torqueAt(rpm){
     // Piecewise estimated curve, capped by the published nominal max power.
     const points=[[0,0],[1200,230],[3000,405],[5000,510],[6500,550],[8000,520],[9250,420],[10000,0]];
@@ -76,7 +79,7 @@
     // Wall hits terminate an episode, not a simulated deformable crash. Keep
     // the last force/thermal sample, but do not display a moving dead body.
     const s=car.vehicle;
-    if(s){s.u=0;s.v=0;s.r=0;s.speedMps=0;s.wheels.forEach(w=>{w.omega=0;});}
+    if(s){s.u=0;s.v=0;s.r=0;s.speedMps=0;s.verticalVelocityMps=0;s.wheels.forEach(w=>{w.omega=0;});}
     car.speed=car._physicsSpeed=car.longitudinalVelocity=car.lateralVelocity=car.yawRate=car.velocityX=car.velocityY=0;
   }
   function tyreCapacity(w,fz){
@@ -89,10 +92,10 @@
     return {fx:nx*factor,fy:ny*factor};
   }
   function normalLoads(s){
-    const mass=s.massKg,weight=mass*G,frontStatic=weight*MODEL.frontWeight+s.downforceN*MODEL.aeroFront;
-    const longitudinal=mass*s.ax*MODEL.cgHeightM/SPEC.wheelbaseM;
+    const mass=s.massKg,weight=mass*(s.supportAcceleration??G),frontStatic=weight*MODEL.frontWeight+s.downforceN*MODEL.aeroFront;
+    const longitudinal=mass*(s.ax-(s.gravityX||0))*MODEL.cgHeightM/SPEC.wheelbaseM;
     const front=clamp(frontStatic-longitudinal,weight*.06,weight+s.downforceN-weight*.06),rear=weight+s.downforceN-front;
-    const rollTransfer=mass*s.ay*MODEL.cgHeightM,frontTransfer=rollTransfer*.48/MODEL.frontTrackM,rearTransfer=rollTransfer*.52/MODEL.rearTrackM;
+    const rollTransfer=mass*(s.ay-(s.gravityY||0))*MODEL.cgHeightM,frontTransfer=rollTransfer*.48/MODEL.frontTrackM,rearTransfer=rollTransfer*.52/MODEL.rearTrackM;
     const ft=clamp(frontTransfer,-front*.47,front*.47),rt=clamp(rearTransfer,-rear*.47,rear*.47);
     // Wheel order: FL, FR, RL, RR. Positive lateral acceleration loads left.
     return [front*.5+ft,front*.5-ft,rear*.5+rt,rear*.5-rt];
@@ -161,34 +164,50 @@
       const bx=w.fx*cos-w.fy*sin,by=w.fx*sin+w.fy*cos;
       fx+=bx;fy+=by;moment+=x*by-y*bx;
     }
-    const rolling=MODEL.rollingCoefficient*s.massKg*G*Math.tanh(s.u/.4);
+    const rolling=MODEL.rollingCoefficient*s.massKg*(s.gravityNormal??G)*Math.tanh(s.u/.4);
     const dragX=speed>1e-6?s.dragN*s.u/speed:0,dragY=speed>1e-6?s.dragN*s.v/speed:0;
-    s.ax=(fx-rolling-dragX)/s.massKg;s.ay=(fy-dragY)/s.massKg;
+    s.ax=(fx-rolling-dragX)/s.massKg+(s.gravityX||0);s.ay=(fy-dragY)/s.massKg+(s.gravityY||0);
     const du=s.ax+s.v*s.r,dv=s.ay-s.u*s.r;
     s.u+=du*h;s.v+=dv*h;s.r+=moment/MODEL.yawInertia*h;
-    if(throttle===0&&Math.abs(s.u)<.08&&Math.abs(s.v)<.04&&Math.abs(s.r)<.04){s.u=0;s.v=0;s.r=0;s.wheels.forEach(w=>{w.omega=0;});}
-    // Sprung-body pitch/roll response on a flat plane, NOT full 3D suspension.
-    s.pitchRate+=(s.massKg*s.ax*MODEL.cgHeightM-MODEL.pitchStiffness*s.pitch-MODEL.pitchDamping*s.pitchRate)/MODEL.pitchInertia*h;
-    s.rollRate+=(s.massKg*s.ay*MODEL.cgHeightM-MODEL.rollStiffness*s.roll-MODEL.rollDamping*s.rollRate)/MODEL.rollInertia*h;
+    const staticBrake=brake*MODEL.brakeTorqueNm/(SPEC.rearRadiusM*s.massKg),staticGravity=Math.hypot(s.gravityX||0,s.gravityY||0);
+    if(throttle===0&&Math.abs(s.u)<.08&&Math.abs(s.v)<.04&&Math.abs(s.r)<.04&&(staticGravity===0||staticBrake>staticGravity&&brake>.05)){s.u=0;s.v=0;s.r=0;s.wheels.forEach(w=>{w.omega=0;});}
+    // Sprung-body response is relative to the ground plane. No airborne or
+    // deformable-suspension model is claimed. Grade is not body-pitch feedback.
+    s.pitchRate+=(s.massKg*(s.ax-(s.gravityX||0))*MODEL.cgHeightM-MODEL.pitchStiffness*s.pitch-MODEL.pitchDamping*s.pitchRate)/MODEL.pitchInertia*h;
+    s.rollRate+=(s.massKg*(s.ay-(s.gravityY||0))*MODEL.cgHeightM-MODEL.rollStiffness*s.roll-MODEL.rollDamping*s.rollRate)/MODEL.rollInertia*h;
     s.pitch+=s.pitchRate*h;s.roll+=s.rollRate*h;
     const power=s.enginePowerKw*1000;s.fuelL=Math.max(0,s.fuelL-h*(.0007+power/(.30*43e6*MODEL.fuelDensity)));
     s.speedMps=Math.hypot(s.u,s.v);s.distanceM+=s.speedMps*h;s.simulationSeconds+=h;
     if(![s.u,s.v,s.r,s.rpm,s.ax,s.ay].every(Number.isFinite)||s.speedMps>150||Math.abs(s.r)>15)throw Error('Stato fisico Porsche non valido');
   }
-  function step(car,commands,dt){
+  function surfaceState(s,sample,heading){
+    const frame=Terrain.frame(sample,heading),vx=frame.forward[0]*s.u+frame.side[0]*s.v,vy=frame.forward[2]*s.u+frame.side[2]*s.v;
+    s.elevationM=frame.height;s.roadPitch=frame.pitch;s.roadRoll=frame.roll;s.roadGradePercent=Math.tan(frame.pitch)*100;
+    s.gravityX=-G*frame.forward[1];s.gravityY=-G*frame.side[1];s.gravityNormal=G*frame.normal[1];
+    const normalAcceleration=((sample.hxx||0)*vx*vx+2*(sample.hxy||0)*vx*vy+(sample.hyy||0)*vy*vy)*frame.normal[1];
+    s.supportAcceleration=Math.max(0,s.gravityNormal+normalAcceleration);s.normalG=s.supportAcceleration/G;
+    s.verticalVelocityMps=frame.forward[1]*s.u+frame.side[1]*s.v;return frame;
+  }
+  function placeOnSurface(car,ground){if(ground&&!ground.flat)surfaceState(car.vehicle,ground.sample(car.x,car.y),car.heading);}
+  function step(car,commands,dt,ground=null){
     if(!Number.isFinite(dt)||dt<=0||dt>.1)throw Error('Passo fisico non valido');
     const s=car.vehicle||(car.vehicle=createState()),ppm=car.pixelsPerMeter||1;
     if(Math.abs(car.speed-(car._physicsSpeed??car.speed))>1e-7)synchroniseSpeed(s,car.speed/ppm);
     const n=Math.ceil(dt*MODEL.physicsHz-1e-8),h=dt/n;let dx=0,dy=0,heading=car.heading;
     for(let i=0;i<n;i++){
+      const tilted=ground&&!ground.flat,frame=tilted?surfaceState(s,ground.sample(car.x+dx*ppm,car.y+dy*ppm),heading):null;
       substep(s,commands[0],commands[1],commands[2],h);
-      const mid=heading+s.r*h*.5;dx+=(Math.cos(mid)*s.u-Math.sin(mid)*s.v)*h;dy+=(Math.sin(mid)*s.u+Math.cos(mid)*s.v)*h;heading+=s.r*h;
+      const mid=heading+s.r*h*.5;
+      if(frame){const f=Terrain.frame(ground.sample(car.x+dx*ppm,car.y+dy*ppm),mid);dx+=(f.forward[0]*s.u+f.side[0]*s.v)*h;dy+=(f.forward[2]*s.u+f.side[2]*s.v)*h;}
+      else{dx+=(Math.cos(mid)*s.u-Math.sin(mid)*s.v)*h;dy+=(Math.sin(mid)*s.u+Math.cos(mid)*s.v)*h;}
+      heading+=s.r*h;
     }
     car.x+=dx*ppm;car.y+=dy*ppm;car.heading=heading%(2*Math.PI);car.steer=s.steeringAngle/.58;
     car.longitudinalVelocity=s.u*ppm;car.lateralVelocity=s.v*ppm;car.yawRate=s.r;
-    car.velocityX=(Math.cos(heading)*s.u-Math.sin(heading)*s.v)*ppm;car.velocityY=(Math.sin(heading)*s.u+Math.cos(heading)*s.v)*ppm;
+    const finalFrame=ground&&!ground.flat?surfaceState(s,ground.sample(car.x,car.y),heading):null;
+    car.velocityX=(finalFrame?finalFrame.forward[0]*s.u+finalFrame.side[0]*s.v:Math.cos(heading)*s.u-Math.sin(heading)*s.v)*ppm;car.velocityY=(finalFrame?finalFrame.forward[2]*s.u+finalFrame.side[2]*s.v:Math.sin(heading)*s.u+Math.cos(heading)*s.v)*ppm;
     car.speed=s.speedMps*ppm;car._physicsSpeed=car.speed;
-    car.longitudinalAcceleration=s.ax;car.lateralAcceleration=s.ay;car.longitudinalG=s.ax/G;car.lateralG=s.ay/G;car.totalG=Math.hypot(s.ax,s.ay)/G;
+    car.longitudinalAcceleration=s.ax;car.lateralAcceleration=s.ay;car.longitudinalG=(s.ax-s.gravityX)/G;car.lateralG=(s.ay-s.gravityY)/G;car.totalG=finalFrame?Math.hypot(car.longitudinalG,car.lateralG,s.normalG-1):Math.hypot(s.ax,s.ay)/G;
     car.loadTransfer=clamp(car.lateralG*MODEL.cgHeightM/MODEL.frontTrackM+car.longitudinalG*MODEL.cgHeightM/SPEC.wheelbaseM,-1,1);
     car.slipAngle=Math.abs(s.u)<.1?0:Math.atan2(s.v,Math.abs(s.u));
     car.distance+=s.speedMps*dt*ppm;car.lifetime+=dt;
@@ -201,9 +220,10 @@
       absEnabled:s.absEnabled,tcEnabled:s.tcEnabled,absActive:s.absActive,tcActive:s.tcActive,tcFactor:s.tcFactor,brakeBias:s.brakeBias,
       tyreC:average('temperatureC'),tyreWear:average('wear'),pressureBar:average('pressureBar'),brakeC:average('brakeC'),
       rearSlip:(s.wheels[2].slip+s.wheels[3].slip)*.5,frontSlip:(s.wheels[0].slip+s.wheels[1].slip)*.5,
-      downforceN:s.downforceN,dragN:s.dragN,pitch:s.pitch,roll:s.roll,distanceM:s.distanceM};
+      downforceN:s.downforceN,dragN:s.dragN,pitch:s.pitch,roll:s.roll,distanceM:s.distanceM,
+      elevationM:s.elevationM,roadGradePercent:s.roadGradePercent,roadPitch:s.roadPitch,roadRoll:s.roadRoll,normalG:s.normalG,verticalVelocityMps:s.verticalVelocityMps};
     if(full)view.wheels=s.wheels.map(w=>({...w}));return view;
   }
-  const api={SPEC,MODEL,REVISION,G,CIRCUIT_METRICS,configureTrack,createState,torqueAt,ratio,requestGear,shift,synchroniseSpeed,stop,combinedForce,normalLoads,step,telemetry};
+  const api={SPEC,MODEL,REVISION,G,CIRCUIT_METRICS,configureTrack,createState,torqueAt,ratio,requestGear,shift,synchroniseSpeed,stop,combinedForce,normalLoads,step,telemetry,Terrain,placeOnSurface};
   return api;
 });

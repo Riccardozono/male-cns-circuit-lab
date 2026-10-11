@@ -15,7 +15,7 @@
           <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
           <div>
             <p class="brand-name">MAL-E CNS</p>
-            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.2.0</span></p>
+            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.3.0</span></p>
           </div>
         </div>
         <div class="topbar-meta">
@@ -93,6 +93,7 @@
             </div>
           </div>
           <div class="track-measures"><p id="track-dimensions">Dimensioni in caricamento…</p><p id="track-local-width">Larghezza del tratto in caricamento…</p></div>
+          <p id="track-elevation-note" class="track-model-note">Profilo altimetrico stimato · influenza la fisica; vegetazione solo visiva.</p>
           <p class="track-navigation" id="track-navigation-note">Trascina per spostare · rotella o pizzico per zoom · clic su un’auto o una curva</p>
           <p class="track-model-note" id="track-3d-status" role="status"></p>
           <details class="track-asset-credit"><summary>Modello Porsche 3D e crediti</summary><p>“porsche_992_gt3_r” di <a href="https://sketchfab.com/MattDoesBlender" target="_blank" rel="noreferrer">MattDoesBlender</a>, fornito nello ZIP. Modifiche: livelli di dettaglio, unione dei materiali, esterni adattati alle dimensioni della simulazione. <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noreferrer">CC BY-NC-SA 4.0</a>. Le auto sovrapposte alla partenza sono rappresentate dal corpo dell’auto selezionata; gli agenti restano selezionabili.</p></details>
@@ -250,7 +251,7 @@
                 <button class="button button--secondary" id="save-progress" type="button" aria-describedby="progress-file-note">Salva file…</button>
                 <button class="button button--secondary" id="load-progress" type="button" aria-describedby="progress-file-note">Carica file…</button>
               </div>
-              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.2.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file precedenti richiedono la loro versione dell’app: i progressi 5.1.0 restano utilizzabili con l’app 5.1.0.</p>
+              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.3.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file precedenti richiedono la loro versione dell’app: i progressi 5.2.0 restano utilizzabili con l’app 5.2.0.</p>
               <p class="progress-status hint" id="progress-status" role="status" aria-live="polite" aria-atomic="true">Nessun file salvato in questa sessione.</p>
               <input id="progress-file-input" type="file" accept=".malecns-save" hidden>
             </section>
@@ -291,6 +292,7 @@
                   <div><dt>Carico aerodinamico</dt><dd id="vehicle-aero">0 N</dd></div>
                 </dl>
                 <p id="vehicle-wheel-loads" class="vehicle-note">Carichi ruote in attesa.</p>
+                <p id="vehicle-road-surface" class="vehicle-note">Quota e pendenza in attesa.</p>
                 <label class="control-label" for="vehicle-gearbox">Cambio dell’auto selezionata</label>
                 <div class="gearbox-controls"><select id="vehicle-gearbox"><option value="auto">Sequenziale automatico</option><option value="manual">Sequenziale manuale</option></select><button type="button" id="gear-down" class="button button--secondary" aria-label="Scala una marcia" disabled>−</button><button type="button" id="gear-up" class="button button--secondary" aria-label="Inserisci la marcia successiva" disabled>+</button></div>
                 <div class="vehicle-assists"><label><input id="vehicle-abs" type="checkbox" checked> ABS</label><label><input id="vehicle-tc" type="checkbox" checked> Controllo trazione</label></div>
@@ -373,6 +375,8 @@
     <script src="legacy-models.js"></script>
     <script src="data/circuits.js"></script>
     <script src="neural-learning.js"></script>
+    <script src="data/terrain.js"></script>
+    <script src="terrain.js"></script>
     <script src="vehicle-992.js"></script>
     <script src="rewards.js"></script>
     <script src="simulation.js"></script>

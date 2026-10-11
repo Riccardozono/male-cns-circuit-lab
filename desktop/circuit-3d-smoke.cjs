@@ -27,10 +27,11 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       const transform=metrics.carLods?.livery?.transform;
       check(circuitId+': 100 real agents and bounded instanced LOD draw calls',metrics.carCount===100&&metrics.drawCalls<150&&metrics.carRevision==='992-user-glb-lod-3'&&metrics.carLods?.livery?.loaded&&JSON.stringify(transform)===JSON.stringify({offset:[0,2],scale:[1,-1]})&&metrics.roadVertices>20&&!metrics.lost,metrics);
       check(circuitId+': static estimated barriers/runoffs load locally',metrics.scenery?.geometryRevision==='circuit-scenery-1'&&metrics.scenery.estimated&&metrics.scenery.barrierSegments>50&&metrics.scenery.meshes<=9&&metrics.scenery.zones.every(z=>z.renderedTiles>0),metrics.scenery);
+      check(circuitId+': physical estimated elevation and static vegetation are present',metrics.terrain?.revision==='terrain-profile-1'&&metrics.terrain.estimated&&metrics.vegetation?.instances>20&&metrics.vegetation.drawCalls<=3, {terrain:metrics.terrain,vegetation:metrics.vegetation});
       const detailsInitiallyOn=await js('document.getElementById("track-details").getAttribute("aria-pressed")==="true"');
       if(!detailsInitiallyOn)await js('document.getElementById("track-details").click();render()');
       await js('document.getElementById("track-details").click();render()');
-      check(circuitId+': Details hides scenery while paused',await js('!circuitLab.circuit3D.info().scenery.visible'));
+      check(circuitId+': Details hides scenery while paused',await js('!circuitLab.circuit3D.info().scenery.visible&&!circuitLab.circuit3D.vegetation.group.visible'));
       await js('document.getElementById("track-details").click();render()');
       check(circuitId+': Details restores scenery without new physics',await js('circuitLab.circuit3D.info().scenery.visible')&&hash(await engine.exportProgress())===hash(original));
       await js('document.getElementById("track-zoom-in").click();document.getElementById("track-3d-canvas").dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowLeft",bubbles:true}));render()');
@@ -39,10 +40,14 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       if(capture&&circuitId!=='lab'){
         await change('camera-select','overview');await snap(circuitId+'-overview',1540,980);
         const focusLabels={monza:'Prima Variante · T1',monaco:'Sainte-Dévote','le-mans':'Chicane Dunlop'};
-        await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('width:')&&o.textContent.includes(${JSON.stringify(focusLabels[circuitId])}));if(!option)throw Error('Named runoff UI focus unavailable');select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));circuitLab.circuit3D.distance=145;circuitLab.circuit3D.pitch=1.05;render();})()`);
+        await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('width:')&&o.textContent.startsWith(${JSON.stringify(focusLabels[circuitId]+' · ')}));if(!option)throw Error('Named runoff UI focus unavailable');select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));circuitLab.circuit3D.distance=145;circuitLab.circuit3D.pitch=1.05;render();})()`);
         const focusBefore=hash(original),focusAfter=hash(await engine.exportProgress());
         check(circuitId+': named runoff UI focus preserves paused progress',focusBefore===focusAfter);
         await snap(circuitId+'-runoff',1540,980,{pausedProgress:{before:focusBefore,after:focusAfter,unchanged:focusBefore===focusAfter}});
+        if(circuitId==='monaco'){
+          await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('width:')&&o.textContent.includes('Beau Rivage'));select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));circuitLab.circuit3D.distance=170;circuitLab.circuit3D.pitch=.32;circuitLab.circuit3D.yaw=2.3;render();})()`);
+          await snap('monaco-elevation',1540,980,{pausedProgress:{before:focusBefore,after:hash(await engine.exportProgress()),unchanged:focusBefore===hash(await engine.exportProgress())}});
+        }
         if(circuitId==='monza'){
           await change('camera-select','follow');
           await js('if(document.getElementById("toggle-sensors").getAttribute("aria-pressed")==="true")document.getElementById("toggle-sensors").click()');

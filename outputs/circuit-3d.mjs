@@ -1,33 +1,35 @@
 /* Read-only 3D view. One metre in the physical model is one scene unit.
  * Road triangles have exactly the same outer/inner rings as collision/sensors.
- * Flat terrain and vertical edge markers are schematic, not surveyed heights.
+ * Shared estimated terrain and edge markers, not surveyed heights.
  * No controller, physics tick, random generator or training command lives here. */
 import * as T from './vendor/three.module.js';
 import {CarFleet,CAR_VISUAL_REVISION} from './car-3d.mjs';
 import {createTrackScenery} from './track-scenery.mjs';
+import {Terrain,drape,refineRoad,terrainMesh} from './terrain-3d.mjs';
+import {createVegetation} from './vegetation.mjs';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function overviewFit(bounds,aspect,yaw=2.3,pitch=.90,fov=48,points=null,target={x:0,z:0}){
   const tangent=Math.tan(fov*Math.PI/360),halfX=bounds.width/2,halfZ=bounds.height/2;
-  const coordinates=points?points.map(p=>[p.x-bounds.x-halfX-target.x,p.y-bounds.y-halfZ-target.z]):[-halfX,halfX].flatMap(x=>[-halfZ,halfZ].map(z=>[x,z]));
+  const coordinates=points?points.map(p=>[p.x-bounds.x-halfX-target.x,p.y-bounds.y-halfZ-target.z,(p.height||0)-(target.y||0)]):[-halfX,halfX].flatMap(x=>[-halfZ,halfZ].map(z=>[x,z,0]));
   let distance=0;
-  for(const [x,z] of coordinates){
+  for(const [x,z,y] of coordinates){
     const horizontal=x*Math.cos(yaw)-z*Math.sin(yaw),along=x*Math.sin(yaw)+z*Math.cos(yaw);
-    distance=Math.max(distance,along*Math.cos(pitch)+Math.max(Math.abs(horizontal)/(tangent*Math.max(.1,aspect)),Math.abs(along*Math.sin(pitch))/tangent));
+    distance=Math.max(distance,along*Math.cos(pitch)+y*Math.sin(pitch)+Math.max(Math.abs(horizontal)/(tangent*Math.max(.1,aspect)),Math.abs(y*Math.cos(pitch)-along*Math.sin(pitch))/tangent));
   }
   return Math.max(20,distance*1.10);
 }
 export function overviewTarget(track,yaw=2.3){
   const b=track.bounds,cx=b.x+b.width/2,cz=b.y+b.height/2;let loU=Infinity,hiU=-Infinity,loV=Infinity,hiV=-Infinity;
   for(const p of track.outer){const x=p.x-cx,z=p.y-cz,u=x*Math.cos(yaw)-z*Math.sin(yaw),v=x*Math.sin(yaw)+z*Math.cos(yaw);loU=Math.min(loU,u);hiU=Math.max(hiU,u);loV=Math.min(loV,v);hiV=Math.max(hiV,v);}
-  const u=(loU+hiU)/2,v=(loV+hiV)/2;return {x:u*Math.cos(yaw)+v*Math.sin(yaw),z:-u*Math.sin(yaw)+v*Math.cos(yaw)};
+  const u=(loU+hiU)/2,v=(loV+hiV)/2,heights=track.outer.map(p=>p.height||0);return {x:u*Math.cos(yaw)+v*Math.sin(yaw),y:(Math.min(...heights)+Math.max(...heights))/2,z:-u*Math.sin(yaw)+v*Math.cos(yaw)};
 }
 
 export function roadGeometry(track,origin={x:0,y:0},height=.035){
   const points=ring=>ring.map(p=>new T.Vector2(p.x-origin.x,-(p.y-origin.y)));
   const shape=new T.Shape(points(track.outer));shape.holes.push(new T.Path(points(track.inner)));
-  const geometry=new T.ShapeGeometry(shape),position=geometry.getAttribute('position');
+  let geometry=new T.ShapeGeometry(shape);const ground=Terrain.forTrack(track);if(!ground.flat)geometry=refineRoad(geometry,12*(track.pixelsPerMeter||1));const position=geometry.getAttribute('position');
   for(let i=0;i<position.count;i++)position.setXYZ(i,position.getX(i),height,-position.getY(i));
-  geometry.computeVertexNormals();return geometry;
+  drape(geometry,origin,ground);geometry.computeVertexNormals();return geometry;
 }
 export function groundMesh(bounds,material,ppm=1){
   const size=Math.max(bounds.width,bounds.height)*20,geometry=new T.PlaneGeometry(size,size);geometry.rotateX(-Math.PI/2);
@@ -94,25 +96,31 @@ export class Circuit3D{
     this.scene.background.set(model.theme.ground);
     const add=(geometry,material)=>{const mesh=new T.Mesh(geometry,material);this.staticGroup.add(mesh);return mesh;};
     this.scenery=createTrackScenery(track,model,this.origin);this.staticGroup.add(this.scenery.group);
-    this.overviewPoints=[...track.outer,...this.scenery.plan.footprint];
+    this.ground=Terrain.forTrack(track);this.terrainInfo=this.ground.info();
+    for(const object of this.scenery.group.children)drape(object.geometry,this.origin,this.ground);
+    this.terrainObject=terrainMesh(track,this.scenery.groundMaterial(),this.ground);this.staticGroup.add(this.terrainObject);
+    const vegetationGround={...this.ground,visualHeight:(x,y)=>this.terrainObject.userData.heightAt(x,y)/this.ground.ppm};
+    this.vegetation=createVegetation(track,model,this.scenery.plan,vegetationGround,this.origin);this.staticGroup.add(this.vegetation.group);
+    this.overviewPoints=[...track.outer,...this.scenery.plan.footprint].map(p=>({...p,height:this.ground.sample(p.x,p.y).height*this.ground.ppm}));
+    for(const p of this.vegetation.plan.plants)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});
     this.staticGroup.add(groundMesh(b,this.scenery.groundMaterial(),track.pixelsPerMeter||1));
     this.road=add(roadGeometry(track,this.origin),new T.MeshLambertMaterial({color:model.theme.road,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
     const outline=[];for(const wall of track.walls)outline.push(wall.a.x-this.origin.x,.06,wall.a.y-this.origin.y,wall.b.x-this.origin.x,.06,wall.b.y-this.origin.y);
-    const outlineGeometry=new T.BufferGeometry();outlineGeometry.setAttribute('position',new T.Float32BufferAttribute(outline,3));
+    const outlineGeometry=new T.BufferGeometry();outlineGeometry.setAttribute('position',new T.Float32BufferAttribute(outline,3));drape(outlineGeometry,this.origin,this.ground);
     this.outline=new T.LineSegments(outlineGeometry,new T.LineBasicMaterial({color:0x82999d}));this.staticGroup.add(this.outline);
     // Physical edge visualization, not an assertion about real track barriers.
-    this.edges=add(boundaryGeometry(track,this.origin,.20*(track.pixelsPerMeter||1)),new T.MeshLambertMaterial({color:0x9aaba4,side:T.DoubleSide}));
-    this.kerbs=curbGeometry(model,track,this.origin,onRoad).map((g,i)=>add(g,new T.MeshLambertMaterial({color:model.theme.curbColors[i],side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-4})));
+    this.edges=add(drape(boundaryGeometry(track,this.origin,.20*(track.pixelsPerMeter||1)),this.origin,this.ground),new T.MeshLambertMaterial({color:0x9aaba4,side:T.DoubleSide}));
+    this.kerbs=curbGeometry(model,track,this.origin,onRoad).map((g,i)=>add(drape(g,this.origin,this.ground),new T.MeshLambertMaterial({color:model.theme.curbColors[i],side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-4})));
     const start=track.center[0],next=track.center[1],heading=Math.atan2(next.y-start.y,next.x-start.x),width=(track.widthMeters?.[0]||track.halfWidth*2),ppm=track.pixelsPerMeter||1;
     const count=Math.max(4,Math.round(width/(.6*ppm))),checker=[[],[]],x=start.x-this.origin.x,z=start.y-this.origin.y,cos=Math.cos(heading),sin=Math.sin(heading),point=(a,b)=>[x+cos*a-sin*b,.055,z+sin*a+cos*b];
     for(let row=0;row<2;row++)for(let col=0;col<count;col++){const a=(row-.5)*.45*ppm,b=-width/2+col*width/count;quad(checker[(row+col)%2],point(a,b),point(a+.45*ppm,b),point(a+.45*ppm,b+width/count),point(a,b+width/count));}
-    checker.forEach((p,i)=>add(triangles(p),new T.MeshBasicMaterial({color:i?0xf4efdf:0x13191d,side:T.DoubleSide})));
+    checker.forEach((p,i)=>add(drape(triangles(p),this.origin,this.ground),new T.MeshBasicMaterial({color:i?0xf4efdf:0x13191d,side:T.DoubleSide})));
     this.overviewDistance=this.fitDistance();this.reset();
   }
-  clearStatic(){this.scenery?.dispose();this.scenery=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
+  clearStatic(){this.scenery?.dispose();this.vegetation?.dispose();this.scenery=null;this.vegetation=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
   overviewTarget(){return overviewTarget({...this.track,outer:this.overviewPoints||this.track.outer},this.yaw);}
   fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.overviewPoints||this.track.outer,this.overviewTarget()):1200;}
-  centreOverview(){const target=this.track?this.overviewTarget():{x:0,z:0};this.focus.set(target.x,0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
+  centreOverview(){const target=this.track?this.overviewTarget():{x:0,z:0};this.focus.set(target.x,target.y||0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
   resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=Math.min(1.5,globalThis.devicePixelRatio||1);if(this.width!==r.width||this.height!==r.height||this.dpr!==dpr){
     const ratio=this.distance/(this.overviewDistance||this.distance);
     this.width=r.width;this.height=r.height;this.dpr=dpr;this.renderer.setPixelRatio(dpr);this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;
@@ -122,29 +130,31 @@ export class Circuit3D{
   setMode(mode){this.mode=mode==='follow'?'follow':'overview';if(this.mode==='overview'){this.pitch=.90;this.yaw=2.3;this.centreOverview();}else{this.pitch=.50;this.yaw=-1.05;}this.dirty=true;}
   reset(){this.focus.set(0,0,0);this.followDistance=18;this.yaw=this.mode==='follow'?-1.05:2.3;this.pitch=this.mode==='follow'?.50:.90;this.centreOverview();this.dirty=true;this.onChange();}
   zoom(factor){if(this.mode==='follow')this.followDistance=clamp(this.followDistance/factor,6,150);else this.distance=clamp(this.distance/factor,8,(this.overviewDistance||3000)*2);this.dirty=true;this.onChange();}
-  focusPoint(point){this.mode='overview';this.focus.set(point.x-this.origin.x,0,point.y-this.origin.y);this.distance=95;this.pitch=.85;this.dirty=true;this.onChange();}
+  focusPoint(point){this.mode='overview';this.focus.set(point.x-this.origin.x,this.ground.sample(point.x,point.y).height*this.ground.ppm,point.y-this.origin.y);this.distance=95;this.pitch=.85;this.dirty=true;this.onChange();}
   pan(dx,dy){if(this.mode==='follow'){this.mode='overview';this.distance=this.followDistance;}const unit=this.distance/Math.max(200,this.height);this.focus.x-=Math.cos(this.yaw)*dx*unit+Math.sin(this.yaw)*dy*unit;this.focus.z+=Math.sin(this.yaw)*dx*unit-Math.cos(this.yaw)*dy*unit;this.dirty=true;this.onChange();}
-  project(car){const v=new T.Vector3(car.x-this.origin.x,.8*(car.pixelsPerMeter||1),car.y-this.origin.y).project(this.camera);return {x:(v.x+1)*this.width/2,y:(1-v.y)*this.height/2,visible:v.z>-1&&v.z<1};}
+  project(car){const v=new T.Vector3(car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+.8)*(car.pixelsPerMeter||1),car.y-this.origin.y).project(this.camera);return {x:(v.x+1)*this.width/2,y:(1-v.y)*this.height/2,visible:v.z>-1&&v.z<1};}
   pick(clientX,clientY){if(!this.cars)return;const r=this.canvas.getBoundingClientRect(),x=clientX-r.left,y=clientY-r.top;let min=22,id=null;for(const car of this.cars){const p=this.project(car),d=Math.hypot(p.x-x,p.y-y);if(p.visible&&d<min){min=d;id=car.id;}}if(id!==null)this.onSelect(id);}
   render(sim,selected,palette,{sensors=true,boundaries=false,details=true,sensorDistances,angles}={}){
     if(this.lost||!this.track||!selected)return;this.resize();if(!this.width||!this.height)return;this.cars=sim.cars;
     const ppm=selected.pixelsPerMeter||1;
-    if(this.mode==='follow')this.focus.set(selected.x-this.origin.x,.55*ppm,selected.y-this.origin.y);
+    const elevation=this.ground.sample(selected.x,selected.y).height*ppm;
+    if(this.mode==='follow')this.focus.set(selected.x-this.origin.x,elevation+.55*ppm,selected.y-this.origin.y);
     const yaw=this.yaw-(this.mode==='follow'?selected.heading:0),distance=this.mode==='follow'?this.followDistance*ppm:this.distance;
     const near=Math.max(.05,distance*.003),far=Math.max(250,distance+Math.hypot(this.track.bounds.width,this.track.bounds.height)*2);
     if(this.camera.near!==near||this.camera.far!==far){this.camera.near=near;this.camera.far=far;this.camera.updateProjectionMatrix();}
     this.camera.position.set(this.focus.x+Math.sin(yaw)*Math.cos(this.pitch)*distance,this.focus.y+Math.sin(this.pitch)*distance,this.focus.z+Math.cos(yaw)*Math.cos(this.pitch)*distance);this.camera.lookAt(this.focus);this.camera.updateMatrixWorld();
-    this.fleet.update(sim.cars,this.origin,palette,{selected,camera:this.camera,height:this.height,mode:this.mode});
+    this.fleet.update(sim.cars,this.origin,palette,{selected,camera:this.camera,height:this.height,mode:this.mode,ground:this.ground});
     this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
     this.scenery?.setVisible(details,this.mode);
+    this.vegetation?.setVisible(details);
     this.road.material.color.set(this.mode==='overview'?0x62757b:this.model.theme.road);this.outline.material.color.set(this.mode==='overview'?0xb1c0c1:0x82999d);
-    this.selection.position.set(selected.x-this.origin.x,.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
+    this.selection.position.set(selected.x-this.origin.x,elevation+.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
     this.rays.visible=sensors;
-    if(sensors&&sensorDistances){const distances=sensorDistances(sim.track,selected),p=this.rayGeometry.attributes.position;for(let i=0;i<distances.length;i++){const a=selected.heading+angles[i],x=selected.x-this.origin.x,z=selected.y-this.origin.y;p.setXYZ(i*2,x,.52*ppm,z);p.setXYZ(i*2+1,x+Math.cos(a)*distances[i],.52*ppm,z+Math.sin(a)*distances[i]);}p.needsUpdate=true;this.rayGeometry.setDrawRange(0,distances.length*2);}
+    if(sensors&&sensorDistances){const distances=sensorDistances(sim.track,selected),p=this.rayGeometry.attributes.position;for(let i=0;i<distances.length;i++){const a=selected.heading+angles[i],x=selected.x-this.origin.x,z=selected.y-this.origin.y,ex=selected.x+Math.cos(a)*distances[i],ez=selected.y+Math.sin(a)*distances[i];p.setXYZ(i*2,x,elevation+.52*ppm,z);p.setXYZ(i*2+1,ex-this.origin.x,(this.ground.sample(ex,ez).height+.52)*ppm,ez-this.origin.y);}p.needsUpdate=true;this.rayGeometry.setDrawRange(0,distances.length*2);}
     const p=this.markers.geometry.attributes.position,c=this.markers.geometry.attributes.color,color=new T.Color();this.markers.visible=this.mode!=='follow'||distance>90*ppm;
-    for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,1.4*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
+    for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+1.4)*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
-  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),lost:this.lost};}
+  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,vegetation:this.vegetation?.info(),lost:this.lost};}
   dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }

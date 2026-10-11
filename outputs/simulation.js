@@ -224,7 +224,7 @@
   function makeCar(track,id=0,genome=null) {
     const a=track.center[0],b=track.center[1];
     const ppm=track.pixelsPerMeter||1;
-    return Rewards.initialise(track,{id,genome,x:a.x,y:a.y,heading:Math.atan2(b.y-a.y,b.x-a.x),speed:0,steer:0,scale:Vehicle.SPEC.lengthM*ppm/24,
+    const car=Rewards.initialise(track,{id,genome,x:a.x,y:a.y,heading:Math.atan2(b.y-a.y,b.x-a.x),speed:0,steer:0,scale:Vehicle.SPEC.lengthM*ppm/24,
       pixelsPerMeter:ppm,vehicle:Vehicle.createState(),
       velocityX:0,velocityY:0,longitudinalVelocity:0,lateralVelocity:0,yawRate:0,
       longitudinalAcceleration:0,lateralAcceleration:0,longitudinalG:0,lateralG:0,totalG:0,loadTransfer:0,slipAngle:0,_physicsSpeed:0,
@@ -232,6 +232,7 @@
       alive:true,reason:'',distance:0,progress:0,lastAlong:0,bestProgress:0,fitness:0,reward:0,penalty:0,lastReward:0,lastPenalty:0,
       laps:0,lapTimes:[],lastLapTime:null,lastLapReward:0,lastLapPenalty:0,bestLapTime:Infinity,lastLapStartTime:0,
       lifetime:0,lastProgressTime:0,inputs:Array(VISUAL_SENSOR_COUNT).fill(0),physicsInputs:Array(PHYSICS_SENSOR_COUNT).fill(0),sensorVector:Array(SENSOR_COUNT).fill(0),outputs:[0,0,0],trail:[],brain:null});
+    Vehicle.placeOnSurface(car,Vehicle.Terrain.forTrack(track));return car;
   }
   function collided(track,car) {
     // Exact oriented 4.619 x 2.050 m envelope against the EXISTING walls.
@@ -256,7 +257,7 @@
     if(!car.alive) return;
     const [steering,throttle,brake]=normalizeDriveCommands(commands);
     car.outputs=[steering,throttle,brake];
-    Vehicle.step(car,car.outputs,dt);
+    Vehicle.step(car,car.outputs,dt,Vehicle.Terrain.forTrack(track));
     const nearest=locate(track,car.x,car.y);
     Rewards.step(track,car,{along:nearest.along,onRoad:track.explicitBoundaries?onRoad(track,car.x,car.y):nearest.distance<=track.halfWidth+5,
       collision:collided(track,car),forwardClearance:raycast(track,car.x,car.y,car.heading),dt});

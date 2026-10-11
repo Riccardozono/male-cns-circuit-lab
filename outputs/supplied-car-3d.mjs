@@ -3,6 +3,7 @@
  * Shared geometry/textures and instancing; no physics or neural state writes. */
 import * as T from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
+import {placeCar} from './terrain-3d.mjs';
 export const SUPPLIED_CAR_REVISION='992-user-glb-lod-3';
 export class SuppliedCarFleet{
   static async load(group){
@@ -26,11 +27,11 @@ export class SuppliedCarFleet{
     if(this.parts.length!==114||this.lods.some(parts=>parts.length!==38))throw Error('Modello Porsche 3D incompleto.');
     this.resources=gltf;this.counts=[0,0,0];
   }
-  update(cars,origin,palette,{selected,camera,height,mode}={}){
+  update(cars,origin,palette,{selected,camera,height,mode,ground}={}){
     const count=Math.min(100,cars.length),chosen=selected||cars[0],ppm=chosen?.pixelsPerMeter||1;
     this.carCount=count;const lists=[[],[],[]],near=[];
     for(let i=0;i<count;i++){
-      const car=cars[i],distance=camera.position.distanceTo(new T.Vector3(car.x-origin.x,.6*ppm,car.y-origin.y)),pixels=height*4.619*ppm/(Math.max(.1,distance)*2*Math.tan(camera.fov*Math.PI/360));
+      const car=cars[i],distance=camera.position.distanceTo(new T.Vector3(car.x-origin.x,((ground?.sample(car.x,car.y).height||0)+.6)*ppm,car.y-origin.y)),pixels=height*4.619*ppm/(Math.max(.1,distance)*2*Math.tan(camera.fov*Math.PI/360));
       if(car===chosen&&pixels>55){lists[0].push(car);continue;}
       // Cars are independent overlapping trials. At the same starting point,
       // show the selected body once to avoid hundreds of coincident surfaces.
@@ -44,7 +45,7 @@ export class SuppliedCarFleet{
       const parts=this.lods[lod],list=lists[lod];for(const part of parts)part.mesh.count=list.length;
       for(let i=0;i<list.length;i++){
         const car=list[i],scale=car.pixelsPerMeter||1,object=this.scratch;
-        object.position.set(car.x-origin.x,.04*scale,car.y-origin.y);object.rotation.set(0,-car.heading,0);object.scale.setScalar(scale);object.updateMatrix();this.base.copy(object.matrix);
+        placeCar(object,car,origin,ground,.04);this.base.copy(object.matrix);
         for(const part of parts){
           if(part.wheel){
             const front=part.wheel.endsWith('F'),steering=front?Number(car.vehicle?.steeringAngle??car.steer*.58)||0:0,radius=front?.34:.355;

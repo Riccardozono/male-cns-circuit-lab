@@ -1,6 +1,23 @@
-# MAL-E CNS / Circuit Lab — Windows 5.2.0
+# MAL-E CNS / Circuit Lab — Windows 5.3.0
 
-Distribuzione corrente in `dist-scenery-v520/`: guardrail, muri, recinzioni,
+Distribuzione corrente in `dist-terrain-v530/`: vegetazione procedurale 3D e
+profili altimetrici stimati, con **pendenza e curvatura attive nella fisica**.
+Salite/discese modificano accelerazione, frenata e carico normale delle gomme.
+Strada, auto, bordi, cordoli e camera campionano la stessa superficie. Il
+Laboratorio resta piano; Monza, Monaco e Le Mans hanno ancoraggi locali stimati,
+non una mappa altimetrica rilevata. Gli alberi e i cespugli sono fuori dalla
+carreggiata e dalle vie di fuga; **Dettagli: sì/no** li nasconde insieme alle
+protezioni, senza disattivare il terreno fisico.
+
+Anatomia, policy, ricompense, algoritmi di apprendimento e carreggiata XY sono
+conservati. I nuovi carichi fisici possono cambiare le prove di guida. Le auto
+rimangono ghost car; il modello è vincolato al suolo, senza salti o volo libero.
+I nuovi salvataggi richiedono **5.3.0**; quelli 5.2.0 si usano con la vecchia
+app, preservata. [Guida e fonti](TERRENO-v530.md) · [Verifiche](VERIFICA-v530.md).
+
+## Distribuzione precedente 5.2.0
+
+Distribuzione 5.2.0 in `dist-scenery-v520/`: guardrail, muri, recinzioni,
 banchine e vie di fuga visuali nella vista 3D. Sei zone a Monza, tre a Monaco,
 nove a Le Mans; il Laboratorio usa protezioni sintetiche. **Dettagli: sì/no**
 nasconde o mostra tutta la nuova scenografia, anche in pausa. Non sono presenti

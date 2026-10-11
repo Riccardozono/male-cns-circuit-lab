@@ -1,6 +1,39 @@
 # Product
 
-## Estensione corrente: ambiente 3D, Windows 5.2.0 — 11 ottobre 2026
+## Estensione corrente: vegetazione e dislivello fisico, Windows 5.3.0
+
+L'utente chiede vegetazione e dislivello del circuito e conferma esplicitamente
+che il rilievo deve influenzare la fisica. Un campo di quota condiviso rialza
+strada, bordi, cordoli, protezioni, auto e camera, senza cambiare la carreggiata
+XY. Profili periodici a raccordo continuo per Monza, Monaco e Le Mans; il
+Laboratorio resta piano. Le fonti primarie forniscono solo contesto parziale:
+quote, ancoraggi e raccordi locali sono dichiarati stimati, non un rilievo.
+Scala verticale 1:1. [Guida](outputs/TERRENO-v530.md) e
+[catalogo](outputs/data/terrain.js).
+
+La gravità è proiettata nel piano tangente; pendenza e curvatura verticale
+modificano accelerazione, frenata e carico normale delle gomme. Il solver
+rimane vincolato al contatto: niente salti, volo libero o sospensioni 3D complete.
+I 17 canali fisici esistenti ricevono la telemetria risultante; nessuna quota,
+centerline o traiettoria ideale entra nella policy. Ricompense, anatomia,
+decoder, apprendimento e calcolo neurale CPU/GPU sono conservati. Il diverso
+ambiente fisico può cambiare le prove: non si rivendica una convergenza migliore.
+
+Alberi e cespugli nativi istanziati, con RNG locale deterministico, restano fuori
+da carreggiata e vie di fuga. La vegetazione è solo visiva e non aggiunge
+collisioni; auto ghost come prima. Dettagli mostra/nasconde verde e protezioni,
+mai il terreno fisico. Comandi, mappa 2D, Segui auto, Panoramica e atlante sono
+conservati; quota, pendenza e carico si leggono nella telemetria esistente.
+È un'estensione Operate, non un cambio di identità; DESIGN.md e il sidecar
+rimangono intatti; il contratto di lavoro e i report di revisione sono privati,
+non risorse caricate dall'app.
+
+App e file di progresso richiedono la versione esatta 5.3.0. Distribuzioni,
+release e salvataggi precedenti sono preservati. Verifiche della sorgente in
+[VERIFICA-v530.md](outputs/VERIFICA-v530.md), controlli dei pacchetti e commit
+distribuito nelle note della release 5.3.0.
+
+## Estensione precedente: ambiente 3D, Windows 5.2.0 — 11 ottobre 2026
 
 La richiesta riguarda barriere e vie di fuga della vista 3D, non strade o
 varchi di servizio. L'estensione visuale aggiunge guardrail, muri di protezione,

@@ -1,6 +1,6 @@
 {
   "name": "male-cns-circuit-lab",
-  "version": "5.2.0",
+  "version": "5.3.0",
   "description": "MAL-E CNS Circuit Lab: desktop evolutionary driving simulator powered by the annotated MaleCNS connectome.",
   "private": true,
   "main": "desktop/main.cjs",
@@ -33,6 +33,10 @@
       "outputs/legacy-models.js",
       "outputs/neural-learning.js",
       "outputs/vehicle-992.js",
+      "outputs/terrain.js",
+      "outputs/terrain-3d.mjs",
+      "outputs/vegetation.mjs",
+      "outputs/data/terrain.js",
       "outputs/rewards.js",
       "outputs/simulation.js",
       "outputs/agent-selection.js",
@@ -77,6 +81,8 @@
       "outputs/README.md",
       "outputs/VISTA-3D-v510.md",
       "outputs/AMBIENTE-3D-v520.md",
+      "outputs/TERRENO-v530.md",
+      "outputs/VERIFICA-v530.md",
       "outputs/VERIFICA-v520.md",
       "outputs/TEXTURE-v510.md",
       "outputs/VERIFICA-v510.md",
@@ -90,7 +96,7 @@
       "package.json"
     ],
     "directories": {
-      "output": "dist-scenery-v520"
+      "output": "dist-terrain-v530"
     },
     "win": {
       "target": [

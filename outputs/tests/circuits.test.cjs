@@ -38,12 +38,11 @@ for(const def of catalog.circuits){
     assert.ok(distances.every(v=>Number.isFinite(v)&&v>0&&v<=F.SENSOR_MAX));
     assert.ok(distances.some(v=>v<F.SENSOR_MAX),'the initial pose must see at least one real boundary');
   });
-  test(`${def.name}: no rail-following, zero motors stay still and zero steering crashes`,()=>{
-    const t=make(def.id).track,a=F.makeCar(t),b=F.makeCar(t),pose=[a.x,a.y,a.heading];
+  test(`${def.name}: no rail-following; surface gravity and zero-steer motion are physical`,()=>{
+    const t=make(def.id).track,a=F.makeCar(t),b=F.makeCar(t),control=F.makeCar(t),ground=F.Vehicle.Terrain.forTrack(t),pose=[a.x,a.y,a.heading];
     for(let i=0;i<420;i++)F.drive(t,a,[0,0,0]);assert.deepEqual([a.x,a.y,a.heading],pose);
-    for(let i=0;i<3600&&b.alive;i++)F.drive(t,b,[0,.7,0]);
-    assert.equal(b.reason,'urto');assert.equal(b.heading,pose[2]);assert.ok(b.distance>10);
-    assert.ok(Math.abs((b.x-pose[0])*Math.sin(b.heading)-(b.y-pose[1])*Math.cos(b.heading))<1e-7);
+    for(let i=0;i<3600&&b.alive;i++){F.drive(t,b,[0,.7,0]);F.Vehicle.step(control,[0,.7,0],F.DT,ground);assert.deepEqual([b.x,b.y,b.heading],[control.x,control.y,control.heading],'reward/collision layer must not project or steer a moving car');}
+    assert.equal(b.reason,'urto');assert.ok(b.distance>10);
   });
   test(`${def.name}: neural simulation evolves with finite states and unchanged graph`,()=>{
     const sim=make(def.id),edges=JSON.stringify(data.edges);
@@ -67,7 +66,8 @@ test('Switching track clears only the trial, preserving controls, pause and grap
 test('Checkpoint keys isolate circuits; legacy Lab saves never load on map tracks',()=>{
   const sim=make('lab');
   const record={schema:1,rewardRevision:F.Rewards.REVISION,vehicleRevision:F.Vehicle.REVISION,graphRevision:sim.graph.revision,dataset:data.dataset,nodes:sim.graph.n,edges:sim.graph.from.length,fitness:123,genome:F.cloneGenome(sim.cars[0].genome)};
-  assert.equal(F.checkpointKey(),`malecns-circuit-v48-${F.Rewards.REVISION}-992-gt3r-si-1-lab-r1-champion`);assert.equal(F.validCheckpoint(record,sim,data.dataset),true);
+  assert.equal(F.checkpointKey(),`malecns-circuit-v48-${F.Rewards.REVISION}-${F.Vehicle.REVISION}-lab-r1-champion`);assert.equal(F.validCheckpoint(record,sim,data.dataset),true);
+  assert.equal(F.validCheckpoint({...record,vehicleRevision:'992-gt3r-si-1'},sim,data.dataset),false,'pre-elevation physics cannot silently resume');
   assert.equal(F.validCheckpoint({...record,vehicleRevision:undefined},sim,data.dataset),false,'previous physics is explicitly incompatible');
   const legacy={...record,graphRevision:undefined,nodes:364,edges:6441};
   assert.equal(F.validCheckpoint(legacy,sim,data.dataset),false,'RL readout must not load against a different graph');

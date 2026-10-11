@@ -14,7 +14,7 @@ const carRenderer=new MaleCNSCars.Renderer();
 const agentSelection=new MaleCNSAgents.Selection();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.2.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.3.0',number=n=>n.toLocaleString('it-IT');
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
@@ -69,6 +69,8 @@ function refreshTrackWidth(car=selected()){
   const station=trackFocus.startsWith('width:')?sim.track.widthStations[Number(trackFocus.slice(6))]:null;
   const info=FlySim.trackWidthAt(sim.track,station?station.alongMeters:car.lastAlong||0);
   $('track-local-width').textContent=`${station?'Tratto inquadrato':`A-${pad(car.id+1)}`} · ${info.label} · ${info.widthMeters.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})} m${info.estimated?' (stimata)':''}`;
+  const ground=FlySim.Vehicle.Terrain.forTrack(sim.track),point=station||car,sample=ground.sample(point.x,point.y),range=ground.profile.max-ground.profile.min;
+  $('track-elevation-note').textContent=ground.flat?'Profilo pianeggiante · vegetazione procedurale, solo visiva.':`Dislivello modellato ${range.toFixed(1)} m · quota locale ${sample.height.toFixed(1)} m sopra il punto minimo · profilo stimato, pendenze attive nella fisica · vegetazione procedurale.`;
 }
 function resetTrackView(){trackCamera.reset();cameraSelect.value='overview';circuit3D?.setMode('overview');circuit3D?.reset();trackFocus='';$('track-landmark').value='';refreshTrackWidth();renderDirty=true;render();}
 function focusTrack(key){
@@ -131,13 +133,13 @@ async function setCircuitView(mode){
       if(!circuit3D){
         circuit3DLoading??=import('./circuit-3d.mjs');const {Circuit3D}=await circuit3DLoading;
         if(request!==circuitViewRequest)return;
-        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · barriere e vie di fuga schematiche, solo visive';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
+        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · vegetazione e protezioni solo visive · dislivello stimato attivo nella fisica';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
         circuit3D.setTrack(sim.track,trackRenderer.model,FlySim.onRoad);
         cameraSelect.value='follow';circuit3D.setMode('follow');
       }
       if(circuit3D.lost)throw Error('Contesto grafico non disponibile: riapri l’app per riprovare.');
       circuit3D.setMode(cameraSelect.value);
-      $('track-3d-status').textContent=circuit3D.carRevision?'Porsche 992 dello ZIP · barriere e vie di fuga schematiche, solo visive':'3D su GPU · caricamento Porsche 992 locale…';
+      $('track-3d-status').textContent=circuit3D.carRevision?'Porsche 992 dello ZIP · vegetazione e protezioni solo visive · dislivello stimato attivo nella fisica':'3D su GPU · caricamento Porsche 992 locale…';
     }catch(error){mode='2d';$('track-3d-status').textContent='3D non disponibile. La mappa 2D e l’IA restano attive. '+error.message;}
     finally{$('track-mode-3d').disabled=false;}
   }
@@ -280,6 +282,7 @@ function refreshVehicle(car){
   $('vehicle-rpm').textContent=number(Math.round(v.rpm))+' rpm';
   $('vehicle-aids').textContent=`ABS ${v.absEnabled?(v.absActive?'interviene':'attivo'):'spento'} · TC ${v.tcEnabled?(v.tcActive?'interviene':'attivo'):'spento'} · ${v.gearboxMode==='auto'?'cambio automatico':'cambio manuale'}${v.limiter?' · limitatore':''}`;
   $('vehicle-power').textContent=v.enginePowerKw.toFixed(0)+' kW';$('vehicle-fuel').textContent=v.fuelL.toFixed(1)+' L';
+  $('vehicle-road-surface').textContent=`Quota relativa ${(v.elevationM||0).toFixed(1)} m · pendenza ${(v.roadGradePercent||0)>=0?'+':''}${(v.roadGradePercent||0).toFixed(1)}% · carico normale ${(v.normalG??1).toFixed(2)} g, esclusa aerodinamica · profilo stimato.`;
   $('vehicle-tyres').textContent=v.tyreC.toFixed(0)+' °C / '+(v.tyreWear*100).toFixed(1)+'%';$('vehicle-pressure').textContent=v.pressureBar.toFixed(2)+' bar';
   $('vehicle-brakes').textContent=v.brakeC.toFixed(0)+' °C';$('vehicle-aero').textContent=v.downforceN.toFixed(0)+' N';
   $('vehicle-wheel-loads').textContent=v.wheels?['AS','AD','PS','PD'].map((label,i)=>label+' '+Math.round(v.wheels[i].fz)+' N').join(' · '):'Carichi ruote in attesa del campione.';

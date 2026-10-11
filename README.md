@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.2.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0)
+[![Versione 5.3.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-portable-5.2.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-setup-5.2.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0)**
+**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-portable-5.3.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-setup-5.3.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,16 +34,18 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
-**Novità 5.2.0:** nella vista 3D ci sono barriere, recinzioni e vie di fuga in asfalto o ghiaia: sei zone a Monza, tre a Monaco e nove a Le Mans. Il comando **Dettagli: sì/no** le mostra o nasconde. Sono elementi scenografici stimati, non un rilievo delle protezioni reali: **non cambiano carreggiata, collisioni, sensori o apprendimento**. Nessuna strada di servizio aggiunta. [Copertura, fonti e limiti](outputs/AMBIENTE-3D-v520.md).
+**Novità 5.3.0:** alberi e cespugli 3D fuori dalla carreggiata e dalle vie di fuga, più salite e discese che **influenzano davvero gravità, accelerazione, frenata e carico degli pneumatici**. Strada, auto, cordoli, protezioni e camera seguono la stessa superficie. Quote locali e raccordi sono **stime esplicite**, non un rilievo altimetrico completo; la vegetazione è procedurale e solo visiva. **Dettagli: sì/no** nasconde verde e protezioni, ma non disattiva la fisica del terreno. [Guida, fonti e limiti](outputs/TERRENO-v530.md).
+
+La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Monaco e nove a Le Mans, senza accessi di servizio. Barriere e verde non aggiungono collisioni; geometria XY, policy neurale, algoritmi di apprendimento e ricompense sono conservati. Il nuovo ambiente fisico può invece cambiare il comportamento delle auto. [Scenografia 5.2.0](outputs/AMBIENTE-3D-v520.md).
 
 ## Avvio rapido
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-portable-5.2.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-setup-5.2.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-portable-5.3.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-setup-5.3.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
-La [release 5.2.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
+La [release 5.3.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
 
 ### Esplora una prova
 
@@ -78,10 +80,10 @@ Fonti dell'implementazione: [policy e ottimizzatore](outputs/neural-learning.js)
 | Nell'app | Cosa trovi |
 | --- | --- |
 | **Circuito** | Mappa 2D interattiva, zoom, pan, raggi dei sensori e selezione delle auto. |
-| **Circuito 3D** | Panoramica del tracciato e telecamera che segue lo stato fisico dell'auto osservata. |
+| **Circuito 3D** | Panoramica, inseguimento, vegetazione e rilievo stimato condiviso con la fisica. |
 | **Atlante MaleCNS** | Coordinate somatiche, selezione e ricerca dei neuroni, attività della rete e uscite motorie. |
 | **Porsche 992 GT3 R** | Modello 3D con texture locali, livrea, ruote animate e luci di frenata. |
-| **Fisica e telemetria** | Inerzia, forze G, pneumatici, aerodinamica, carburante, temperature, ABS, controllo di trazione e cambio sequenziale a sei rapporti. |
+| **Fisica e telemetria** | Inerzia, forze G, pendenza e carico normale, pneumatici, aerodinamica, carburante, temperature, ABS, controllo di trazione e cambio sequenziale a sei rapporti. |
 | **Apprendimento** | Fino a 100 agenti per generazione e worker, mutazioni, ricompense, penalità e confronto fra modelli. |
 | **Progressi** | Distanza e tempi separati dai punti, storico delle generazioni e salvataggi condivisibili. |
 
@@ -99,14 +101,16 @@ Il modello fornito nello ZIP dall'utente usa texture locali e livelli di dettagl
 
 <img src="outputs/texture-verification-v510/source-3d/monza-overview.png" alt="Vista panoramica 3D del circuito di Monza nella versione 5.1.0, con il tracciato completo e i controlli della prova" width="1200" />
 
-Le viste mostrano la geometria del simulatore, con larghezze locali stimate e cordoli documentati. Sono approssimazioni delle mappe, **non rilievi laser o CAD ufficiali**.
+Queste anteprime sono della **5.1.0** e non mostrano il verde e il terreno introdotti nella 5.3.0. Le viste mostrano la geometria del simulatore, con larghezze locali stimate e cordoli documentati. Sono approssimazioni delle mappe, **non rilievi laser o CAD ufficiali**.
 
-| Circuito | Lunghezza nel simulatore |
+| Circuito | Lunghezza planimetrica nel simulatore |
 | --- | ---: |
 | **Monza** | 5.793 m |
 | **Monaco** | 3.337 m |
 | **Le Mans** | 13.626 m |
 | **Laboratorio** | Tracciato di prova locale |
+
+Le lunghezze XY sono conservate. La distanza lungo la superficie inclinata è leggermente maggiore; il profilo modellato ha un intervallo di quota di 8 m a Monza, 42 m a Monaco e 34 m a Le Mans. **Questi intervalli non sono misure certificate dei circuiti reali.** Il Laboratorio resta piano. [Terreno e fisica 5.3.0](outputs/TERRENO-v530.md).
 
 [Geometrie e fonti](outputs/CIRCUITI.md) · [Renderer 3D e limiti](outputs/VISTA-3D-v510.md) · [Origine delle anteprime](docs/assets/README.md).
 
@@ -187,7 +191,7 @@ No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabor
 <details>
 <summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-No. Un file `.malecns-save` creato con **5.2.0** richiede **5.2.0**; quelli della 5.1.0 continuano a richiedere la [release 5.1.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0), che resta disponibile. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
+No. Un file `.malecns-save` creato con **5.3.0** richiede **5.3.0**; i file 5.2.0 e 5.1.0 continuano a richiedere le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
 </details>
 
@@ -196,18 +200,19 @@ No. Un file `.malecns-save` creato con **5.2.0** richiede **5.2.0**; quelli dell
 
 No. La vettura usa unità SI, quattro patch di contatto e componenti stimati per motore, pneumatici e aerodinamica. Non sono dati certificati da Porsche o Michelin.
 
-Non sono presenti collisioni tra auto, danni deformabili, meteo, scia aerodinamica, un rilievo altimetrico completo o un modello completo di sospensione sui cordoli. Le mappe e le larghezze dei circuiti sono approssimazioni documentate.
+Salite, discese e curvatura verticale modificano gravità e carichi, ma la vettura resta vincolata al contatto con la superficie: non simula salti o volo libero. Non sono presenti collisioni tra auto, danni deformabili, meteo, scia aerodinamica, un rilievo altimetrico completo o un modello completo di sospensione sui cordoli. Le mappe, le larghezze e gli ancoraggi altimetrici sono approssimazioni documentate. [Portata della fisica 5.3.0](outputs/TERRENO-v530.md).
 
 </details>
 
 ## Documentazione
 
 - [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
-- [Verifica 5.2.0](outputs/VERIFICA-v520.md) — controlli dell'ambiente 3D; [rapporto precedente 5.1.0](outputs/VERIFICA-v510.md).
+- [Verifica 5.3.0](outputs/VERIFICA-v530.md) — gravità, carichi, regressione piana e vegetazione; [rapporto precedente 5.2.0](outputs/VERIFICA-v520.md).
 - [Profilo V5](outputs/MODELLO-V5.md) — anatomia, capacità elaborata e costo computazionale.
 - [Circuiti](outputs/CIRCUITI.md) — geometrie, larghezze e provenienza.
 - [Vista 3D](outputs/VISTA-3D-v510.md) — telecamere, risorse e limiti del rendering.
 - [Barriere e vie di fuga 5.2.0](outputs/AMBIENTE-3D-v520.md) — scenografia locale, copertura e stime.
+- [Vegetazione e dislivello fisico 5.3.0](outputs/TERRENO-v530.md) — profili stimati, superficie condivisa e limiti.
 - [Texture Porsche](outputs/TEXTURE-v510.md) — livrea locale e coordinate UV.
 - [Modalità test](outputs/TEST-MODELLI-v500.md) — protocollo del confronto dei due giri.
 - [Salvataggi](outputs/SALVATAGGI-v462.md) — file condivisibili e vincolo di versione.
@@ -243,7 +248,7 @@ npm run dist
 
 Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-La build produce i pacchetti in `dist-scenery-v520/`, separati dalle distribuzioni precedenti. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
+La build produce i pacchetti in `dist-terrain-v530/`, separati dalle distribuzioni precedenti. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
 
 <details>
 <summary><strong>Struttura del repository</strong></summary>
