@@ -1,8 +1,9 @@
 # Verifica 5.3.0 — vegetazione e pendenze
 
-Rapporto della sorgente prima dell'impacchettamento, su Windows x64 con profili
-diagnostici separati dai progressi personali. Le verifiche successive dei binari
-e i checksum sono nelle [note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0).
+Rapporto della sorgente e dei pacchetti, su Windows x64 con profili diagnostici
+separati dai progressi personali. Commit distribuito, conferma dei controlli
+sui binari finali e checksum sono nelle
+[note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0).
 
 ## Evidenze eseguite
 
@@ -39,6 +40,28 @@ node_modules\electron\dist\electron.exe . --progress-smoke --progress-output-dir
 Le acquisizioni sono della normale app: camera/zoom/focus ordinari, nessuna
 auto riposizionata per la foto o risultato di guida inventato. Il dettaglio
 Beau Rivage mostra il dislivello e non prova che un agente lo abbia percorso.
+
+## Pacchetti Windows
+
+Sullo stesso PC, AMD Ryzen 5 5600G (6 core/12 thread), NVIDIA RTX 4060 e grafica
+AMD integrata, la build 5.3.0 è stata avviata con profili di prova indipendenti:
+
+- App impacchettata: **53/53** controlli con GPU disponibile, **34/34** con
+  fallback CPU e **49/49** sui progressi. Zero errori di console.
+- Vero portable autoestraente: **34/34**, zero errori di console.
+- **88/88** file distribuiti controllati identici alla sorgente; versione
+  5.3.0 e fisica `992-gt3r-si-2`. Nessun file di progresso personale, log Codex
+  o cache diagnostica inclusi nell'app.
+- Installer NSIS: payload x64 estratto senza installare; archivio integro,
+  **88/88** file identici alla sorgente, eseguibile runtime identico a quello
+  dell'app impacchettata verificata. Il payload è x64; i wrapper NSIS sono x86.
+- Portable, installer e app riportano versione 5.3.0 e stato Windows
+  **NotSigned**. Il flusso completo dell'installer su Windows pulito non è
+  stato provato: non è equivalente alla verifica del payload.
+
+Questi sono controlli funzionali locali, non un benchmark di convergenza,
+di FPS sostenuti o di velocità effettiva 30x. Checksum e verifiche di download
+pubblico appartengono alle note della release, non a questo documento.
 
 ## Costo e conservazione
 
