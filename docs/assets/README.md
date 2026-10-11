@@ -25,3 +25,9 @@ delle relazioni fra sensori, policy, simulazione e selezione evolutiva.
 Le relazioni descritte fanno riferimento a
 [simulation.js](../../outputs/simulation.js) e
 [neural-learning.js](../../outputs/neural-learning.js).
+
+I cinque [badge locali](badges/) sono SVG originali scritti per il README,
+senza dipendenza da un servizio esterno di immagini. Riportano la versione
+in package.json, il target Windows x64, l'esecuzione locale, il calcolo
+CPU/WebGPU e il metodo di sviluppo indicato dall'autore. Non rappresentano
+misurazioni di performance o certificazioni.

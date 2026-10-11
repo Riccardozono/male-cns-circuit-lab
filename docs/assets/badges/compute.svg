@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="141" height="20" viewBox="0 0 141 20" role="img" aria-label="calcolo: CPU + WebGPU">
+  <title>calcolo: CPU + WebGPU</title>
+  <rect width="49" height="20" fill="#38434d"/>
+  <rect x="49" width="92" height="20" fill="#8250df"/>
+  <g fill="#fff" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" text-anchor="middle">
+    <text x="24.5" y="14">calcolo</text>
+    <text x="95" y="14">CPU + WebGPU</text>
+  </g>
+</svg>

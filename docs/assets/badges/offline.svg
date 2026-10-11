@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="126" height="20" viewBox="0 0 126 20" role="img" aria-label="simulazione: offline">
+  <title>simulazione: offline</title>
+  <rect width="78" height="20" fill="#38434d"/>
+  <rect x="78" width="48" height="20" fill="#238636"/>
+  <g fill="#fff" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="11" text-anchor="middle">
+    <text x="39" y="14">simulazione</text>
+    <text x="102" y="14">offline</text>
+  </g>
+</svg>

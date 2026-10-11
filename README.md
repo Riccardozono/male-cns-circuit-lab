@@ -6,11 +6,11 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.1.0](https://img.shields.io/badge/versione-5.1.0-ff7658?style=flat-square)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)
-[![Windows x64](https://img.shields.io/badge/Windows-x64-0969da?style=flat-square)](#avvio-rapido)
-[![Simulazione locale](https://img.shields.io/badge/simulazione-locale_%2F_offline-238636?style=flat-square)](#faq)
-[![CPU e WebGPU](https://img.shields.io/badge/calcolo-CPU_%2B_WebGPU-8250df?style=flat-square)](#faq)
-[![Vibe coding](https://img.shields.io/badge/sviluppo-vibe_coding-57606a?style=flat-square)](#sviluppo-con-openai-codex)
+[![Versione 5.1.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)
+[![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
+[![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
+[![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
+[![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
 **[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)**
 
