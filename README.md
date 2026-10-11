@@ -1,138 +1,217 @@
+<div align="center">
+
 # MAL-E CNS Circuit Lab
 
-Laboratorio locale per Windows in cui una popolazione di auto da gara prova a imparare un circuito attraverso una policy ricorrente costruita sul connectome **MaleCNS**.
+### Un laboratorio locale per far imparare a guidare una rete basata sul connectome della mosca.
 
-L'app unisce simulazione fisica, apprendimento evolutivo, circuiti in scala metrica, mappa 2D interattiva, visualizzazione 3D e strumenti per confrontare i modelli V2, V3, V4 e V5.
+**Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-> **Stato:** versione `5.1.0` · Windows x64 · Electron · simulazione CPU/WebGPU ibrida
+[![Versione 5.1.0](https://img.shields.io/badge/versione-5.1.0-ff7658?style=flat-square)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)
+[![Windows x64](https://img.shields.io/badge/Windows-x64-0969da?style=flat-square)](#avvio-rapido)
+[![Simulazione locale](https://img.shields.io/badge/simulazione-locale_%2F_offline-238636?style=flat-square)](#faq)
+[![CPU e WebGPU](https://img.shields.io/badge/calcolo-CPU_%2B_WebGPU-8250df?style=flat-square)](#faq)
+[![Vibe coding](https://img.shields.io/badge/sviluppo-vibe_coding-57606a?style=flat-square)](#sviluppo-con-openai-codex)
 
-> **Metodo di sviluppo:** progetto realizzato in modalità **vibe coding**, con iterazioni guidate in linguaggio naturale, assistenza di OpenAI Codex e verifiche automatiche sul repository.
+**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)**
 
-## Scarica l'app per Windows
+[Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
-La release contiene due pacchetti già compilati:
+<br />
 
-| Pacchetto | Uso |
+<img src="outputs/texture-verification-v510/source-3d/desktop-split.png" alt="MAL-E CNS Circuit Lab 5.1.0: circuito Monza, atlante 3D MaleCNS e controlli della simulazione affiancati" width="1200" />
+
+<br />
+
+*L'app 5.1.0 in vista affiancata: circuito, atlante del cervello e telemetria. Anteprima in pausa, non un risultato di apprendimento.*
+
+</div>
+
+---
+
+MAL-E CNS Circuit Lab è un'app sperimentale per Windows: una popolazione di Porsche 992 GT3 R riceve sensori fisici, produce comandi di guida e viene valutata su un circuito. Puoi osservare ogni auto, esplorare il cervello in 3D e confrontare i profili **V2, V3, V4 e V5**.
+
+La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/natverse/malecns)** e agli export ufficiali **[MaleCNS](https://male-cns.janelia.org/download/)**. Dinamica neurale, sensori, decoder motorio e apprendimento sono implementazioni artificiali del laboratorio: **non è una simulazione biologica validata del cervello di una mosca**.
+
+La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
+
+## Avvio rapido
+
+### Scarica e apri l'app
+
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+
+La [release 5.1.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
+
+### Esplora una prova
+
+1. Scegli **circuito**, **modello** e **popolazione**. Usa **Pausa / Riprendi** per controllare la simulazione.
+2. Alterna **Mappa 2D** e **Vista 3D**. In **Camera del circuito**, scegli **Segui auto** o **Panoramica**.
+3. Apri **Cervello 3D** oppure **Affiancati** per leggere il circuito e l'atlante insieme.
+4. Guarda distanza, giri validi e tempo sul giro oltre ai punti: un punteggio più alto, da solo, non dimostra che l'auto stia guidando meglio.
+5. Salva i progressi prima di chiudere. I file `.malecns-save` sono condivisibili, ma richiedono **la stessa versione dell'app**.
+
+### Confronta i modelli da zero
+
+Premi **Apri test modelli**, poi **Avvia V2 · V3 · V4 · V5**. Ogni modello parte da zero sul circuito scelto, con le stesse impostazioni e un worker. Il test mette in pausa l'addestramento normale e ne conserva i progressi.
+
+L'obiettivo è che **la stessa auto completi due giri**, seguiti dalla fine naturale della generazione. Una generazione terminata soltanto per urti o stallo non conta come successo. Il pannello distingue tempo reale, tempo simulato e tempo dei due giri; puoi esportare i risultati in JSON.
+
+## Come funziona
+
+L'auto non segue un percorso preregistrato: la policy riceve osservazioni sensoriali e cerca un comportamento attraverso la valutazione delle prove. Non usa un pilota guida, una traiettoria ideale o un insegnante nascosto.
+
+<p align="center">
+  <img src="docs/assets/learning-flow.svg" alt="Ciclo di apprendimento: 28 sensori, rete ricorrente MaleCNS, Porsche sul circuito e punteggi; la fisica aggiorna i sensori e la selezione evolutiva aggiorna la policy per la generazione successiva" width="480" />
+</p>
+
+La fisica produce nuove osservazioni; la rete le elabora e il decoder produce sterzo e azione longitudinale. Ricompense e penalità valutano progresso, checkpoint, giri validi, ritmo, stallo, uscite, urti, retromarcia e regressione. Un'auto termina dopo due giri oppure quando l'episodio fallisce.
+
+La strategia evolutiva apprende i parametri dell'encoder, del decoder e dei gruppi di guadagno della policy. **Non addestra individualmente milioni di connessioni anatomiche.** La ricorrenza dei profili completi può usare WebGPU; fisica, sensori, ricompense e selezione restano sui worker CPU.
+
+Fonti dell'implementazione: [policy e ottimizzatore](outputs/neural-learning.js), [simulazione](outputs/simulation.js), [profili neurali](outputs/model-profiles.js).
+
+## Cosa puoi osservare
+
+| Nell'app | Cosa trovi |
 | --- | --- |
-| [Portable x64 — download diretto](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe) | Avvia l'app senza installazione. È utile per una prova rapida o per portare l'app su un altro PC. |
-| [Installer x64 — download diretto](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe) | Installa l'app in Windows e crea i collegamenti nel menu Start e sul desktop. |
+| **Circuito** | Mappa 2D interattiva, zoom, pan, raggi dei sensori e selezione delle auto. |
+| **Circuito 3D** | Panoramica del tracciato e telecamera che segue lo stato fisico dell'auto osservata. |
+| **Atlante MaleCNS** | Coordinate somatiche, selezione e ricerca dei neuroni, attività della rete e uscite motorie. |
+| **Porsche 992 GT3 R** | Modello 3D con texture locali, livrea, ruote animate e luci di frenata. |
+| **Fisica e telemetria** | Inerzia, forze G, pneumatici, aerodinamica, carburante, temperature, ABS, controllo di trazione e cambio sequenziale a sei rapporti. |
+| **Apprendimento** | Fino a 100 agenti per generazione e worker, mutazioni, ricompense, penalità e confronto fra modelli. |
+| **Progressi** | Distanza e tempi separati dai punti, storico delle generazioni e salvataggi condivisibili. |
 
-Per vedere note, documentazione e checksum, apri la [release MAL-E CNS Circuit Lab v5.1.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0).
+Le auto **non collidono tra loro**. La carreggiata usata da disegno, sensori e controllo delle uscite è la stessa: la visualizzazione non aggiunge una seconda geometria di guida.
 
-> I file Windows non sono firmati Authenticode: al primo avvio Windows SmartScreen potrebbe mostrare un avviso. La portable non richiede Node.js.
+## Anteprime
 
-## In breve
+### Porsche 992 GT3 R in 3D
 
-Il laboratorio simula auto indipendenti che ricevono osservazioni sensoriali, elaborano l'attività della rete MaleCNS e producono sterzo e azione longitudinale. La generazione viene valutata con giri completati, tempo, progresso, ricompense e penalità.
+<img src="outputs/texture-verification-v510/source-3d/monza-car-left.png" alt="Porsche 992 GT3 R con livrea gialla e nera nell'app 5.1.0, osservata lateralmente a Monza" width="1200" />
 
-Il progetto non usa una traiettoria memorizzata, un pilota guida o una regola nascosta per far seguire alle auto il circuito. Il percorso viene valutato dalla simulazione e il comportamento viene cercato dall'ottimizzatore.
+Il modello fornito nello ZIP dall'utente usa texture locali e livelli di dettaglio per contenere il costo del rendering. La telecamera cambia l'osservazione, non le decisioni dell'IA. [Crediti del modello](outputs/assets/PORSCHE-3D-CREDITS.md) · [Verifica delle texture](outputs/TEXTURE-v510.md).
 
-```text
-sensori fisici → policy ricorrente MaleCNS → neuroni discendenti → sterzo e pedali
-```
+### Circuiti in scala metrica
 
-## Modelli OpenAI usati nello sviluppo
+<img src="outputs/texture-verification-v510/source-3d/monza-overview.png" alt="Vista panoramica 3D del circuito di Monza nella versione 5.1.0, con il tracciato completo e i controlli della prova" width="1200" />
 
-Questo progetto è stato realizzato in modalità **vibe coding** con assistenza di OpenAI Codex.
+Le viste mostrano la geometria del simulatore, con larghezze locali stimate e cordoli documentati. Sono approssimazioni delle mappe, **non rilievi laser o CAD ufficiali**.
+
+| Circuito | Lunghezza nel simulatore |
+| --- | ---: |
+| **Monza** | 5.793 m |
+| **Monaco** | 3.337 m |
+| **Le Mans** | 13.626 m |
+| **Laboratorio** | Tracciato di prova locale |
+
+[Geometrie e fonti](outputs/CIRCUITI.md) · [Renderer 3D e limiti](outputs/VISTA-3D-v510.md) · [Origine delle anteprime](docs/assets/README.md).
+
+## Modelli neurali
+
+I profili V2–V5 sono eseguiti **dall'app**, non da OpenAI. Il confronto cambia il costo e la capacità del controller, non la pista o le regole fisiche.
+
+| Profilo | Neuroni anatomici | Archi | Caratteristica |
+| --- | ---: | ---: | --- |
+| **V2** | 1.121 | 32.351 | Nucleo compatto ricostruito, per prove rapide. |
+| **V3** | 7.721 | 242.486 | Sottoinsieme storico intermedio del connectome. |
+| **V4** | 166.700 | 6.242.118 | Dataset completo incluso; solver sparso da 8.192 slot, 2 passaggi e 64 letture motorie. |
+| **V5** | 166.700 | 6.242.118 | Stessa anatomia; 32.768 slot, 4 passaggi e 128 letture motorie. |
+
+V4 e V5 condividono il dataset annotato e gli archi con **almeno cinque sinapsi**. V5 amplia il budget del solver e il decoder: **non aggiunge neuroni biologici inventati**. Gli slot sono una capacità massima, non il numero di neuroni necessariamente attivi a ogni aggiornamento.
+
+Più capacità significa anche più calcolo; non garantisce un apprendimento più veloce. Le prove brevi o un singolo seed non dimostrano convergenza su tutti i circuiti. [Dettaglio V5](outputs/MODELLO-V5.md) · [Metadati anatomici](outputs/data/connectome-full.json).
+
+## Origine del cervello
+
+Il riferimento upstream è **[natverse/malecns](https://github.com/natverse/malecns)**, il progetto R per lavorare con i dati MaleCNS. È collegato nel repository tramite il [submodule `work/malecns`](work/malecns).
+
+L'app non esegue direttamente il pacchetto R durante una prova: carica [export offline e manifest](outputs/data/) derivati dai dati ufficiali MaleCNS. Fonti, conteggi, licenze e checksum sono conservati nella [provenienza dei dati](outputs/data/provenance.json).
+
+La struttura anatomica è distinta dalla dinamica artificiale a tassi normalizzati. Potenziali di membrana, ritardi sinaptici e una fisiologia completa della mosca non vengono simulati. Il progetto è un esperimento di controllo e apprendimento, non una validazione neuroscientifica.
+
+## Sviluppo con OpenAI Codex
+
+Questo è un progetto realizzato in modalità **vibe coding**: richieste in linguaggio naturale, iterazioni assistite da OpenAI Codex e verifiche sul codice e sull'app.
+
+I modelli OpenAI utilizzati dall'autore sono:
 
 | Modello OpenAI | Ambiente |
 | --- | --- |
-| **GPT-6 Astra** | **OpenAI Codex** |
-| **GPT-6 Luna** | **OpenAI Codex** |
-| **GPT-6.1 Sol** | **OpenAI Codex** |
-| **GPT-5.6 Luna** | **OpenAI Codex** |
+| **GPT-6 Astra** | OpenAI Codex |
+| **GPT-6 Luna** | OpenAI Codex |
+| **GPT-6.1 Sol** | OpenAI Codex |
+| **GPT-5.6 Luna** | OpenAI Codex |
 
-Questi sono i modelli OpenAI utilizzati dall'autore durante lo sviluppo in vibe coding. Il repository non conserva un registro per commit che permetta di attribuire ogni singola modifica a un modello specifico; la tabella documenta quindi l'insieme dei modelli usati nel progetto, non una suddivisione artificiale del lavoro tra loro.
+L'elenco è quello indicato dall'autore. Non esiste un registro per attribuire ogni commit a uno specifico modello. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
 
-## Modelli usati dall'app
+## FAQ
 
-| Categoria | Modello o componente | Funzione |
-| --- | --- | --- |
-| Rete neurale | **MaleCNS V2** | Profilo compatto ricostruito per prove rapide e confronto di base. |
-| Rete neurale | **MaleCNS V3** | Profilo intermedio ricostruito con capacità superiore a V2. |
-| Rete neurale | **MaleCNS V4** | Profilo completo usato come riferimento principale del connectome. |
-| Rete neurale | **MaleCNS V5** | Profilo esteso con maggiore capacità elaborata, più passaggi ricorrenti e decoder più ampio. |
-| Veicolo 3D/fisico | **Porsche 992 GT3 R** | Vettura simulata, con modello 3D, texture locali, fisica, cambio, pneumatici e telemetria. |
+<details>
+<summary><strong>Serve Node.js per usare l'app Windows?</strong></summary>
 
-Il runtime della simulazione usa i profili MaleCNS locali e gli asset inclusi nel progetto; non invia le decisioni di guida a un servizio AI cloud. I modelli OpenAI assistono lo sviluppo, mentre V2, V3, V4 e V5 sono i modelli neurali eseguiti dall'app.
+No per portable e installer: contengono il runtime. Node.js e npm servono se vuoi avviare il progetto da sorgente o generarne una build.
 
-## Funzionalità principali
+</details>
 
-- **Mappa 2D interattiva** con zoom, pan, auto selezionabile e raggi dei sensori.
-- **Vista 3D panoramica** dell'intero circuito.
-- **Telecamera 3D in inseguimento** dell'auto osservata o dell'auto migliore.
-- **Porsche 992 GT3 R** con modello 3D, texture locali, livrea, ruote animate e luci di frenata.
-- **Fisica con inerzia e forze**: velocità del corpo, imbardata, trasferimento di carico, pneumatici, aerodinamica, temperature, usura, pressione, carburante e cambio sequenziale a sei rapporti.
-- **Sensori fisici** per bordi, velocità, RPM, marcia, slip delle ruote, temperature e freni.
-- **Ricompense e penalità episodiche** per progresso, checkpoint, giri validi, ritmo, stallo, uscita, urto sul bordo, retromarcia, slip, nessun giro e regressione.
-- **Due giri per episodio**: ogni auto termina dopo due giri oppure quando conclude, urta, esce dalla pista o raggiunge lo stallo.
-- **Fino a 100 agenti per generazione** e velocità richiesta fino a `30×`, compatibilmente con il carico del PC.
-- **Modalità test** per confrontare i modelli partendo da zero con le stesse impostazioni.
-- **Salvataggi condivisibili**, vincolati alla versione dell'app che li ha creati.
+<details>
+<summary><strong>L'app usa la GPU? Posso ottenere sempre 30×?</strong></summary>
 
-## Origine del cervello MaleCNS
+La ricorrenza neurale dei profili completi usa WebGPU quando disponibile, con fallback CPU. Fisica, sensori e ottimizzazione restano sulla CPU; il rendering 3D è un percorso separato. Non è un backend CUDA.
 
-Il riferimento anatomico del progetto è la repository ufficiale del progetto MaleCNS:
+Lo slider arriva a **30× richiesto**. Il rapporto effettivo fra tempo simulato e tempo reale dipende da modello, numero di auto e hardware: 100 agenti con V5 non garantiscono 30× reali.
 
-- **Repository upstream:** [natverse/malecns](https://github.com/natverse/malecns)
-- **Collegamento nel progetto:** [submodule `work/malecns`](https://github.com/Riccardozono/male-cns-circuit-lab/tree/main/work/malecns)
-- **Export offline utilizzati dall'app:** [`outputs/data/`](https://github.com/Riccardozono/male-cns-circuit-lab/tree/main/outputs/data/)
-- **Manifest e provenienza locale:** [`outputs/data/provenance.json`](https://github.com/Riccardozono/male-cns-circuit-lab/blob/main/outputs/data/provenance.json)
+</details>
 
-Il codice e i dati upstream vengono mantenuti separati dalla dinamica artificiale del simulatore. L'app usa export offline con manifest e checksum; non esegue direttamente il pacchetto R `natverse/malecns` durante la simulazione.
+<details>
+<summary><strong>Gli agenti imparano sempre a completare un giro?</strong></summary>
 
-Il connectome caricato e le annotazioni anatomiche sono una base scientifica di riferimento, ma la normalizzazione, i tassi di attività, gli ingressi sensoriali, il decoder motorio e l'apprendimento sono scelte del simulatore. Per questo il progetto **non va interpretato come una simulazione biologica validata del cervello di una mosca**.
+Non è garantito. La policy parte senza un pilota preaddestrato e può produrre stallo, urti o peggioramenti. I risultati dipendono da seed, circuito, profilo, popolazione e generazioni.
 
-Per fonti, licenze, checksum e limiti, consulta la [documentazione tecnica della distribuzione](outputs/README.md) e la [provenienza dei dati](outputs/data/provenance.json).
+Per valutare un miglioramento, confronta distanza, giri validi e tempi, non soltanto i punti. La modalità test confronta i quattro modelli da zero e registra anche i tentativi falliti.
 
-## Dettaglio dei modelli neurali MaleCNS
+</details>
 
-| Modello | Profilo | Dimensione indicativa |
-| --- | --- | ---: |
-| **V2** | Profilo compatto ricostruito per prove rapide e confronto di base. | 1.121 neuroni · 32.351 archi |
-| **V3** | Profilo intermedio ricostruito con capacità superiore a V2. | 7.721 neuroni · 242.486 archi |
-| **V4** | Profilo completo usato come riferimento principale. | 166.700 neuroni · 6.242.118 archi |
-| **V5** | Profilo esteso con più capacità elaborata, passaggi ricorrenti e decoder più ampio. | stessa anatomia di V4 |
+<details>
+<summary><strong>V5 aggiorna tutti i 166.700 neuroni a ogni tick?</strong></summary>
 
-V4 e V5 condividono lo stesso dataset anatomico annotato. V5 aumenta la capacità computazionale del profilo, non inventa neuroni o connessioni biologiche aggiuntive. Inoltre, il solver sparso non aggiorna simultaneamente tutti i 166.700 neuroni a ogni tick: il dataset completo viene caricato, mentre l'attività elaborata segue il budget del modello.
+No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabora l'attività con un budget sparso. V5 aumenta quel budget e i passaggi ricorrenti; non è un aggiornamento simultaneo di ogni neurone né una simulazione biologica completa.
 
-> **Nota sull'apprendimento:** più neuroni o più capacità non garantiscono automaticamente un apprendimento più veloce. V4 e V5 richiedono più calcolo e possono avere bisogno di più generazioni per produrre un miglioramento misurabile.
+</details>
 
-## Circuiti
+<details>
+<summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-| Circuito | Lunghezza usata dal simulatore |
-| --- | ---: |
-| Monza | 5.793 m |
-| Monaco | 3.337 m |
-| Le Mans | 13.626 m |
-| Laboratorio | circuito di prova incluso nell'app |
+No. Un file `.malecns-save` creato con **5.1.0** richiede **5.1.0**. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
-Monza, Monaco e Le Mans mantengono forme e proporzioni derivate dalle mappe di riferimento. La larghezza locale, i cordoli, i raggi e i bordi sono approssimazioni documentate del simulatore: non sono una scansione laser, non includono un rilievo altimetrico completo e non rappresentano una certificazione tecnica dei circuiti reali.
+</details>
 
-La stessa geometria di carreggiata viene usata da disegno, sensori, controllo dei bordi e uscita di pista, così la mappa osservata dall'utente corrisponde alla superficie valutata dalla simulazione.
+<details>
+<summary><strong>La fisica e i circuiti sono quelli di un simulatore certificato?</strong></summary>
 
-## Come funzionano fisica e apprendimento
+No. La vettura usa unità SI, quattro patch di contatto e componenti stimati per motore, pneumatici e aerodinamica. Non sono dati certificati da Porsche o Michelin.
 
-La vettura usa unità SI e un modello discreto con inerzia, velocità, imbardata, trasferimento di carico e quattro patch di contatto. Sono presenti cambio sequenziale, limitatore, retromarcia, protezione dalla scalata fuori giri, ABS e controllo di trazione come componenti stimati del simulatore.
+Non sono presenti collisioni tra auto, danni deformabili, meteo, scia aerodinamica, un rilievo altimetrico completo o un modello completo di sospensione sui cordoli. Le mappe e le larghezze dei circuiti sono approssimazioni documentate.
 
-Gli agenti non si scontrano tra loro: ogni auto viene valutata indipendentemente. Gli urti contro il bordo della pista e le uscite dalla carreggiata possono invece terminare l'episodio.
+</details>
 
-La selezione evolutiva usa il saldo tra ricompense e penalità, con giri, tempo e progresso come informazioni di valutazione. Le auto possono quindi peggiorare temporaneamente o rimanere immobili nelle prime generazioni: non esiste una promessa di convergenza dopo pochi episodi.
+## Documentazione
 
-## Avvio rapido da Windows
+- [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
+- [Verifica 5.1.0](outputs/VERIFICA-v510.md) — controlli della versione.
+- [Profilo V5](outputs/MODELLO-V5.md) — anatomia, capacità elaborata e costo computazionale.
+- [Circuiti](outputs/CIRCUITI.md) — geometrie, larghezze e provenienza.
+- [Vista 3D](outputs/VISTA-3D-v510.md) — telecamere, risorse e limiti del rendering.
+- [Texture Porsche](outputs/TEXTURE-v510.md) — livrea locale e coordinate UV.
+- [Modalità test](outputs/TEST-MODELLI-v500.md) — protocollo del confronto dei due giri.
+- [Salvataggi](outputs/SALVATAGGI-v462.md) — file condivisibili e vincolo di versione.
 
-1. Scarica la [portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe) oppure l'[installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe).
-2. Avvia l'app e scegli circuito, modello e numero di agenti.
-3. Premi **Avvia** per iniziare le generazioni.
-4. Usa **Panoramica 3D** per vedere tutto il tracciato oppure **Segui auto** per osservare un agente.
-5. Controlla generazione, giri completati, tempo sul giro, progresso e saldo ricompense/penalità.
-6. Salva i progressi prima di chiudere l'app se vuoi riprendere l'addestramento.
+## Sviluppo e verifiche
 
-I salvataggi `.malecns-save` creati dalla versione `5.1.0` richiedono esattamente la versione `5.1.0`; non vengono migrati automaticamente tra versioni diverse.
+### Avvio da sorgente
 
-## Avvio da sorgente
-
-Richiede Node.js e npm.
+Richiede Node.js, npm e Git.
 
 ```powershell
 git clone --recurse-submodules https://github.com/Riccardozono/male-cns-circuit-lab.git
@@ -141,59 +220,46 @@ npm install
 npm start
 ```
 
-Se il repository è stato clonato senza submodule:
+Se hai già clonato senza submodule: `git submodule update --init --recursive`.
 
-```powershell
-git submodule update --init --recursive
-```
-
-## Test, benchmark e build
+### Test e pacchetti Windows
 
 ```powershell
 # Test automatici
 npm test
 
-# Benchmark di tutti i modelli/piste secondo il protocollo del progetto
+# Benchmark headless CPU: V2, V3 e V4
 npm run benchmark:all
 
 # Genera portable e installer Windows x64
 npm run dist
 ```
 
-`npm run dist` produce gli artefatti nella cartella `dist-textures-v510/`. Le cartelle `dist-*` e `node_modules/` sono generate localmente e non fanno parte del sorgente versionato. Gli eseguibili contengono file singoli oltre il limite di 100 MB di GitHub, quindi vengono pubblicati nella pagina Releases e non nella cronologia del codice.
+Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-## Struttura del progetto
+La build produce i pacchetti in `dist-textures-v510/`. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
 
-| Cartella/file | Contenuto |
+<details>
+<summary><strong>Struttura del repository</strong></summary>
+
+| Percorso | Contenuto |
 | --- | --- |
 | `desktop/` | Shell Electron e runtime Windows. |
-| `outputs/` | Interfaccia, simulazione, apprendimento, veicolo, circuiti, renderer 2D/3D, connectome e documentazione. |
-| `outputs/data/` | Export offline, circuiti, manifest e checksum del dataset usato dall'app. |
-| `outputs/assets/` | Modello Porsche, texture e documentazione di provenienza degli asset. |
+| `outputs/` | Interfaccia, simulazione, apprendimento, circuiti e renderer. |
+| `outputs/data/` | Connectome offline, circuiti, manifest e checksum. |
+| `outputs/assets/` | Porsche, texture e provenienza degli asset. |
 | `work/` | Submodule MaleCNS, benchmark e strumenti riproducibili. |
+| `docs/assets/` | Diagramma e fonti delle anteprime del README. |
 | `package.json` | Script di sviluppo, test e distribuzione. |
 
-## Limiti dichiarati
+`node_modules/` e `dist-*` sono generati localmente e non fanno parte del sorgente versionato.
 
-- Non vengono simulate collisioni tra auto, danni deformabili, meteo o scia aerodinamica.
-- I cordoli non sono un modello completo di elevazione e sospensione.
-- I coefficienti di pneumatici, aerodinamica, motore e trasmissione sono tarature del simulatore, non dati certificati da Porsche o Michelin.
-- La GPU viene usata tramite WebGPU quando disponibile; il fallback CPU non equivale a CUDA.
-- Le misure di performance e i risultati di apprendimento dipendono da modello, popolazione, circuito, seed e hardware.
+</details>
 
-## Documentazione tecnica
+## Crediti
 
-- [Documentazione della distribuzione 5.1.0](outputs/README.md)
-- [Verifica della versione 5.1.0](outputs/VERIFICA-v510.md)
-- [Modello V5 e limiti](outputs/MODELLO-V5.md)
-- [Circuiti e provenienza delle geometrie](outputs/CIRCUITI.md)
-- [Vista 3D](outputs/VISTA-3D-v510.md)
-- [Correzione delle texture](outputs/TEXTURE-v510.md)
-- [Crediti del modello Porsche](outputs/assets/PORSCHE-3D-CREDITS.md)
+- **Cervello e strumenti anatomici:** [natverse/malecns](https://github.com/natverse/malecns), [dati ufficiali MaleCNS](https://male-cns.janelia.org/download/) e relativo [manifest di provenienza](outputs/data/provenance.json).
+- **Modello Porsche:** [MattDoesBlender](https://sketchfab.com/MattDoesBlender), asset fornito dall'utente; attribuzione, licenza e modifiche nei [crediti 3D](outputs/assets/PORSCHE-3D-CREDITS.md).
+- **Presentazione del repository:** struttura ispirata al [README di REA](https://github.com/morluto/rea), adattata ai contenuti e alle immagini reali di questo progetto.
 
-## Attribuzioni
-
-- Connectome MaleCNS e riferimenti anatomici: [natverse/malecns](https://github.com/natverse/malecns).
-- Export, manifest e checksum utilizzati dall'app: [`outputs/data/`](outputs/data/).
-- Modello 3D Porsche e relative fonti: [documentazione degli asset](outputs/assets/PORSCHE-3D-CREDITS.md).
-- Il progetto è un laboratorio sperimentale ispirato al riferimento funzionale indicato dall'utente; non riusa codice o asset del gioco Steam citato come esempio.
+Il riferimento al gioco Steam indica l'idea funzionale di partenza; il progetto non riusa codice o asset del gioco. Le condizioni dei dati e degli asset sono documentate separatamente: la modalità vibe coding non ne modifica le licenze.

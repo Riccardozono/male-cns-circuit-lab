@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="540" viewBox="0 0 480 540" role="img" aria-labelledby="title desc">
+  <title id="title">Il ciclo di apprendimento di MAL-E CNS Circuit Lab</title>
+  <desc id="desc">Ventotto sensori alimentano la rete ricorrente MaleCNS. Il decoder produce sterzo e pedali per la Porsche sul circuito. La fisica aggiorna le osservazioni; i punteggi della prova alimentano la selezione evolutiva della nuova generazione.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#68d3c5"/>
+    </marker>
+    <marker id="learning" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#ff7658"/>
+    </marker>
+  </defs>
+  <rect width="480" height="540" rx="12" fill="#0c1017"/>
+  <g fill="#151d27" stroke="#2b3945" stroke-width="1">
+    <rect x="70" y="24" width="340" height="86" rx="10"/>
+    <rect x="70" y="150" width="340" height="86" rx="10"/>
+    <rect x="70" y="276" width="340" height="86" rx="10"/>
+    <rect x="70" y="426" width="340" height="86" rx="10"/>
+  </g>
+  <g fill="none" stroke="#68d3c5" stroke-width="2" marker-end="url(#arrow)">
+    <path d="M 240 111 V 141"/>
+    <path d="M 240 237 V 267"/>
+    <path d="M 240 363 V 416"/>
+    <path d="M 70 319 H 32 V 67 H 61"/>
+  </g>
+  <path d="M 410 469 H 448 V 193 H 419" fill="none" stroke="#ff7658" stroke-width="2" marker-end="url(#learning)"/>
+  <g font-family="system-ui, -apple-system, Segoe UI, sans-serif" text-anchor="middle">
+    <g fill="#f4efdf" font-size="23" font-weight="650">
+      <text x="240" y="59">28 sensori</text>
+      <text x="240" y="185">Rete ricorrente MaleCNS</text>
+      <text x="240" y="311">Porsche e circuito</text>
+      <text x="240" y="461">Punteggio della prova</text>
+    </g>
+    <g fill="#a9b2b7" font-size="17">
+      <text x="240" y="88">bordi, velocità e stato fisico</text>
+      <text x="240" y="214">encoder → attività → decoder</text>
+      <text x="240" y="340">sterzo, acceleratore e freno</text>
+      <text x="240" y="490">selezione ES → nuova generazione</text>
+    </g>
+    <text x="240" y="397" fill="#68d3c5" font-size="17">ricompense e penalità</text>
+  </g>
+</svg>
