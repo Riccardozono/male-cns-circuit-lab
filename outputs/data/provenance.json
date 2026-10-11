@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "modelRevision": 3,
+  "runtimeAdapter44": {
+    "boundary": "Reward-trained artificial recurrent policy on real MaleCNS topology, not validated biological learning. No circuit coordinates, centerline, teacher actions, target-speed formula or wall-following action law enters the policy.",
+    "algorithm": "Rank-based diagonal evolution strategy with shared synaptic gains, elites and antithetic exploration",
+    "randomInitialPolicy": true,
+    "drivingCalibrationSamples": 0,
+    "trainingLabels": false,
+    "controlRateHz": 10,
+    "physicsRateHz": 60,
+    "readoutDescendingNeuronsByModel": {"v2": 64, "v3": 64, "v4": 64},
+    "trainableParameters": {"sensorWeightsAndBiases": 44, "sharedSynapticLogGains": 16, "descendingReadoutWeights": 128, "actionBiases": 2, "total": 190},
+    "edgeBoundary": "No edges added or removed. Sixteen positive learned gains modulate existing normalized anatomical edges by source-neuron group; millions of independent edge weights are not individually trained.",
+    "v4Boundary": "All 166700 annotated nodes and 6242118 strong edges loaded. Approximate sparse recurrence reserves the 7721-node core within an 8192-slot budget, not all nodes simultaneously nonzero.",
+    "selection": "Completed laps first, fastest lap second; measured progress before first lap; net reward minus severe penalties breaks ties.",
+    "implementation": "../neural-learning.js"
+  },
+  "runtimeAdapter43": {
+    "status": "Historical assisted controller; removed from current runtime",
+    "boundary": "Artificial warm-start adapter over real CSR synapses, not biological learning; no circuit coordinates, waypoints, centerline or target trajectory enter the controller.",
+    "fastBranchNeuronsByModel": {"v2": 94, "v3": 114, "v4": 111},
+    "calibrationTrainingSamples": 768,
+    "calibrationHeldoutSamples": 64,
+    "decodedSensorChannels": ["roadBalance", "roadPreviewTurn", "forwardClearance", "speed"],
+    "fastMotorRateHz": 60,
+    "recurrentRateHz": 5,
+    "legacyRecurrentRateHz": 20,
+    "evolvedMotorParameterCount": 8,
+    "defaultRecurrentMotorMix": 0,
+    "selection": "Completed laps first, fastest lap second; progress before the first lap; net penalty score remains secondary.",
+    "historicalReport": "../README-v43-assisted.md",
+    "archivedWorkspaceImplementation": "../../work/archive-v43/neural-learning-assisted.js"
+  },
+  "dataset": "male-cns:v1.0",
+  "license": "CC-BY-4.0",
+  "credit": "MaleCNS consortium: FlyEM (HHMI Janelia), University of Cambridge, MRC LMB, Google Research",
+  "sourcePage": "https://male-cns.janelia.org/download/",
+  "sources": [
+    {
+      "file": "body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "bytes": 14483314,
+      "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2"
+    },
+    {
+      "file": "connectome-weights-male-cns-v1.0-minconf-0.5.feather",
+      "url": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/connectome-weights-male-cns-v1.0-minconf-0.5.feather",
+      "bytes": 1051241946,
+      "sha256": "e35da783d1c686b2b58b3b87cd6a403ae43bfcfba8bff28e08ef752c1a56afc1"
+    }
+  ],
+  "selection": "DNa01/DNa02; top 60 incoming neurons per output; top 3000 incoming neurons from the expanded central/visual/descending shell; top 4500 visual_projection inputs into the first two shells; top 1200 visual_projection nodes by induced outgoing synapse count receive the runtime sensor adapter. All 1200 input slots keep their eleven visual ray relays; the last 112 deterministic slots also receive 7 artificial vehicle-physics channels and 4 real-wall road-preview channels at a reduced adapter gain. The road-preview channels are additive and start neutral, so the historical visual/physics mapping remains compatible. Classes: ['ascending_neuron', 'cb_efferent', 'cb_intrinsic', 'cb_motor', 'descending_neuron', 'efferent_ascending', 'efferent_descending', 'visual_centrifugal', 'visual_projection']. All induced edges with >=5 synapses; remove nodes without a directed path to an output. Ties by bodyId. Each node includes the official somaLocation [x,y,z] for the 3D atlas.",
+  "modelBoundary": "Real IDs, annotations, directed edges and integer synapse counts. This file describes reduced V3; complete V4 has its own manifest. Artificial rate dynamics, input injection, shared trainable synaptic gains and motor readout are not validated biology. Historical relay fields below describe the legacy adapter; runtimeAdapter44 describes current learning. Eleven wall rays, seven vehicle-physics and four wall-preview channels are simulation inputs, not biological annotations. Neurotransmitters and physiology are not simulated.",
+  "nodeCount": 7721,
+  "edgeCount": 242486,
+  "synapseCount": 5018643,
+  "inputCount": 1200,
+  "visualSensorCount": 11,
+  "physicsSensorCount": 11,
+  "sensorCount": 22,
+  "visualRelayCount": 1200,
+  "physicsRelayStart": 1088,
+  "physicsRelayCount": 112,
+  "physicsSensors": ["speed", "longitudinalG", "lateralG", "totalG", "slipAngle", "yawRate", "loadTransfer", "roadBalance", "roadPreviewTurn", "forwardClearance", "observedWidth"],
+  "physicsRelayGainLaboratory": 0.35,
+  "physicsRelayGainMapDerived": 0.8,
+  "roadRelayCount": 112,
+  "mapPhysicsSpeedLimit": 82,
+  "mapForwardRiskPenalty": "36 pt/s scaled by the deficit between forward wall clearance and the estimated braking corridor",
+  "narrowProfileVisualEncoding": "side rays use close-wall normalization; the forward ray keeps the long-range distance gradient",
+  "outputs": [
+    {
+      "bodyId": 10360,
+      "type": "DNa02",
+      "instance": "DNa02_R",
+      "superclass": "descending_neuron",
+      "side": "R",
+      "position": [
+        33699,
+        18906,
+        15758
+      ]
+    },
+    {
+      "bodyId": 10442,
+      "type": "DNa01",
+      "instance": "DNa01(VES006)_L",
+      "superclass": "descending_neuron",
+      "side": "L",
+      "position": [
+        61859,
+        18689,
+        15971
+      ]
+    },
+    {
+      "bodyId": 10760,
+      "type": "DNa01",
+      "instance": "DNa01(VES006)_R",
+      "superclass": "descending_neuron",
+      "side": "R",
+      "position": [
+        35932,
+        19030,
+        15516
+      ]
+    },
+    {
+      "bodyId": 523769,
+      "type": "DNa02",
+      "instance": "DNa02_L",
+      "superclass": "descending_neuron",
+      "side": "L",
+      "position": [
+        61859,
+        18876,
+        14052
+      ]
+    }
+  ],
+  "subsetSha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+  "annotatedNodeCount": 166700,
+  "annotatedStrongEdgeCount": 6242118,
+  "annotatedStrongSynapseCount": 89860280,
+  "fullUpstreamNodeCount": 162067,
+  "fullUpstreamEdgeCount": 6141242,
+  "fullUpstreamSynapseCount": 87393123
+}

@@ -1,0 +1,4 @@
+{
+  "error": "Error: Exact normal training state, original session and physical state preserved undefined\n    at check (C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\desktop\\model-test-smoke.cjs:11:93)\n    at Object.run (C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\desktop\\model-test-smoke.cjs:39:3)",
+  "generatedAt": "2026-10-09T10:35:18.806Z"
+}

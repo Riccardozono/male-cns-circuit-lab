@@ -1,0 +1,3717 @@
+{
+  "version": "5.0.0",
+  "generatedAt": "2026-10-01T12:17:19.814Z",
+  "passed": true,
+  "artifacts": [
+    {
+      "file": "dist-model-ui-v500/MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+      "bytes": 116623048,
+      "sha256": "ebfccdd00997dfab1d44755f347c4361b2faf9853eba49f59974da7577005cd3"
+    },
+    {
+      "file": "dist-model-ui-v500/MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+      "bytes": 116853125,
+      "sha256": "4fcf74b1b14ab5d66cc683d31cc366c06b0fc4225fd5189be88661eb8f08d61d"
+    }
+  ],
+  "signatures": [
+    {
+      "Path": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-ui-v500\\MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+      "Status": "NotSigned",
+      "StatusMessage": "The file C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-ui-v500\\MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170"
+    },
+    {
+      "Path": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-ui-v500\\MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+      "Status": "NotSigned",
+      "StatusMessage": "The file C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-ui-v500\\MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170"
+    }
+  ],
+  "tests": {
+    "file": "outputs/test-results-model-ui-v500.tap",
+    "tests": 250,
+    "passed": 250,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "527a74895076642e135c40c43b7ecfec92b8e5fc19e4a3d95aacb4bcc491ec3a"
+  },
+  "files": [
+    {
+      "file": "outputs/simulation.js",
+      "sourceSha256": "430d52490cb053d265da73d7ffefff88c50854711c3fec17a7f2dcf1206eb434",
+      "packagedSha256": "430d52490cb053d265da73d7ffefff88c50854711c3fec17a7f2dcf1206eb434",
+      "identical": true
+    },
+    {
+      "file": "outputs/neural-learning.js",
+      "sourceSha256": "6c884645ec92cfda2d275a2f82dae376b3b47afbc91e8cba3ce418483a7900e0",
+      "packagedSha256": "6c884645ec92cfda2d275a2f82dae376b3b47afbc91e8cba3ce418483a7900e0",
+      "identical": true
+    },
+    {
+      "file": "outputs/model-profiles.js",
+      "sourceSha256": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb",
+      "packagedSha256": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb",
+      "identical": true
+    },
+    {
+      "file": "outputs/full-connectome-loader.js",
+      "sourceSha256": "8ffa8cae2bb865937aa39d172169f66d8c06cc5aed531c58bcfdb2a145b9adbe",
+      "packagedSha256": "8ffa8cae2bb865937aa39d172169f66d8c06cc5aed531c58bcfdb2a145b9adbe",
+      "identical": true
+    },
+    {
+      "file": "outputs/legacy-models.js",
+      "sourceSha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f",
+      "packagedSha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f",
+      "identical": true
+    },
+    {
+      "file": "outputs/rewards.js",
+      "sourceSha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a",
+      "packagedSha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a",
+      "identical": true
+    },
+    {
+      "file": "outputs/vehicle-992.js",
+      "sourceSha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52",
+      "packagedSha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52",
+      "identical": true
+    },
+    {
+      "file": "outputs/progress-save.js",
+      "sourceSha256": "18befe5c991c00e9fc777bd49bd6ac4864566af2622ef0e71baf72e0f461b2b9",
+      "packagedSha256": "18befe5c991c00e9fc777bd49bd6ac4864566af2622ef0e71baf72e0f461b2b9",
+      "identical": true
+    },
+    {
+      "file": "outputs/desktop-runtime.js",
+      "sourceSha256": "69f406899714dfd37897786adcedba98393594f9dffcfd43a90bc57229601b27",
+      "packagedSha256": "69f406899714dfd37897786adcedba98393594f9dffcfd43a90bc57229601b27",
+      "identical": true
+    },
+    {
+      "file": "outputs/desktop-state.js",
+      "sourceSha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc",
+      "packagedSha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome-full.json",
+      "sourceSha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87",
+      "packagedSha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome-full.bin",
+      "sourceSha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9",
+      "packagedSha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome.json",
+      "sourceSha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+      "packagedSha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/circuits.json",
+      "sourceSha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4",
+      "packagedSha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/circuits.js",
+      "sourceSha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287",
+      "packagedSha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/curbs.js",
+      "sourceSha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85",
+      "packagedSha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85",
+      "identical": true
+    },
+    {
+      "file": "outputs/track-renderer.js",
+      "sourceSha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd",
+      "packagedSha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd",
+      "identical": true
+    },
+    {
+      "file": "outputs/car-renderer.js",
+      "sourceSha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef",
+      "packagedSha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef",
+      "identical": true
+    },
+    {
+      "file": "outputs/brain-atlas.js",
+      "sourceSha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a",
+      "packagedSha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a",
+      "identical": true
+    },
+    {
+      "file": "outputs/agent-selection.js",
+      "sourceSha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822",
+      "packagedSha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822",
+      "identical": true
+    },
+    {
+      "file": "outputs/assets/porsche-992-gt3r-top-v1.png",
+      "sourceSha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b",
+      "packagedSha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b",
+      "identical": true
+    },
+    {
+      "file": "desktop/engine.cjs",
+      "sourceSha256": "628a499657022ca145a065321e99fa786ea2041b755a423b141dc74af7ec8014",
+      "packagedSha256": "628a499657022ca145a065321e99fa786ea2041b755a423b141dc74af7ec8014",
+      "identical": true
+    },
+    {
+      "file": "desktop/worker.cjs",
+      "sourceSha256": "490351f9722fa4bf653b9703e1741dbc12a8bba568bcd99a25868920668886e1",
+      "packagedSha256": "490351f9722fa4bf653b9703e1741dbc12a8bba568bcd99a25868920668886e1",
+      "identical": true
+    },
+    {
+      "file": "desktop/preload.cjs",
+      "sourceSha256": "d5ea122da4d7b9f680b328b1abfc9b5fe5843eb2cdd98dfbb5764e85c7f930d1",
+      "packagedSha256": "d5ea122da4d7b9f680b328b1abfc9b5fe5843eb2cdd98dfbb5764e85c7f930d1",
+      "identical": true
+    },
+    {
+      "file": "desktop/progress-files.cjs",
+      "sourceSha256": "a93d9634a2e293c7854900762568950a0da7f2669263c25dda7cbd43fcde4e11",
+      "packagedSha256": "a93d9634a2e293c7854900762568950a0da7f2669263c25dda7cbd43fcde4e11",
+      "identical": true
+    },
+    {
+      "file": "outputs/index.html",
+      "sourceSha256": "cb8ec880a53164dabb6eac5ab9090ca1b639d1c9a9e7886f5fbcd4b39d372bef",
+      "packagedSha256": "cb8ec880a53164dabb6eac5ab9090ca1b639d1c9a9e7886f5fbcd4b39d372bef",
+      "identical": true
+    },
+    {
+      "file": "outputs/app.js",
+      "sourceSha256": "92320aeec11cd480c8e1e74aaba197bc0c4d620a23c2a19e4314474ad420cac6",
+      "packagedSha256": "92320aeec11cd480c8e1e74aaba197bc0c4d620a23c2a19e4314474ad420cac6",
+      "identical": true
+    },
+    {
+      "file": "outputs/styles.css",
+      "sourceSha256": "a5119ec5bc557766efdef13944d1da165bb7df41cec1810c4f93843b89a8b017",
+      "packagedSha256": "a5119ec5bc557766efdef13944d1da165bb7df41cec1810c4f93843b89a8b017",
+      "identical": true
+    },
+    {
+      "file": "outputs/model-comparison.js",
+      "sourceSha256": "b6a81098f16ccaca0c742bc537669c8d872bd3f268da98713a554d73d67165f7",
+      "packagedSha256": "b6a81098f16ccaca0c742bc537669c8d872bd3f268da98713a554d73d67165f7",
+      "identical": true
+    },
+    {
+      "file": "outputs/tests/model-comparison.test.cjs",
+      "sourceSha256": "cf7f6d1c829e51c444bb54b9fe963f8f8b8782abb75a87d22c3fff46500cfcdd",
+      "packagedSha256": "cf7f6d1c829e51c444bb54b9fe963f8f8b8782abb75a87d22c3fff46500cfcdd",
+      "identical": true
+    },
+    {
+      "file": "outputs/README.md",
+      "sourceSha256": "56108cd2d62a67d96b8b02b56fad4f3d57a7e7319669536e5eb6ffe443b955f3",
+      "packagedSha256": "56108cd2d62a67d96b8b02b56fad4f3d57a7e7319669536e5eb6ffe443b955f3",
+      "identical": true
+    },
+    {
+      "file": "outputs/VERIFICA-MODELLI-UI-v500.md",
+      "sourceSha256": "c838b80e23e88f6f2a59931b70b2d83d98e8063ae45ea1c7363f8626cdc4777f",
+      "packagedSha256": "c838b80e23e88f6f2a59931b70b2d83d98e8063ae45ea1c7363f8626cdc4777f",
+      "identical": true
+    },
+    {
+      "file": "outputs/test-results-model-ui-v500.tap",
+      "sourceSha256": "527a74895076642e135c40c43b7ecfec92b8e5fc19e4a3d95aacb4bcc491ec3a",
+      "packagedSha256": "527a74895076642e135c40c43b7ecfec92b8e5fc19e4a3d95aacb4bcc491ec3a",
+      "identical": true
+    },
+    {
+      "file": "desktop/main.cjs",
+      "sourceSha256": "bc1061aac5260af6530b64ad4e24fb8a23e78e6e5c3882ea9d5a4dd8e21a1eca",
+      "packagedSha256": "bc1061aac5260af6530b64ad4e24fb8a23e78e6e5c3882ea9d5a4dd8e21a1eca",
+      "identical": true
+    },
+    {
+      "file": "desktop/model-comparison-smoke.cjs",
+      "sourceSha256": "21ca00ab9ac74031caa8f23dbf7885a91c151201b92d3aac54d82bf8e649c0c5",
+      "packagedSha256": "21ca00ab9ac74031caa8f23dbf7885a91c151201b92d3aac54d82bf8e649c0c5",
+      "identical": true
+    },
+    {
+      "file": "desktop/progress-smoke.cjs",
+      "sourceSha256": "a16dbdcc8b5578659907c7d38602eb8bc5988b876400bfb0b4118632585a1d55",
+      "packagedSha256": "a16dbdcc8b5578659907c7d38602eb8bc5988b876400bfb0b4118632585a1d55",
+      "identical": true
+    }
+  ],
+  "manifestEqual": true,
+  "core": {
+    "version": "5.0.0",
+    "generatedAt": "2026-10-01T12:11:36.971Z",
+    "passed": true,
+    "files": [
+      {
+        "file": "outputs/simulation.js",
+        "identical": true,
+        "sha256": "430d52490cb053d265da73d7ffefff88c50854711c3fec17a7f2dcf1206eb434"
+      },
+      {
+        "file": "outputs/neural-learning.js",
+        "identical": true,
+        "sha256": "6c884645ec92cfda2d275a2f82dae376b3b47afbc91e8cba3ce418483a7900e0"
+      },
+      {
+        "file": "outputs/model-profiles.js",
+        "identical": true,
+        "sha256": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb"
+      },
+      {
+        "file": "outputs/full-connectome-loader.js",
+        "identical": true,
+        "sha256": "8ffa8cae2bb865937aa39d172169f66d8c06cc5aed531c58bcfdb2a145b9adbe"
+      },
+      {
+        "file": "outputs/legacy-models.js",
+        "identical": true,
+        "sha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f"
+      },
+      {
+        "file": "outputs/rewards.js",
+        "identical": true,
+        "sha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a"
+      },
+      {
+        "file": "outputs/vehicle-992.js",
+        "identical": true,
+        "sha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52"
+      },
+      {
+        "file": "outputs/progress-save.js",
+        "identical": true,
+        "sha256": "18befe5c991c00e9fc777bd49bd6ac4864566af2622ef0e71baf72e0f461b2b9"
+      },
+      {
+        "file": "outputs/desktop-runtime.js",
+        "identical": true,
+        "sha256": "69f406899714dfd37897786adcedba98393594f9dffcfd43a90bc57229601b27"
+      },
+      {
+        "file": "outputs/desktop-state.js",
+        "identical": true,
+        "sha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc"
+      },
+      {
+        "file": "outputs/data/connectome-full.json",
+        "identical": true,
+        "sha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87"
+      },
+      {
+        "file": "outputs/data/connectome-full.bin",
+        "identical": true,
+        "sha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9"
+      },
+      {
+        "file": "outputs/data/connectome.json",
+        "identical": true,
+        "sha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698"
+      },
+      {
+        "file": "outputs/data/circuits.json",
+        "identical": true,
+        "sha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4"
+      },
+      {
+        "file": "outputs/data/circuits.js",
+        "identical": true,
+        "sha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287"
+      },
+      {
+        "file": "outputs/data/curbs.js",
+        "identical": true,
+        "sha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85"
+      },
+      {
+        "file": "outputs/track-renderer.js",
+        "identical": true,
+        "sha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd"
+      },
+      {
+        "file": "outputs/car-renderer.js",
+        "identical": true,
+        "sha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef"
+      },
+      {
+        "file": "outputs/brain-atlas.js",
+        "identical": true,
+        "sha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a"
+      },
+      {
+        "file": "outputs/agent-selection.js",
+        "identical": true,
+        "sha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822"
+      },
+      {
+        "file": "outputs/assets/porsche-992-gt3r-top-v1.png",
+        "identical": true,
+        "sha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b"
+      },
+      {
+        "file": "desktop/engine.cjs",
+        "identical": true,
+        "sha256": "628a499657022ca145a065321e99fa786ea2041b755a423b141dc74af7ec8014"
+      },
+      {
+        "file": "desktop/worker.cjs",
+        "identical": true,
+        "sha256": "490351f9722fa4bf653b9703e1741dbc12a8bba568bcd99a25868920668886e1"
+      },
+      {
+        "file": "desktop/preload.cjs",
+        "identical": true,
+        "sha256": "d5ea122da4d7b9f680b328b1abfc9b5fe5843eb2cdd98dfbb5764e85c7f930d1"
+      },
+      {
+        "file": "desktop/progress-files.cjs",
+        "identical": true,
+        "sha256": "a93d9634a2e293c7854900762568950a0da7f2669263c25dda7cbd43fcde4e11"
+      }
+    ],
+    "appOnlyAddedReadOnlyComparisonCall": true,
+    "previousArtifacts": [
+      {
+        "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+        "identical": true,
+        "sha256": "6974a3348b25164a248563b469137de8bed5c3a789e61a194b3386d986a4dac1"
+      },
+      {
+        "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+        "identical": true,
+        "sha256": "086171ec7aa79f09a83c51e7f31c1a5e40f4d7b833e419ea18153fe4957d28a0"
+      }
+    ],
+    "priorSaves": [
+      {
+        "file": "outputs/progress-portable-v500/progress-v2.malecns-save",
+        "modelId": "v2",
+        "version": "5.0.0",
+        "sha256": "a8db5495701f85db8727834a799f95ed6a09d122fe94e107a2f6ac7622c7265c",
+        "workers": 2,
+        "population": 4,
+        "validUnderUnchangedModel": true
+      },
+      {
+        "file": "outputs/progress-portable-v500/progress-v3.malecns-save",
+        "modelId": "v3",
+        "version": "5.0.0",
+        "sha256": "e0e3e8b1b212b44613359b488a36cc437cc9b0056734d37006f1c5c5e40f4512",
+        "workers": 1,
+        "population": 4,
+        "validUnderUnchangedModel": true
+      },
+      {
+        "file": "outputs/progress-portable-v500/progress-v4-100.malecns-save",
+        "modelId": "v4",
+        "version": "5.0.0",
+        "sha256": "f424f7fe5ab90e3b31bb1317a8802b62214c1876e8c1a20fd80000f5d176d8b2",
+        "workers": 1,
+        "population": 100,
+        "validUnderUnchangedModel": true
+      },
+      {
+        "file": "outputs/progress-portable-v500/progress-v5-100.malecns-save",
+        "modelId": "v5",
+        "version": "5.0.0",
+        "sha256": "eca02cbda14b111cd323b255176fa7b7d9ad3347f7aabf2ca11e16b618f3d0cc",
+        "workers": 1,
+        "population": 100,
+        "validUnderUnchangedModel": true
+      }
+    ],
+    "boundary": "All neural, physical, reward, geometry, GPU/CPU and progress core files unchanged byte-for-byte from delivered 5.0.0. UI app.js adds only a read-only comparison call. Prior actual 5.0.0 save files validate against current graphs. No new learning or throughput claim."
+  },
+  "coreEvidenceEqualExceptAuditTimestamp": true,
+  "previousArtifacts": [
+    {
+      "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+      "identical": true,
+      "sha256": "6974a3348b25164a248563b469137de8bed5c3a789e61a194b3386d986a4dac1"
+    },
+    {
+      "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+      "identical": true,
+      "sha256": "086171ec7aa79f09a83c51e7f31c1a5e40f4d7b833e419ea18153fe4957d28a0"
+    }
+  ],
+  "priorSaveIntegrity": [
+    {
+      "file": "outputs/progress-portable-v500/progress-v2.malecns-save",
+      "identical": true,
+      "sha256": "a8db5495701f85db8727834a799f95ed6a09d122fe94e107a2f6ac7622c7265c"
+    },
+    {
+      "file": "outputs/progress-portable-v500/progress-v3.malecns-save",
+      "identical": true,
+      "sha256": "e0e3e8b1b212b44613359b488a36cc437cc9b0056734d37006f1c5c5e40f4512"
+    },
+    {
+      "file": "outputs/progress-portable-v500/progress-v4-100.malecns-save",
+      "identical": true,
+      "sha256": "f424f7fe5ab90e3b31bb1317a8802b62214c1876e8c1a20fd80000f5d176d8b2"
+    },
+    {
+      "file": "outputs/progress-portable-v500/progress-v5-100.malecns-save",
+      "identical": true,
+      "sha256": "eca02cbda14b111cd323b255176fa7b7d9ad3347f7aabf2ca11e16b618f3d0cc"
+    }
+  ],
+  "diagnostics": {
+    "source": {
+      "version": "5.0.0",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T12:07:34.678Z",
+      "forceCpuFallback": false,
+      "checks": [
+        {
+          "name": "App/UI retain exact 5.0.0 save version",
+          "passed": true
+        },
+        {
+          "name": "Comparison is available beneath selector, closed by default",
+          "passed": true
+        },
+        {
+          "name": "v2: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v2: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v2: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v2: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v2: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v2: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v3: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v3: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v3: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v3: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v3: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v3: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 8192,
+              "maxActivity": 0.6528760194778442
+            }
+          }
+        },
+        {
+          "name": "v4: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v4: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v4: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v4: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v4: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6528760194778442
+          }
+        },
+        {
+          "name": "v5: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 32768,
+              "maxActivity": 0.6848371028900146
+            }
+          }
+        },
+        {
+          "name": "v5: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v5: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v5: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v5: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v5: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v5: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.6848371028900146
+          }
+        },
+        {
+          "name": "Native disclosure opens from Chromium keyboard with visible focus",
+          "passed": true,
+          "detail": {
+            "open": true,
+            "active": "model-comparison-toggle",
+            "outline": "solid"
+          }
+        },
+        {
+          "name": "No duplicate DOM IDs",
+          "passed": true
+        },
+        {
+          "name": "desktop-comparison: all comparison cells fit viewport and table",
+          "passed": true,
+          "detail": {
+            "width": 1540,
+            "height": 980,
+            "documentWidth": 1525,
+            "tableOverflow": [
+              false,
+              false
+            ],
+            "overflow": [],
+            "rows": 8,
+            "open": true,
+            "bodyFont": "12px",
+            "tableFont": "11.5px",
+            "gap": "12px"
+          }
+        },
+        {
+          "name": "narrow-comparison: all comparison cells fit viewport and table",
+          "passed": true,
+          "detail": {
+            "width": 390,
+            "height": 844,
+            "documentWidth": 375,
+            "tableOverflow": [
+              false,
+              false
+            ],
+            "overflow": [],
+            "rows": 8,
+            "open": true,
+            "bodyFont": "12px",
+            "tableFont": "11.5px",
+            "gap": "12px"
+          }
+        },
+        {
+          "name": "split-map-atlas: all comparison cells fit viewport and table",
+          "passed": true,
+          "detail": {
+            "width": 1540,
+            "height": 980,
+            "documentWidth": 1525,
+            "tableOverflow": [
+              false,
+              false
+            ],
+            "overflow": [],
+            "rows": 8,
+            "open": true,
+            "bodyFont": "12px",
+            "tableFont": "11.5px",
+            "gap": "12px"
+          }
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "population": 4,
+          "graph": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v3",
+          "population": 4,
+          "graph": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v4",
+          "population": 4,
+          "graph": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 8192,
+              "maxActivity": 0.6528760194778442
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v5",
+          "population": 4,
+          "graph": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 32768,
+              "maxActivity": 0.6848371028900146
+            }
+          },
+          "trainingStateUnchanged": true
+        }
+      ],
+      "views": {
+        "desktop-comparison": {
+          "width": 1540,
+          "height": 980,
+          "documentWidth": 1525,
+          "tableOverflow": [
+            false,
+            false
+          ],
+          "overflow": [],
+          "rows": 8,
+          "open": true,
+          "bodyFont": "12px",
+          "tableFont": "11.5px",
+          "gap": "12px",
+          "file": "desktop-comparison.png"
+        },
+        "narrow-comparison": {
+          "width": 390,
+          "height": 844,
+          "documentWidth": 375,
+          "tableOverflow": [
+            false,
+            false
+          ],
+          "overflow": [],
+          "rows": 8,
+          "open": true,
+          "bodyFont": "12px",
+          "tableFont": "11.5px",
+          "gap": "12px",
+          "file": "narrow-comparison.png"
+        },
+        "split-map-atlas": {
+          "width": 1540,
+          "height": 980,
+          "documentWidth": 1525,
+          "tableOverflow": [
+            false,
+            false
+          ],
+          "overflow": [],
+          "rows": 8,
+          "open": true,
+          "bodyFont": "12px",
+          "tableFont": "11.5px",
+          "gap": "12px",
+          "file": "split-map-atlas.png"
+        }
+      },
+      "consoleErrors": [],
+      "passed": true,
+      "boundary": "Read-only model comparison on the real Windows app. Model selection runs existing neural engines; paused disclosure/map/atlas inspection preserves actual engine training and physical state. Not a throughput or convergence benchmark.",
+      "file": "outputs/model-comparison-finish-v500/model-comparison-smoke.json",
+      "sha256": "18549c4aedadc7e430e0a341805ac4b28eaf286c0101b14496ff18e36dc78ee3"
+    },
+    "portableGpu": {
+      "version": "5.0.0",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T12:14:27.089Z",
+      "forceCpuFallback": false,
+      "checks": [
+        {
+          "name": "App/UI retain exact 5.0.0 save version",
+          "passed": true
+        },
+        {
+          "name": "Comparison is available beneath selector, closed by default",
+          "passed": true
+        },
+        {
+          "name": "v2: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v2: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v2: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v2: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v2: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v2: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v3: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v3: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v3: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v3: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v3: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v3: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 8192,
+              "maxActivity": 0.6843107342720032
+            }
+          }
+        },
+        {
+          "name": "v4: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v4: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v4: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v4: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v4: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6843107342720032
+          }
+        },
+        {
+          "name": "v5: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 32768,
+              "maxActivity": 0.6830607652664185
+            }
+          }
+        },
+        {
+          "name": "v5: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v5: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v5: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v5: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v5: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v5: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.6830607652664185
+          }
+        },
+        {
+          "name": "Native disclosure opens from Chromium keyboard with visible focus",
+          "passed": true,
+          "detail": {
+            "open": true,
+            "active": "model-comparison-toggle",
+            "outline": "solid"
+          }
+        },
+        {
+          "name": "No duplicate DOM IDs",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "population": 4,
+          "graph": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v3",
+          "population": 4,
+          "graph": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v4",
+          "population": 4,
+          "graph": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 8192,
+              "maxActivity": 0.6843107342720032
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v5",
+          "population": 4,
+          "graph": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "active",
+              "backend": "WebGPU",
+              "workerCount": 1,
+              "error": null,
+              "adapter": {
+                "label": "nvidia lovelace",
+                "vendor": "nvidia",
+                "architecture": "lovelace",
+                "device": null,
+                "description": null
+              },
+              "activeCount": 32768,
+              "maxActivity": 0.6830607652664185
+            }
+          },
+          "trainingStateUnchanged": true
+        }
+      ],
+      "views": {},
+      "consoleErrors": [],
+      "passed": true,
+      "boundary": "Read-only model comparison on the real Windows app. Model selection runs existing neural engines; paused disclosure/map/atlas inspection preserves actual engine training and physical state. Not a throughput or convergence benchmark.",
+      "file": "outputs/model-comparison-portable-v500/model-comparison-smoke.json",
+      "sha256": "f81d2c3f829a883974c06692329eb298f452d0e60f301d8c7069dbad465ab6ce"
+    },
+    "portableCpu": {
+      "version": "5.0.0",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T12:14:30.307Z",
+      "forceCpuFallback": true,
+      "checks": [
+        {
+          "name": "App/UI retain exact 5.0.0 save version",
+          "passed": true
+        },
+        {
+          "name": "Comparison is available beneath selector, closed by default",
+          "passed": true
+        },
+        {
+          "name": "v2: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v2: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v2: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v2: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v2: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v2: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v3: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v3: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v3: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v3: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v3: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v3: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "fallback",
+              "backend": null,
+              "workerCount": 0,
+              "error": "Nessun adapter WebGPU disponibile.",
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v4: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v4: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v4: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v4: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v4: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v4: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "v5: displayed anatomy/learning are the actual loaded graph",
+          "passed": true,
+          "detail": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "fallback",
+              "backend": null,
+              "workerCount": 0,
+              "error": "Nessun adapter WebGPU disponibile.",
+              "adapter": null
+            }
+          }
+        },
+        {
+          "name": "v5: both comparison tables contain all exact configurations",
+          "passed": true
+        },
+        {
+          "name": "v5: only selected model is highlighted and announced",
+          "passed": true
+        },
+        {
+          "name": "v5: disclosure/map zoom/split atlas remain functional",
+          "passed": true,
+          "detail": {
+            "zoomed": true,
+            "view": "split",
+            "atlas": true,
+            "open": true
+          }
+        },
+        {
+          "name": "v5: comparison and map inspection leave physics/RNG/genomes/optimizer/history unchanged",
+          "passed": true
+        },
+        {
+          "name": "v5: no duplicate table rows across model switches",
+          "passed": true
+        },
+        {
+          "name": "v5: existing GPU/CPU engine remains available",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "Native disclosure opens from Chromium keyboard with visible focus",
+          "passed": true,
+          "detail": {
+            "open": true,
+            "active": "model-comparison-toggle",
+            "outline": "solid"
+          }
+        },
+        {
+          "name": "No duplicate DOM IDs",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "population": 4,
+          "graph": {
+            "model": "v2",
+            "neurons": 1121,
+            "connections": 32351,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v2",
+                "aria": "true"
+              },
+              {
+                "id": "v2",
+                "aria": "true"
+              }
+            ],
+            "selection": "V2 selezionato · Sottoinsieme compatto ricostruito dal V3; non è il file storico originale. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v3",
+          "population": 4,
+          "graph": {
+            "model": "v3",
+            "neurons": 7721,
+            "connections": 242486,
+            "slots": null,
+            "passes": null,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v3",
+                "aria": "true"
+              },
+              {
+                "id": "v3",
+                "aria": "true"
+              }
+            ],
+            "selection": "V3 selezionato · Nucleo anatomico storico, più grande del V2. Aggiornamento denso su CPU.",
+            "gpu": {
+              "state": "not-used",
+              "backend": null,
+              "workerCount": 0,
+              "error": null,
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v4",
+          "population": 4,
+          "graph": {
+            "model": "v4",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 8192,
+            "passes": 2,
+            "readout": 64,
+            "gainGroups": 16,
+            "parameters": 202,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v4",
+                "aria": "true"
+              },
+              {
+                "id": "v4",
+                "aria": "true"
+              }
+            ],
+            "selection": "V4 selezionato · Grafo anatomico completo; elaborazione sparsa fino a 8.192 slot per agente e passo.",
+            "gpu": {
+              "state": "fallback",
+              "backend": null,
+              "workerCount": 0,
+              "error": "Nessun adapter WebGPU disponibile.",
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        },
+        {
+          "modelId": "v5",
+          "population": 4,
+          "graph": {
+            "model": "v5",
+            "neurons": 166700,
+            "connections": 6242118,
+            "slots": 32768,
+            "passes": 4,
+            "readout": 128,
+            "gainGroups": 32,
+            "parameters": 346,
+            "rows": [
+              [
+                [
+                  "V2",
+                  "1.121",
+                  "32.351",
+                  "Denso"
+                ],
+                [
+                  "V3",
+                  "7.721",
+                  "242.486",
+                  "Denso"
+                ],
+                [
+                  "V4",
+                  "166.700",
+                  "6.242.118",
+                  "8.192"
+                ],
+                [
+                  "V5",
+                  "166.700",
+                  "6.242.118",
+                  "32.768"
+                ]
+              ],
+              [
+                [
+                  "V2",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V3",
+                  "4",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V4",
+                  "2",
+                  "64",
+                  "202"
+                ],
+                [
+                  "V5",
+                  "4",
+                  "128",
+                  "346"
+                ]
+              ]
+            ],
+            "current": [
+              {
+                "id": "v5",
+                "aria": "true"
+              },
+              {
+                "id": "v5",
+                "aria": "true"
+              }
+            ],
+            "selection": "V5 selezionato · Stesso grafo del V4, con 4× gli slot, il doppio dei passaggi e un decoder più ampio. Richiede più calcolo, non aggiunge neuroni al dataset.",
+            "gpu": {
+              "state": "fallback",
+              "backend": null,
+              "workerCount": 0,
+              "error": "Nessun adapter WebGPU disponibile.",
+              "adapter": null
+            }
+          },
+          "trainingStateUnchanged": true
+        }
+      ],
+      "views": {},
+      "consoleErrors": [],
+      "passed": true,
+      "boundary": "Read-only model comparison on the real Windows app. Model selection runs existing neural engines; paused disclosure/map/atlas inspection preserves actual engine training and physical state. Not a throughput or convergence benchmark.",
+      "file": "outputs/model-comparison-cpu-v500/model-comparison-smoke.json",
+      "sha256": "a3203828a9051b2280f48cfada45200249214391bc11911d9a86b0893ec9b30b"
+    },
+    "progress": {
+      "version": "5.0.0",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T12:15:59.364Z",
+      "forceCpuFallback": false,
+      "checks": [
+        {
+          "name": "UI and native app report the same exact version",
+          "passed": true
+        },
+        {
+          "name": "v2: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 230165,
+            "workers": 2
+          }
+        },
+        {
+          "name": "v2: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            },
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v2: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v2.malecns-save · 2 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v2: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v2",
+            "circuit": "monza",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1697.456424,
+            "y": 1380.786835,
+            "startX": 1697.456424,
+            "startY": 1380.786835,
+            "speed": 0,
+            "selector": "v2",
+            "status": "Caricato progress-v2.malecns-save · V2 · Monza · gen. 3 · 2 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v2: imported model updates both comparison highlights",
+          "passed": true
+        },
+        {
+          "name": "v2: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "a0a7fa982154ebaab087b0fc86db5b91b4ef18af9be14778bb2ca937de13d016",
+            "after": "a0a7fa982154ebaab087b0fc86db5b91b4ef18af9be14778bb2ca937de13d016"
+          }
+        },
+        {
+          "name": "v2: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v2: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v3: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 119660,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v3: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v3: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v3.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v3: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v3",
+            "circuit": "monaco",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 142.983295,
+            "y": 802.394199,
+            "startX": 142.983295,
+            "startY": 802.394199,
+            "speed": 0,
+            "selector": "v3",
+            "status": "Caricato progress-v3.malecns-save · V3 · Monaco · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v3: imported model updates both comparison highlights",
+          "passed": true
+        },
+        {
+          "name": "v3: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220",
+            "after": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220"
+          }
+        },
+        {
+          "name": "v3: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v3: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v4: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 119604,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v4: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v4: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v4.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v4: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v4",
+            "circuit": "le-mans",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1174.324402,
+            "y": 2797.14342,
+            "startX": 1174.324402,
+            "startY": 2797.14342,
+            "speed": 0,
+            "selector": "v4",
+            "status": "Caricato progress-v4.malecns-save · V4 · Le Mans · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v4: imported model updates both comparison highlights",
+          "passed": true
+        },
+        {
+          "name": "v4: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "75ddfba029171fdad00286e185c9fcceca96c3d8a61f5d9ec2583de5612e5c95",
+            "after": "75ddfba029171fdad00286e185c9fcceca96c3d8a61f5d9ec2583de5612e5c95"
+          }
+        },
+        {
+          "name": "v4: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v4: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v4 restored GPU/CPU path is active",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.5274473428726196
+          }
+        },
+        {
+          "name": "v5: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 200153,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v5: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v5: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v5.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v5: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v5",
+            "circuit": "monza",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1697.456424,
+            "y": 1380.786835,
+            "startX": 1697.456424,
+            "startY": 1380.786835,
+            "speed": 0,
+            "selector": "v5",
+            "status": "Caricato progress-v5.malecns-save · V5 · Monza · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v5: imported model updates both comparison highlights",
+          "passed": true
+        },
+        {
+          "name": "v5: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "98c21389c307124993d7924f73083e3cb8ccbd264ff1cb73378e68952abfb0be",
+            "after": "98c21389c307124993d7924f73083e3cb8ccbd264ff1cb73378e68952abfb0be"
+          }
+        },
+        {
+          "name": "v5: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v5: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v5 restored GPU/CPU path is active",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.7179043292999268
+          }
+        },
+        {
+          "name": "Cancel Save preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Cancel Open preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Cancel replacement preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Different patch version is rejected without changing the trial",
+          "passed": true,
+          "detail": "Salvataggio della versione 4.6.1: richiede esattamente quella versione. Questa app è 5.0.0."
+        },
+        {
+          "name": "Checksum mismatch is rejected without changing the trial",
+          "passed": true,
+          "detail": "File danneggiato o modificato: checksum SHA-256 non corrispondente."
+        },
+        {
+          "name": "Malformed policy is rejected without changing the trial",
+          "passed": true,
+          "detail": "Policy neurale incompatibile."
+        },
+        {
+          "name": "100 agents and full v4 graph are portable",
+          "passed": true
+        },
+        {
+          "name": "v4: 100-agent file restores all cars without trimming",
+          "passed": true
+        },
+        {
+          "name": "v4: 100-agent imported trial runs with exclusive pedals and finite physics",
+          "passed": true
+        },
+        {
+          "name": "100 agents and full v5 graph are portable",
+          "passed": true
+        },
+        {
+          "name": "v5: 100-agent file restores all cars without trimming",
+          "passed": true
+        },
+        {
+          "name": "v5: 100-agent imported trial runs with exclusive pedals and finite physics",
+          "passed": true
+        },
+        {
+          "name": "v2: previous delivered 5.0.0 file loads paused through the real UI",
+          "passed": true
+        },
+        {
+          "name": "v2: previous file preserves all worker training state exactly",
+          "passed": true
+        },
+        {
+          "name": "v3: previous delivered 5.0.0 file loads paused through the real UI",
+          "passed": true
+        },
+        {
+          "name": "v3: previous file preserves all worker training state exactly",
+          "passed": true
+        },
+        {
+          "name": "v4: previous delivered 5.0.0 file loads paused through the real UI",
+          "passed": true
+        },
+        {
+          "name": "v4: previous file preserves all worker training state exactly",
+          "passed": true
+        },
+        {
+          "name": "v5: previous delivered 5.0.0 file loads paused through the real UI",
+          "passed": true
+        },
+        {
+          "name": "v5: previous file preserves all worker training state exactly",
+          "passed": true
+        },
+        {
+          "name": "No duplicate DOM IDs",
+          "passed": true
+        },
+        {
+          "name": "All expected native picker/confirmation calls completed",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "circuitId": "monza",
+          "file": "progress-v2.malecns-save",
+          "bytes": 230165,
+          "workers": 2,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "028b469b48522594fbfdd50b96be061a508ef13fe2044393ab3c58086b117e34"
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monaco",
+          "file": "progress-v3.malecns-save",
+          "bytes": 119660,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "f01127b41ba55ee055186c1b64abbb80cda03ecaf283a67a24d8fab1238671e2"
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "le-mans",
+          "file": "progress-v4.malecns-save",
+          "bytes": 119604,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "f675d1c20a5d050af6cd8d44ea3b04f0bd6ff26563a2b8cbd453ace4861d8bea"
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monza",
+          "file": "progress-v5.malecns-save",
+          "bytes": 200153,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "f38f8a2e29cb7067e95d03931aa015f2cf9ca5e40f8286ba84a5394ebc28d100"
+        }
+      ],
+      "priorImports": [
+        {
+          "modelId": "v2",
+          "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\progress-portable-v500\\progress-v2.malecns-save",
+          "workers": 2,
+          "population": 4,
+          "sha256": "a8db5495701f85db8727834a799f95ed6a09d122fe94e107a2f6ac7622c7265c"
+        },
+        {
+          "modelId": "v3",
+          "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\progress-portable-v500\\progress-v3.malecns-save",
+          "workers": 1,
+          "population": 4,
+          "sha256": "e0e3e8b1b212b44613359b488a36cc437cc9b0056734d37006f1c5c5e40f4512"
+        },
+        {
+          "modelId": "v4",
+          "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\progress-portable-v500\\progress-v4-100.malecns-save",
+          "workers": 1,
+          "population": 100,
+          "sha256": "f424f7fe5ab90e3b31bb1317a8802b62214c1876e8c1a20fd80000f5d176d8b2"
+        },
+        {
+          "modelId": "v5",
+          "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\progress-portable-v500\\progress-v5-100.malecns-save",
+          "workers": 1,
+          "population": 100,
+          "sha256": "eca02cbda14b111cd323b255176fa7b7d9ad3347f7aabf2ca11e16b618f3d0cc"
+        }
+      ],
+      "views": {},
+      "consoleErrors": [],
+      "boundary": "Training-state round trips, forced early generations and short native runtime checks. Not exact mid-lap/GPU continuation, cryptographic authentication or learning-convergence evidence.",
+      "passed": true,
+      "file": "outputs/model-ui-progress-v500/progress-smoke.json",
+      "sha256": "e3809024be3231b5ab16b5fd0c43a9031633bbb3a1a18d33dcfda5c470b0c736"
+    }
+  },
+  "boundary": "UI-only 5.0.0 build, actual final Windows portable comparison on GPU/CPU and native 5.0.0 current/prior save imports. Neural/physical/reward/data/progress core unchanged. Core diagnostic evidence regenerated after packaging matches except its audit timestamp; all listed code/UI/docs/test files are byte-identical. No learning/convergence or throughput benchmark. Installer built, not installed; older executables and prior progress files preserved."
+}

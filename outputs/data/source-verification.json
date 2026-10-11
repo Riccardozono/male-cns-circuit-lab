@@ -1,0 +1,12 @@
+{
+  "verified": true,
+  "method": "Independent scan of original official Feather files; exact equality of all induced edges >=5 and every exported annotation.",
+  "nodesVerified": 7721,
+  "coordinatesVerified": 7699,
+  "coordinatesMissing": 22,
+  "edgesVerified": 242486,
+  "synapsesVerified": 5018643,
+  "missingEdges": 0,
+  "extraEdges": 0,
+  "alteredAnnotations": 0
+}

@@ -1,0 +1,1260 @@
+{
+  "cases": [
+    {
+      "modelId": "v4",
+      "circuitId": "lab",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 5.089,
+      "observedSimSeconds": 40.53333333333348,
+      "observedSimWallRatio": 7.964891596253385,
+      "peakActiveNeurons": 8192,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 202,
+      "readoutNeurons": 64,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 2,
+        "activityThreshold": 0.001,
+        "edgeContributionThreshold": 0.000001,
+        "activeNeuronBudget": 8192
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 7721,
+        "maxActivity": 0
+      },
+      "gpuBufferBytes": 120469348,
+      "bestProgress": 130.6786650269525,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 202,
+        "meanExploration": 0.12696741567886008,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4655.5498320907145,
+          "mean": -4924.57556830244,
+          "reward": 242.3870595285888,
+          "penalty": 4897.936891619303,
+          "laps": 0,
+          "bestProgress": 96.71475886103671,
+          "meanProgress": 9.300492869501044,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 202,
+            "meanExploration": 0.1283102587131405,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4655.5498320907145,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 226.7620595285888,
+              "checkpoints": 15.625,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 768.106663103045,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 12.158020098478039,
+              "slip": 0,
+              "collision": 1163.024620323499,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2954.647588094282,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4583.68169521879,
+          "mean": -4855.905292389376,
+          "reward": 257.8030366472218,
+          "penalty": 4841.484731866012,
+          "laps": 0,
+          "bestProgress": 130.6786650269525,
+          "meanProgress": 41.21723911184898,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12696741567886008,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4583.68169521879,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 242.1780366472218,
+              "checkpoints": 15.625,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 676.1964640992616,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 14.079208234486655,
+              "slip": 0,
+              "collision": 1199.6446668617084,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2951.5643926705557,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v4",
+      "circuitId": "monza",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 7.423400000000372,
+      "observedSimSeconds": 51.93333333333294,
+      "observedSimWallRatio": 6.99589586083605,
+      "peakActiveNeurons": 8192,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 202,
+      "readoutNeurons": 64,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 2,
+        "activityThreshold": 0.001,
+        "edgeContributionThreshold": 0.000001,
+        "activeNeuronBudget": 8192
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 8192,
+        "maxActivity": 0.749753475189209
+      },
+      "gpuBufferBytes": 120469348,
+      "bestProgress": 760.4659164434481,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 202,
+        "meanExploration": 0.12546772791567015,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4225.774112962863,
+          "mean": -4604.260078508213,
+          "reward": 34.12673728750552,
+          "penalty": 4259.900850250368,
+          "laps": 0,
+          "bestProgress": 39.539237822189136,
+          "meanProgress": 7.086365698837208,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 202,
+            "meanExploration": 0.12810810054603977,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4225.774112962863,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 34.12673728750552,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 242.36147073512453,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.32168894346202004,
+              "slip": 0,
+              "collision": 1024.0430380292833,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2993.1746525424987,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4225.895397704724,
+          "mean": -4492.792042521944,
+          "reward": 34.18345498030097,
+          "penalty": 4260.078852685025,
+          "laps": 0,
+          "bestProgress": 760.4659164434481,
+          "meanProgress": 69.71767682349667,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 1,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12546772791567015,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4225.895397704724,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 34.18345498030097,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 242.36147073512453,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.3156795003064625,
+              "slip": 0,
+              "collision": 1024.2383934456548,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2993.1633090039395,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v4",
+      "circuitId": "monaco",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 5.393,
+      "observedSimSeconds": 28.933333333333913,
+      "observedSimWallRatio": 5.364979294146841,
+      "peakActiveNeurons": 8192,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 202,
+      "readoutNeurons": 64,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 2,
+        "activityThreshold": 0.001,
+        "edgeContributionThreshold": 0.000001,
+        "activeNeuronBudget": 8192
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 8192,
+        "maxActivity": 0.474611759185791
+      },
+      "gpuBufferBytes": 120469348,
+      "bestProgress": 75.8985334128983,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 202,
+        "meanExploration": 0.12701156634037625,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4220.800739225197,
+          "mean": -4653.848750662226,
+          "reward": 45.13999909903029,
+          "penalty": 4265.940738324227,
+          "laps": 0,
+          "bestProgress": 33.70357666989175,
+          "meanProgress": 6.388788475881052,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 202,
+            "meanExploration": 0.12810810054603977,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4220.800739225197,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 45.13999909903029,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 271.8609529230733,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.03332943563216424,
+              "slip": 0,
+              "collision": 1003.0744557853279,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2990.972000180194,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4199.8856240637715,
+          "mean": -4506.808593210288,
+          "reward": 51.79761319591148,
+          "penalty": 4251.683237259683,
+          "laps": 0,
+          "bestProgress": 75.8985334128983,
+          "meanProgress": 21.018688649777797,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12701156634037625,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4199.8856240637715,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 51.79761319591148,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 217.6805513705037,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.4558091770819858,
+              "slip": 0,
+              "collision": 1043.9063993512793,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2989.640477360818,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v4",
+      "circuitId": "le-mans",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 4.9705,
+      "observedSimSeconds": 30.800000000000644,
+      "observedSimWallRatio": 6.1965597022433645,
+      "peakActiveNeurons": 8192,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 202,
+      "readoutNeurons": 64,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 2,
+        "activityThreshold": 0.001,
+        "edgeContributionThreshold": 0.000001,
+        "activeNeuronBudget": 8192
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 7721,
+        "maxActivity": 0.0010021600173786283
+      },
+      "gpuBufferBytes": 120469348,
+      "bestProgress": 123.1528195433534,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 202,
+        "meanExploration": 0.12493016822748083,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4126.992460592851,
+          "mean": -4477.32713492698,
+          "reward": 14.300751581391122,
+          "penalty": 4141.293212174242,
+          "laps": 0,
+          "bestProgress": 38.972408200053074,
+          "meanProgress": 6.896962373022299,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 202,
+            "meanExploration": 0.12810810054603977,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4126.992460592851,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 14.300751581391122,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 121.16174962606118,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.27267421437988654,
+              "slip": 0,
+              "collision": 1022.7189386500797,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2997.139849683722,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4127.284394626284,
+          "mean": -4354.455735457779,
+          "reward": 14.343007469782696,
+          "penalty": 4141.627402096066,
+          "laps": 0,
+          "bestProgress": 123.1528195433534,
+          "meanProgress": 29.8567949448888,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 1,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12493016822748083,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4127.284394626284,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 14.343007469782696,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 121.16174962606118,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.29185608777667366,
+              "slip": 0,
+              "collision": 1023.042397876185,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2997.1313985060433,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v5",
+      "circuitId": "lab",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 15.377700000000186,
+      "observedSimSeconds": 68.93333333333197,
+      "observedSimWallRatio": 4.482681632060135,
+      "peakActiveNeurons": 32768,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 346,
+      "readoutNeurons": 128,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 4,
+        "activityThreshold": 0.0005,
+        "edgeContributionThreshold": 5e-7,
+        "activeNeuronBudget": 32768
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 32768,
+        "maxActivity": 0.6504439115524292
+      },
+      "gpuBufferBytes": 133480292,
+      "bestProgress": 1492.1146099887974,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 5,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 346,
+        "meanExploration": 0.1291397991839522,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4649.386370390223,
+          "mean": -4889.03507370195,
+          "reward": 150.90572197931164,
+          "penalty": 4800.292092369535,
+          "laps": 0,
+          "bestProgress": 159.7312419043057,
+          "meanProgress": 23.26497655868315,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 346,
+            "meanExploration": 0.13023474444242233,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4649.386370390223,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 150.90572197931164,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 731.9990849229872,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 9.49548767844941,
+              "slip": 0,
+              "collision": 1088.9786641639603,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2969.8188556041378,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -2354.0521269965325,
+          "mean": -4583.563827927234,
+          "reward": 3842.233437258197,
+          "penalty": 6196.285564254729,
+          "laps": 0,
+          "bestProgress": 1492.1146099887974,
+          "meanProgress": 137.73185503777708,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1291397991839522,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -2354.0521269965325,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 3498.483437258194,
+              "checkpoints": 343.75,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 2371.6113850082406,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 31.756889905467684,
+              "slip": 0,
+              "collision": 1492.6139767926593,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2300.3033125483616,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v5",
+      "circuitId": "monza",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 12.73419999999972,
+      "observedSimSeconds": 39.73333333333361,
+      "observedSimWallRatio": 3.120206478093204,
+      "peakActiveNeurons": 32768,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 346,
+      "readoutNeurons": 128,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 4,
+        "activityThreshold": 0.0005,
+        "edgeContributionThreshold": 5e-7,
+        "activeNeuronBudget": 32768
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 32768,
+        "maxActivity": 0.738972544670105
+      },
+      "gpuBufferBytes": 133480292,
+      "bestProgress": 331.7712598973122,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 5,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 346,
+        "meanExploration": 0.1274265905663698,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4163.423026738219,
+          "mean": -4546.954900792545,
+          "reward": 19.710931065069996,
+          "penalty": 4183.133957803289,
+          "laps": 0,
+          "bestProgress": 66.40340554533685,
+          "meanProgress": 12.187289589467534,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 346,
+            "meanExploration": 0.13025231429278802,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4163.423026738219,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 19.710931065069996,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 203.90989124349414,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.40009986013014653,
+              "slip": 0,
+              "collision": 982.7661529126784,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2996.057813786986,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4163.518612215202,
+          "mean": -4406.033306182772,
+          "reward": 19.720230529314893,
+          "penalty": 4183.238842744517,
+          "laps": 0,
+          "bestProgress": 331.7712598973122,
+          "meanProgress": 54.6723279460968,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 1,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1274265905663698,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4163.518612215202,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 19.720230529314893,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 203.90989124349414,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.40501277783687395,
+              "slip": 0,
+              "collision": 982.8679848290485,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2996.055953894137,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v5",
+      "circuitId": "monaco",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 11.15719999999972,
+      "observedSimSeconds": 30.63333333333399,
+      "observedSimWallRatio": 2.7456112047229375,
+      "peakActiveNeurons": 32768,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 346,
+      "readoutNeurons": 128,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 4,
+        "activityThreshold": 0.0005,
+        "edgeContributionThreshold": 5e-7,
+        "activeNeuronBudget": 32768
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 32768,
+        "maxActivity": 0.5763140916824341
+      },
+      "gpuBufferBytes": 133480292,
+      "bestProgress": 107.7896424526456,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 5,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 346,
+        "meanExploration": 0.1274711277168062,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4171.63170657255,
+          "mean": -4567.040362749554,
+          "reward": 28.69282913302409,
+          "penalty": 4200.324535705574,
+          "laps": 0,
+          "bestProgress": 41.071397336660525,
+          "meanProgress": 10.780942175315094,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 346,
+            "meanExploration": 0.130307594432459,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4171.63170657255,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 28.69282913302409,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 230.62631103350705,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.2620578230552403,
+              "slip": 0,
+              "collision": 975.1747326756166,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2994.261434173395,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4171.6963014986995,
+          "mean": -4402.933013159582,
+          "reward": 28.72471999217426,
+          "penalty": 4200.4210214908735,
+          "laps": 0,
+          "bestProgress": 107.7896424526456,
+          "meanProgress": 28.930743530915514,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 1,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1274711277168062,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4171.6963014986995,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 28.72471999217426,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 230.62631103350705,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.2849665696987281,
+              "slip": 0,
+              "collision": 975.2546878861025,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2994.255056001565,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "modelId": "v5",
+      "circuitId": "le-mans",
+      "seed": 7717,
+      "population": 16,
+      "mutation": 0.16,
+      "requestedSpeed": 30,
+      "completedGenerations": 2,
+      "censored": false,
+      "wallSeconds": 9.634199999999721,
+      "observedSimSeconds": 33.43333333333403,
+      "observedSimWallRatio": 3.4702760305302984,
+      "peakActiveNeurons": 32768,
+      "neurons": 166700,
+      "connections": 6242118,
+      "parameters": 346,
+      "readoutNeurons": 128,
+      "solver": {
+        "kind": "event-driven sparse rate reservoir",
+        "iterationsPerControlTick": 4,
+        "activityThreshold": 0.0005,
+        "edgeContributionThreshold": 5e-7,
+        "activeNeuronBudget": 32768
+      },
+      "gpu": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 32768,
+        "maxActivity": 0.5836597084999084
+      },
+      "gpuBufferBytes": 133480292,
+      "bestProgress": 119.06831741343493,
+      "completedLaps": 0,
+      "optimizer": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 5,
+        "updates": 2,
+        "episodes": 32,
+        "parameters": 346,
+        "meanExploration": 0.1268580522810006,
+        "warmStart": false
+      },
+      "history": [
+        {
+          "generation": 1,
+          "best": -4075.058191218544,
+          "mean": -4424.064041549797,
+          "reward": 8.390862752175106,
+          "penalty": 4083.449053970719,
+          "laps": 0,
+          "bestProgress": 61.58963564508791,
+          "meanProgress": 11.878082637139421,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 16,
+            "parameters": 346,
+            "meanExploration": 0.13025231429278802,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4075.058191218544,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 8.390862752175106,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 101.71363572139677,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.4847434705524067,
+              "slip": 0,
+              "collision": 982.928847329205,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2998.321827449565,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        },
+        {
+          "generation": 2,
+          "best": -4074.784638184549,
+          "mean": -4291.226119088521,
+          "reward": 8.37048633154438,
+          "penalty": 4083.155124516093,
+          "laps": 0,
+          "bestProgress": 119.06831741343493,
+          "meanProgress": 37.571088745655565,
+          "bestLapTime": null,
+          "noLapCount": 16,
+          "slowerLapCount": 0,
+          "stagnation": 0,
+          "mutationAmount": 0.16,
+          "immigrantCount": 0,
+          "hallOfFame": 4,
+          "learning": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1268580522810006,
+            "warmStart": false
+          },
+          "rewardRevision": "episodic-2",
+          "baseBest": -4074.784638184549,
+          "previousBestLapTime": null,
+          "rewardBreakdown": {
+            "rewards": {
+              "progress": 8.37048633154438,
+              "checkpoints": 0,
+              "lap": 0,
+              "pace": 0
+            },
+            "penalties": {
+              "time": 101.51915458235013,
+              "slowLap": 0,
+              "reverse": 0,
+              "risk": 0.4211441829713551,
+              "slip": 0,
+              "collision": 982.8889230170805,
+              "offTrack": 0,
+              "stall": 0,
+              "slowProgress": 0,
+              "noLap": 2998.3259027336912,
+              "regression": 0,
+              "invalid": 0
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "version": "5.0.0",
+  "warmStart": false,
+  "forcedGenerations": false,
+  "boundary": "Two naturally finished generations per V4/V5 and circuit, 16 cars, one seed. Censored means the wall-time guard ended the observation, never a forced training completion. Throughput observed from snapshots may undercount inter-generation tails. Does not establish long-run convergence or superiority.",
+  "generatedAt": "2026-10-01T11:41:01.184Z",
+  "consoleErrors": [],
+  "forceCpuFallback": false,
+  "passed": true
+}

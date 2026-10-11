@@ -1,0 +1,30 @@
+{
+  "phase": "BuildDuplicates",
+  "root": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo",
+  "completedAt": "2026-10-01T13:24:45.0393637Z",
+  "targets": [
+    {
+      "relative": "dist-model-ui-v500/builder-debug.yml",
+      "status": "SentToRecycleBin",
+      "bytes": 10117,
+      "reason": "Duplicate unpacked runtime or rebuildable builder metadata"
+    },
+    {
+      "relative": "dist-model-ui-v500/MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe.blockmap",
+      "status": "SentToRecycleBin",
+      "bytes": 118791,
+      "reason": "Duplicate unpacked runtime or rebuildable builder metadata"
+    },
+    {
+      "relative": "dist-model-ui-v500/win-unpacked",
+      "status": "SentToRecycleBin",
+      "bytes": 401972431.0,
+      "reason": "Duplicate unpacked runtime or rebuildable builder metadata"
+    }
+  ],
+  "bytes": 402101339.0,
+  "saveCount": 104,
+  "protectedFilesUnchanged": true,
+  "recycleBinEmptied": false,
+  "permanentDeletionUsed": false
+}

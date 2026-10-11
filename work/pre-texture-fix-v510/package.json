@@ -1,0 +1,118 @@
+{
+  "name": "male-cns-circuit-lab",
+  "version": "5.1.0",
+  "description": "MAL-E CNS Circuit Lab: desktop evolutionary driving simulator powered by the annotated MaleCNS connectome.",
+  "private": true,
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "desktop:dev": "electron .",
+    "test": "node --test outputs/tests/*.test.cjs",
+    "benchmark:all": "node work/benchmark-all-models.cjs",
+    "dist": "electron-builder --win portable nsis"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12",
+    "three": "0.186.1"
+  },
+  "build": {
+    "appId": "it.malecns.circuitlab",
+    "productName": "MAL-E CNS Circuit Lab",
+    "asar": false,
+    "files": [
+      "desktop/**/*",
+      "work/benchmark-all-models.cjs",
+      "work/benchmark-connectome-rl.cjs",
+      "outputs/index.html",
+      "outputs/styles.css",
+      "outputs/app.js",
+      "outputs/full-connectome-loader.js",
+      "outputs/model-profiles.js",
+      "outputs/legacy-models.js",
+      "outputs/neural-learning.js",
+      "outputs/vehicle-992.js",
+      "outputs/rewards.js",
+      "outputs/simulation.js",
+      "outputs/agent-selection.js",
+      "outputs/progress-save.js",
+      "outputs/desktop-state.js",
+      "outputs/desktop-runtime.js",
+      "outputs/brain-atlas.js",
+      "outputs/track-renderer.js",
+      "outputs/car-renderer.js",
+      "outputs/car-3d.mjs",
+      "outputs/circuit-3d.mjs",
+      "outputs/supplied-car-3d.mjs",
+      "outputs/learning-metrics.js",
+      "outputs/vendor/three.module.js",
+      "outputs/vendor/three.core.js",
+      "outputs/vendor/THREE-LICENSE.txt",
+      "outputs/vendor/package.json",
+      "outputs/vendor/GLTFLoader.js",
+      "outputs/vendor/BufferGeometryUtils.js",
+      "outputs/vendor/SkeletonUtils.js",
+      "outputs/assets/porsche-992-gt3-r-lod.glb",
+      "outputs/assets/porsche-992-gt3-r-provenance.json",
+      "outputs/assets/PORSCHE-3D-CREDITS.md",
+      "outputs/model-comparison.js",
+      "outputs/model-test.js",
+      "outputs/TEST-MODELLI-v500.md",
+      "outputs/data/circuits.js",
+      "outputs/data/circuits.json",
+      "outputs/data/curbs.js",
+      "outputs/data/connectome.json",
+      "outputs/data/connectome-full.json",
+      "outputs/data/connectome-full.bin",
+      "outputs/data/provenance.json",
+      "outputs/data/source-verification.json",
+      "outputs/assets/porsche-992-gt3r-top-v1.png",
+      "outputs/assets/car-visual-provenance-v1.json",
+      "outputs/vehicle-992-provenance.json",
+      "outputs/README.md",
+      "outputs/VISTA-3D-v510.md",
+      "outputs/VERIFICA-v510.md",
+      "outputs/CIRCUITI.md",
+      "outputs/MODELLO-V5.md",
+      "outputs/RICOMPENSE-v480.md",
+      "outputs/SALVATAGGI-v462.md",
+      "outputs/VERIFICA-MODELLI-UI-v500.md",
+      "outputs/VERIFICA-v500.md",
+      "outputs/PULIZIA-v500.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist-learning-3d-v510"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "MAL-E-CNS-Circuit-Lab-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "unpackDirName": true,
+      "artifactName": "MAL-E-CNS-Circuit-Lab-portable-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "artifactName": "MAL-E-CNS-Circuit-Lab-setup-${version}-${arch}.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MAL-E CNS Circuit Lab"
+    }
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "source": "Original GLB TEXCOORD_0 and exact ZIP decals.png",
+  "paintMeshes": [
+    {
+      "mesh": "porsche_992_gt3_r_exterior_SUB0_EXT_Carpaint_Inst_0",
+      "min": [
+        0.0036296790931373835,
+        1.0070570707321167
+      ],
+      "max": [
+        0.997717022895813,
+        1.99527108669281
+      ],
+      "vertices": 46913,
+      "channels": {
+        "TEXCOORD_0": {
+          "min": [
+            0.0036296790931373835,
+            1.0070570707321167
+          ],
+          "max": [
+            0.997717022895813,
+            1.99527108669281
+          ],
+          "differentFromUv0": 0
+        },
+        "TEXCOORD_1": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 46913
+        },
+        "TEXCOORD_2": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 46913
+        },
+        "TEXCOORD_3": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 46913
+        },
+        "TEXCOORD_4": {
+          "min": [
+            0.0036296790931373835,
+            1.0070570707321167
+          ],
+          "max": [
+            0.997717022895813,
+            1.99527108669281
+          ],
+          "differentFromUv0": 0
+        }
+      }
+    },
+    {
+      "mesh": "GEO_DOOR_L_EXT_Carpaint_Inst_0",
+      "min": [
+        0.04719354957342148,
+        1.089599609375
+      ],
+      "max": [
+        0.8268722891807556,
+        1.9571419954299927
+      ],
+      "vertices": 3406,
+      "channels": {
+        "TEXCOORD_0": {
+          "min": [
+            0.04719354957342148,
+            1.089599609375
+          ],
+          "max": [
+            0.8268722891807556,
+            1.9571419954299927
+          ],
+          "differentFromUv0": 0
+        },
+        "TEXCOORD_1": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3406
+        },
+        "TEXCOORD_2": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3406
+        },
+        "TEXCOORD_3": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3406
+        },
+        "TEXCOORD_4": {
+          "min": [
+            0.04719354957342148,
+            1.089599609375
+          ],
+          "max": [
+            0.8268722891807556,
+            1.9571419954299927
+          ],
+          "differentFromUv0": 0
+        }
+      }
+    },
+    {
+      "mesh": "GEO_DOOR_R_EXT_Carpaint_Inst_0",
+      "min": [
+        0.04742451012134552,
+        1.089599609375
+      ],
+      "max": [
+        0.9905294179916382,
+        1.9611976146697998
+      ],
+      "vertices": 3572,
+      "channels": {
+        "TEXCOORD_0": {
+          "min": [
+            0.04742451012134552,
+            1.089599609375
+          ],
+          "max": [
+            0.9905294179916382,
+            1.9611976146697998
+          ],
+          "differentFromUv0": 0
+        },
+        "TEXCOORD_1": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3572
+        },
+        "TEXCOORD_2": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3572
+        },
+        "TEXCOORD_3": {
+          "min": [
+            0,
+            1
+          ],
+          "max": [
+            0,
+            1
+          ],
+          "differentFromUv0": 3572
+        },
+        "TEXCOORD_4": {
+          "min": [
+            0.04742451012134552,
+            1.089599609375
+          ],
+          "max": [
+            0.9905294179916382,
+            1.9611976146697998
+          ],
+          "differentFromUv0": 0
+        }
+      }
+    }
+  ]
+}

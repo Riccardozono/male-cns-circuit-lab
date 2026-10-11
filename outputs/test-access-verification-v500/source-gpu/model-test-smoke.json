@@ -1,0 +1,585 @@
+{
+  "passed": true,
+  "version": "5.0.0",
+  "forceCpuFallback": false,
+  "generatedAt": "2026-10-09T11:16:41.397Z",
+  "checks": [
+    {
+      "name": "Test disclosure starts closed",
+      "passed": true
+    },
+    {
+      "name": "Requested champion/rules box is removed, file save/load remain",
+      "passed": true
+    },
+    {
+      "name": "Labeled test entry is ready in the top bar",
+      "passed": true
+    },
+    {
+      "name": "desktop-entry: test entry is in first viewport without document overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile-entry: test entry is in first viewport without document overflow",
+      "passed": true
+    },
+    {
+      "name": "Header opens/scrolls/focuses test without starting or resetting training",
+      "passed": true
+    },
+    {
+      "name": "Native disclosure close updates the header accessible state",
+      "passed": true
+    },
+    {
+      "name": "Settings/persistence/manual evolution are locked during comparison",
+      "passed": true
+    },
+    {
+      "name": "Header remains available during test and focuses the stop command",
+      "passed": true
+    },
+    {
+      "name": "First trial is V2, one independent worker and a cold optimizer",
+      "passed": true,
+      "detail": {
+        "generation": 1,
+        "model": "v2",
+        "workerCount": 1,
+        "optimizer": {
+          "algorithm": "diagonal evolution strategy",
+          "version": 3,
+          "updates": 0,
+          "episodes": 0,
+          "parameters": 202,
+          "meanExploration": 0.1276980198019797,
+          "warmStart": false
+        }
+      }
+    },
+    {
+      "name": "Normal engine/worker session retained separately",
+      "passed": true
+    },
+    {
+      "name": "Map zoom and 3D atlas work while testing",
+      "passed": true
+    },
+    {
+      "name": "All four actual models ran in order",
+      "passed": true,
+      "detail": [
+        {
+          "modelId": "v2",
+          "status": "limit",
+          "wallSeconds": 2.000066600000002,
+          "simSeconds": 58.99999999999793,
+          "generations": 2,
+          "currentGeneration": 3,
+          "maxLaps": 0,
+          "bestProgressMeters": 103.20514449834569,
+          "hit": null,
+          "generationSimSeconds": null,
+          "backend": "CPU",
+          "error": null
+        },
+        {
+          "modelId": "v3",
+          "status": "limit",
+          "wallSeconds": 2.0172616999999993,
+          "simSeconds": 5.916666666666651,
+          "generations": 0,
+          "currentGeneration": 1,
+          "maxLaps": 0,
+          "bestProgressMeters": 1.8043038675717262,
+          "hit": null,
+          "generationSimSeconds": null,
+          "backend": "CPU",
+          "error": null
+        },
+        {
+          "modelId": "v4",
+          "status": "limit",
+          "wallSeconds": 2.024320399999997,
+          "simSeconds": 16.43333333333368,
+          "generations": 1,
+          "currentGeneration": 2,
+          "maxLaps": 0,
+          "bestProgressMeters": 5.513043302901518,
+          "hit": null,
+          "generationSimSeconds": null,
+          "backend": "WebGPU + CPU",
+          "error": null
+        },
+        {
+          "modelId": "v5",
+          "status": "limit",
+          "wallSeconds": 2.001129999999997,
+          "simSeconds": 7.116666666666647,
+          "generations": 0,
+          "currentGeneration": 1,
+          "maxLaps": 0,
+          "bestProgressMeters": 14.146855661088834,
+          "hit": null,
+          "generationSimSeconds": null,
+          "backend": "WebGPU + CPU",
+          "error": null
+        }
+      ]
+    },
+    {
+      "name": "Same circuit/population/mutation/speed/seed/worker settings",
+      "passed": true,
+      "detail": {
+        "circuitId": "lab",
+        "population": 4,
+        "mutation": 0.16,
+        "speedMultiplier": 30,
+        "limitSeconds": 2,
+        "seed": 7717,
+        "workerCount": 1
+      }
+    },
+    {
+      "name": "v2: terminal result is measured, not pending/error",
+      "passed": true,
+      "detail": {
+        "modelId": "v2",
+        "status": "limit",
+        "wallSeconds": 2.000066600000002,
+        "simSeconds": 58.99999999999793,
+        "generations": 2,
+        "currentGeneration": 3,
+        "maxLaps": 0,
+        "bestProgressMeters": 103.20514449834569,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v2: real clock and actual fixed physics ticks recorded",
+      "passed": true,
+      "detail": {
+        "modelId": "v2",
+        "status": "limit",
+        "wallSeconds": 2.000066600000002,
+        "simSeconds": 58.99999999999793,
+        "generations": 2,
+        "currentGeneration": 3,
+        "maxLaps": 0,
+        "bestProgressMeters": 103.20514449834569,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v2: no fabricated two-lap success",
+      "passed": true,
+      "detail": {
+        "modelId": "v2",
+        "status": "limit",
+        "wallSeconds": 2.000066600000002,
+        "simSeconds": 58.99999999999793,
+        "generations": 2,
+        "currentGeneration": 3,
+        "maxLaps": 0,
+        "bestProgressMeters": 103.20514449834569,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v2: correct real backend",
+      "passed": true,
+      "detail": "CPU"
+    },
+    {
+      "name": "v3: terminal result is measured, not pending/error",
+      "passed": true,
+      "detail": {
+        "modelId": "v3",
+        "status": "limit",
+        "wallSeconds": 2.0172616999999993,
+        "simSeconds": 5.916666666666651,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 1.8043038675717262,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v3: real clock and actual fixed physics ticks recorded",
+      "passed": true,
+      "detail": {
+        "modelId": "v3",
+        "status": "limit",
+        "wallSeconds": 2.0172616999999993,
+        "simSeconds": 5.916666666666651,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 1.8043038675717262,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v3: no fabricated two-lap success",
+      "passed": true,
+      "detail": {
+        "modelId": "v3",
+        "status": "limit",
+        "wallSeconds": 2.0172616999999993,
+        "simSeconds": 5.916666666666651,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 1.8043038675717262,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v3: correct real backend",
+      "passed": true,
+      "detail": "CPU"
+    },
+    {
+      "name": "v4: terminal result is measured, not pending/error",
+      "passed": true,
+      "detail": {
+        "modelId": "v4",
+        "status": "limit",
+        "wallSeconds": 2.024320399999997,
+        "simSeconds": 16.43333333333368,
+        "generations": 1,
+        "currentGeneration": 2,
+        "maxLaps": 0,
+        "bestProgressMeters": 5.513043302901518,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v4: real clock and actual fixed physics ticks recorded",
+      "passed": true,
+      "detail": {
+        "modelId": "v4",
+        "status": "limit",
+        "wallSeconds": 2.024320399999997,
+        "simSeconds": 16.43333333333368,
+        "generations": 1,
+        "currentGeneration": 2,
+        "maxLaps": 0,
+        "bestProgressMeters": 5.513043302901518,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v4: no fabricated two-lap success",
+      "passed": true,
+      "detail": {
+        "modelId": "v4",
+        "status": "limit",
+        "wallSeconds": 2.024320399999997,
+        "simSeconds": 16.43333333333368,
+        "generations": 1,
+        "currentGeneration": 2,
+        "maxLaps": 0,
+        "bestProgressMeters": 5.513043302901518,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v4: correct real backend",
+      "passed": true,
+      "detail": "WebGPU + CPU"
+    },
+    {
+      "name": "v5: terminal result is measured, not pending/error",
+      "passed": true,
+      "detail": {
+        "modelId": "v5",
+        "status": "limit",
+        "wallSeconds": 2.001129999999997,
+        "simSeconds": 7.116666666666647,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 14.146855661088834,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v5: real clock and actual fixed physics ticks recorded",
+      "passed": true,
+      "detail": {
+        "modelId": "v5",
+        "status": "limit",
+        "wallSeconds": 2.001129999999997,
+        "simSeconds": 7.116666666666647,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 14.146855661088834,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v5: no fabricated two-lap success",
+      "passed": true,
+      "detail": {
+        "modelId": "v5",
+        "status": "limit",
+        "wallSeconds": 2.001129999999997,
+        "simSeconds": 7.116666666666647,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 14.146855661088834,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    },
+    {
+      "name": "v5: correct real backend",
+      "passed": true,
+      "detail": "WebGPU + CPU"
+    },
+    {
+      "name": "Exact normal training state, original session and physical state preserved",
+      "passed": true,
+      "detail": {
+        "sameTraining": true,
+        "sameSession": true,
+        "sameMotion": true
+      }
+    },
+    {
+      "name": "Original simulation object restored, paused as before",
+      "passed": true
+    },
+    {
+      "name": "All local preferences/champions preserved",
+      "passed": true
+    },
+    {
+      "name": "Four result rows without duplicates and export enabled",
+      "passed": true
+    },
+    {
+      "name": "Native JSON export writes the exact measured report",
+      "passed": true
+    },
+    {
+      "name": "Unlimited test can be stopped and untested models are marked honestly",
+      "passed": true,
+      "detail": [
+        {
+          "modelId": "v2",
+          "status": "stopped",
+          "wallSeconds": 0.13833090000000084,
+          "simSeconds": 0.11666666666666665,
+          "generations": 0,
+          "currentGeneration": 1,
+          "maxLaps": 0,
+          "bestProgressMeters": 0.0006441233080930787,
+          "hit": null,
+          "generationSimSeconds": null,
+          "backend": "CPU",
+          "error": null
+        },
+        {
+          "modelId": "v3",
+          "status": "not-run"
+        },
+        {
+          "modelId": "v4",
+          "status": "not-run"
+        },
+        {
+          "modelId": "v5",
+          "status": "not-run"
+        }
+      ]
+    },
+    {
+      "name": "Stop path preserves all training/physical state",
+      "passed": true
+    },
+    {
+      "name": "desktop: no document overflow or duplicate IDs",
+      "passed": true
+    },
+    {
+      "name": "mobile: no document overflow or duplicate IDs",
+      "passed": true
+    },
+    {
+      "name": "Original backend resumes after tests without a model restart",
+      "passed": true
+    },
+    {
+      "name": "No console errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "report": {
+    "schema": 1,
+    "appVersion": "5.0.0",
+    "startedAt": "2026-10-09T11:16:14.999Z",
+    "finishedAt": "2026-10-09T11:16:25.414Z",
+    "settings": {
+      "circuitId": "lab",
+      "population": 4,
+      "mutation": 0.16,
+      "speedMultiplier": 30,
+      "limitSeconds": 2,
+      "seed": 7717,
+      "workerCount": 1
+    },
+    "execution": "sequential-cold-start",
+    "goal": "One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.",
+    "timing": "Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.",
+    "boundary": "One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.",
+    "cases": [
+      {
+        "modelId": "v2",
+        "status": "limit",
+        "wallSeconds": 2.000066600000002,
+        "simSeconds": 58.99999999999793,
+        "generations": 2,
+        "currentGeneration": 3,
+        "maxLaps": 0,
+        "bestProgressMeters": 103.20514449834569,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      },
+      {
+        "modelId": "v3",
+        "status": "limit",
+        "wallSeconds": 2.0172616999999993,
+        "simSeconds": 5.916666666666651,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 1.8043038675717262,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      },
+      {
+        "modelId": "v4",
+        "status": "limit",
+        "wallSeconds": 2.024320399999997,
+        "simSeconds": 16.43333333333368,
+        "generations": 1,
+        "currentGeneration": 2,
+        "maxLaps": 0,
+        "bestProgressMeters": 5.513043302901518,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      },
+      {
+        "modelId": "v5",
+        "status": "limit",
+        "wallSeconds": 2.001129999999997,
+        "simSeconds": 7.116666666666647,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 14.146855661088834,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "WebGPU + CPU",
+        "error": null
+      }
+    ]
+  },
+  "stopped": {
+    "schema": 1,
+    "appVersion": "5.0.0",
+    "startedAt": "2026-10-09T11:16:25.593Z",
+    "finishedAt": "2026-10-09T11:16:25.988Z",
+    "settings": {
+      "circuitId": "lab",
+      "population": 4,
+      "mutation": 0.16,
+      "speedMultiplier": 1,
+      "limitSeconds": 0,
+      "seed": 7717,
+      "workerCount": 1
+    },
+    "execution": "sequential-cold-start",
+    "goal": "One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.",
+    "timing": "Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.",
+    "boundary": "One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.",
+    "cases": [
+      {
+        "modelId": "v2",
+        "status": "stopped",
+        "wallSeconds": 0.13833090000000084,
+        "simSeconds": 0.11666666666666665,
+        "generations": 0,
+        "currentGeneration": 1,
+        "maxLaps": 0,
+        "bestProgressMeters": 0.0006441233080930787,
+        "hit": null,
+        "generationSimSeconds": null,
+        "backend": "CPU",
+        "error": null
+      },
+      {
+        "modelId": "v3",
+        "status": "not-run"
+      },
+      {
+        "modelId": "v4",
+        "status": "not-run"
+      },
+      {
+        "modelId": "v5",
+        "status": "not-run"
+      }
+    ]
+  },
+  "consoleErrors": [],
+  "boundary": "Bounded actual-app cold starts, timeout/stop/export/isolation checks. Not proof all four models learned two laps."
+}

@@ -1,0 +1,1643 @@
+TAP version 13
+# Subtest: Automatic selection is enabled at startup
+ok 1 - Automatic selection is enabled at startup
+  ---
+  duration_ms: 2.4335
+  type: 'test'
+  ...
+# Subtest: A new leader is selected without another click
+ok 2 - A new leader is selected without another click
+  ---
+  duration_ms: 1.7724
+  type: 'test'
+  ...
+# Subtest: Best active car is followed rather than a crashed former leader
+ok 3 - Best active car is followed rather than a crashed former leader
+  ---
+  duration_ms: 0.4981
+  type: 'test'
+  ...
+# Subtest: If all cars are inactive the final best is still inspectable
+ok 4 - If all cars are inactive the final best is still inspectable
+  ---
+  duration_ms: 0.2611
+  type: 'test'
+  ...
+# Subtest: Ranking uses the actual net score even when a worse car has laps
+ok 5 - Ranking uses the actual net score even when a worse car has laps
+  ---
+  duration_ms: 0.2888
+  type: 'test'
+  ...
+# Subtest: Before a lap fitness also decides, with actual progress as an exact-score tiebreak
+ok 6 - Before a lap fitness also decides, with actual progress as an exact-score tiebreak
+  ---
+  duration_ms: 0.2231
+  type: 'test'
+  ...
+# Subtest: Exact ties retain selection and do not produce flickering switches
+ok 7 - Exact ties retain selection and do not produce flickering switches
+  ---
+  duration_ms: 0.8029
+  type: 'test'
+  ...
+# Subtest: Manual selection disables automatic switching until it is re-enabled
+ok 8 - Manual selection disables automatic switching until it is re-enabled
+  ---
+  duration_ms: 0.4034
+  type: 'test'
+  ...
+# Subtest: Missing manual ID and changed population recover to a real car
+ok 9 - Missing manual ID and changed population recover to a real car
+  ---
+  duration_ms: 0.4631
+  type: 'test'
+  ...
+# Subtest: Empty populations are handled without fabricated agents
+ok 10 - Empty populations are handled without fabricated agents
+  ---
+  duration_ms: 0.7649
+  type: 'test'
+  ...
+# Subtest: 100 agents are ranked without sorting or mutating the source
+ok 11 - 100 agents are ranked without sorting or mutating the source
+  ---
+  duration_ms: 2.1804
+  type: 'test'
+  ...
+# Subtest: Selecting an agent never changes CPU physics, neural state, genomes, optimizer or RNG
+ok 12 - Selecting an agent never changes CPU physics, neural state, genomes, optimizer or RNG
+  ---
+  duration_ms: 381.2612
+  type: 'test'
+  ...
+# Subtest: Atlas excludes missing coordinates instead of fabricating a soma location
+ok 13 - Atlas excludes missing coordinates instead of fabricating a soma location
+  ---
+  duration_ms: 3.2208
+  type: 'test'
+  ...
+# Subtest: Atlas also excludes a missing Y/Z coordinate, NaN or incomplete triples
+ok 14 - Atlas also excludes a missing Y/Z coordinate, NaN or incomplete triples
+  ---
+  duration_ms: 0.5326
+  type: 'test'
+  ...
+# Subtest: An empty atlas has finite normalization and no invented points
+ok 15 - An empty atlas has finite normalization and no invented points
+  ---
+  duration_ms: 0.4419
+  type: 'test'
+  ...
+# Subtest: Visual sampling is deterministic, unique and preserves real readout points only
+ok 16 - Visual sampling is deterministic, unique and preserves real readout points only
+  ---
+  duration_ms: 24.1736
+  type: 'test'
+  ...
+# Subtest: Perspective uses the same camera math for positions and point selection
+ok 17 - Perspective uses the same camera math for positions and point selection
+  ---
+  duration_ms: 0.747
+  type: 'test'
+  ...
+# Subtest: Zoomed projections stay finite, with a positive perspective near the camera
+ok 18 - Zoomed projections stay finite, with a positive perspective near the camera
+  ---
+  duration_ms: 0.2289
+  type: 'test'
+  ...
+# Subtest: Connection display reads real CSR edges, source gains and signed activity only
+ok 19 - Connection display reads real CSR edges, source gains and signed activity only
+  ---
+  duration_ms: 1.4514
+  type: 'test'
+  ...
+# Subtest: Hidden endpoints, zero activity and a zero connection budget draw no edges
+ok 20 - Hidden endpoints, zero activity and a zero connection budget draw no edges
+  ---
+  duration_ms: 0.415
+  type: 'test'
+  ...
+# Subtest: Selecting a neuron shows only existing adjacent connections
+ok 21 - Selecting a neuron shows only existing adjacent connections
+  ---
+  duration_ms: 0.6239
+  type: 'test'
+  ...
+# Subtest: Atlas inspection does not change real V2/V3 neural state, genome or optimizer
+ok 22 - Atlas inspection does not change real V2/V3 neural state, genome or optimizer
+  ---
+  duration_ms: 362.8759
+  type: 'test'
+  ...
+# Subtest: Car sprite LOD uses screen size with explicit limits
+ok 23 - Car sprite LOD uses screen size with explicit limits
+  ---
+  duration_ms: 4.5865
+  type: 'test'
+  ...
+# Subtest: Sprite trim derives natural alpha, not guessed background geometry
+ok 24 - Sprite trim derives natural alpha, not guessed background geometry
+  ---
+  duration_ms: 1.6078
+  type: 'test'
+  ...
+# Subtest: Empty cutout fails explicitly instead of becoming an invisible car
+ok 25 - Empty cutout fails explicitly instead of becoming an invisible car
+  ---
+  duration_ms: 13.8813
+  type: 'test'
+  ...
+# Subtest: Visual controls use actual physical steering and exclusive brake output
+ok 26 - Visual controls use actual physical steering and exclusive brake output
+  ---
+  duration_ms: 23.6381
+  type: 'test'
+  ...
+# Subtest: Far zoom draws only colour dots, not a full sprite or tyres
+ok 27 - Far zoom draws only colour dots, not a full sprite or tyres
+  ---
+  duration_ms: 94.149
+  type: 'test'
+  ...
+# Subtest: Unavailable asset retains an explicit working fallback
+ok 28 - Unavailable asset retains an explicit working fallback
+  ---
+  duration_ms: 0.7997
+  type: 'test'
+  ...
+# Subtest: Load prepares at most 8 colours and 24 mip canvases below 6 MiB
+ok 29 - Load prepares at most 8 colours and 24 mip canvases below 6 MiB
+  ---
+  duration_ms: 64.7567
+  type: 'test'
+  ...
+# Subtest: Repeated 100-agent draws reuse prepared materials and preserve all inputs
+ok 30 - Repeated 100-agent draws reuse prepared materials and preserve all inputs
+  ---
+  duration_ms: 107.3244
+  type: 'test'
+  ...
+# Subtest: Colour cache disposes the oldest pixels rather than growing indefinitely
+ok 31 - Colour cache disposes the oldest pixels rather than growing indefinitely
+  ---
+  duration_ms: 46.4206
+  type: 'test'
+  ...
+# Subtest: Preview caps DPR, skips hidden surfaces and remains observational
+ok 32 - Preview caps DPR, skips hidden surfaces and remains observational
+  ---
+  duration_ms: 304.5686
+  type: 'test'
+  ...
+# Subtest: Front tyres track physical radians, rear tyres are not steered
+ok 33 - Front tyres track physical radians, rear tyres are not steered
+  ---
+  duration_ms: 1.4154
+  type: 'test'
+  ...
+# Subtest: Body drawing footprint matches unchanged published SI ratio; no compute dependency
+ok 34 - Body drawing footprint matches unchanged published SI ratio; no compute dependency
+  ---
+  duration_ms: 101.2867
+  type: 'test'
+  ...
+# Subtest: Offline JS catalog equals JSON and exposes the three requested tracks
+ok 35 - Offline JS catalog equals JSON and exposes the three requested tracks
+  ---
+  duration_ms: 164.821
+  type: 'test'
+  ...
+# Subtest: Monza: source provenance and map proportions are retained
+ok 36 - Monza: source provenance and map proportions are retained
+  ---
+  duration_ms: 0.9147
+  type: 'test'
+  ...
+# Subtest: Monza: closed borders do not cross; centerline is fully clear for cars
+ok 37 - Monza: closed borders do not cross; centerline is fully clear for cars
+  ---
+  duration_ms: 943.9328
+  type: 'test'
+  ...
+# Subtest: Monza: sensor distances are derived from the real closed borders
+ok 38 - Monza: sensor distances are derived from the real closed borders
+  ---
+  duration_ms: 100.4546
+  type: 'test'
+  ...
+# Subtest: Monza: no rail-following, zero motors stay still and zero steering crashes
+ok 39 - Monza: no rail-following, zero motors stay still and zero steering crashes
+  ---
+  duration_ms: 1184.6686
+  type: 'test'
+  ...
+# Subtest: Monza: neural simulation evolves with finite states and unchanged graph
+ok 40 - Monza: neural simulation evolves with finite states and unchanged graph
+  ---
+  duration_ms: 10000.4791
+  type: 'test'
+  ...
+# Subtest: Monaco: source provenance and map proportions are retained
+ok 41 - Monaco: source provenance and map proportions are retained
+  ---
+  duration_ms: 0.894
+  type: 'test'
+  ...
+# Subtest: Monaco: closed borders do not cross; centerline is fully clear for cars
+ok 42 - Monaco: closed borders do not cross; centerline is fully clear for cars
+  ---
+  duration_ms: 336.4731
+  type: 'test'
+  ...
+# Subtest: Monaco: sensor distances are derived from the real closed borders
+ok 43 - Monaco: sensor distances are derived from the real closed borders
+  ---
+  duration_ms: 30.1089
+  type: 'test'
+  ...
+# Subtest: Monaco: no rail-following, zero motors stay still and zero steering crashes
+ok 44 - Monaco: no rail-following, zero motors stay still and zero steering crashes
+  ---
+  duration_ms: 117.3362
+  type: 'test'
+  ...
+# Subtest: Monaco: neural simulation evolves with finite states and unchanged graph
+ok 45 - Monaco: neural simulation evolves with finite states and unchanged graph
+  ---
+  duration_ms: 6403.9249
+  type: 'test'
+  ...
+# Subtest: Le Mans: source provenance and map proportions are retained
+ok 46 - Le Mans: source provenance and map proportions are retained
+  ---
+  duration_ms: 0.4022
+  type: 'test'
+  ...
+# Subtest: Le Mans: closed borders do not cross; centerline is fully clear for cars
+ok 47 - Le Mans: closed borders do not cross; centerline is fully clear for cars
+  ---
+  duration_ms: 128.897
+  type: 'test'
+  ...
+# Subtest: Le Mans: sensor distances are derived from the real closed borders
+ok 48 - Le Mans: sensor distances are derived from the real closed borders
+  ---
+  duration_ms: 25.3273
+  type: 'test'
+  ...
+# Subtest: Le Mans: no rail-following, zero motors stay still and zero steering crashes
+ok 49 - Le Mans: no rail-following, zero motors stay still and zero steering crashes
+  ---
+  duration_ms: 102.6285
+  type: 'test'
+  ...
+# Subtest: Le Mans: neural simulation evolves with finite states and unchanged graph
+ok 50 - Le Mans: neural simulation evolves with finite states and unchanged graph
+  ---
+  duration_ms: 6234.8507
+  type: 'test'
+  ...
+# Subtest: Switching track clears only the trial, preserving controls, pause and graph
+ok 51 - Switching track clears only the trial, preserving controls, pause and graph
+  ---
+  duration_ms: 588.5518
+  type: 'test'
+  ...
+# Subtest: Checkpoint keys isolate circuits; legacy Lab saves never load on map tracks
+ok 52 - Checkpoint keys isolate circuits; legacy Lab saves never load on map tracks
+  ---
+  duration_ms: 34.8912
+  type: 'test'
+  ...
+# Subtest: GPU mirror removes CPU scratch arrays without dropping neural activity
+ok 53 - GPU mirror removes CPU scratch arrays without dropping neural activity
+  ---
+  duration_ms: 8.6149
+  type: 'test'
+  ...
+# Subtest: Uninspected renderer agents have no activity or solver allocation
+ok 54 - Uninspected renderer agents have no activity or solver allocation
+  ---
+  duration_ms: 0.3119
+  type: 'test'
+  ...
+# Subtest: CPU fallback restores the actual known GPU state and motor readout
+ok 55 - CPU fallback restores the actual known GPU state and motor readout
+  ---
+  duration_ms: 0.8151
+  type: 'test'
+  ...
+# Subtest: GPU packet keeps all 100 motor readouts and the inspected A-100 atlas
+ok 56 - GPU packet keeps all 100 motor readouts and the inspected A-100 atlas
+  ---
+  duration_ms: 1.5032
+  type: 'test'
+  ...
+# Subtest: GPU packet resolves nonsequential IDs and a population below capacity
+ok 57 - GPU packet resolves nonsequential IDs and a population below capacity
+  ---
+  duration_ms: 0.543
+  type: 'test'
+  ...
+# Subtest: Incomplete GPU packet fails closed
+ok 58 - Incomplete GPU packet fails closed
+  ---
+  duration_ms: 2.6377
+  type: 'test'
+  ...
+# Subtest: Worker scheduler rests in pause and does not skip any due fixed step
+ok 59 - Worker scheduler rests in pause and does not skip any due fixed step
+  ---
+  duration_ms: 0.7771
+  type: 'test'
+  ...
+# Subtest: v2 supports 100 independent policies in one generation
+ok 60 - v2 supports 100 independent policies in one generation
+  ---
+  duration_ms: 305.7392
+  type: 'test'
+  ...
+# Subtest: v3 supports 100 independent policies in one generation
+ok 61 - v3 supports 100 independent policies in one generation
+  ---
+  duration_ms: 153.6008
+  type: 'test'
+  ...
+# Subtest: GPU-status partial snapshot preserves paused simulation and history
+ok 62 - GPU-status partial snapshot preserves paused simulation and history
+  ---
+  duration_ms: 5.9588
+  type: 'test'
+  ...
+# Subtest: Only the inspected car gets a dense activity mirror; sparse updates clear stale cells
+ok 63 - Only the inspected car gets a dense activity mirror; sparse updates clear stale cells
+  ---
+  duration_ms: 2.6768
+  type: 'test'
+  ...
+# Subtest: Late population snapshot cannot undo the requested 100 agents
+ok 64 - Late population snapshot cannot undo the requested 100 agents
+  ---
+  duration_ms: 1.8102
+  type: 'test'
+  ...
+# Subtest: Reusing an already sensed GPU frame preserves sensors, neural outputs and physics exactly
+ok 65 - Reusing an already sensed GPU frame preserves sensors, neural outputs and physics exactly
+  ---
+  duration_ms: 395.8079
+  type: 'test'
+  ...
+# Subtest: Resizing the worker pool retains the requested population, speed and pause
+ok 66 - Resizing the worker pool retains the requested population, speed and pause
+  ---
+  duration_ms: 14.5267
+  type: 'test'
+  ...
+# Subtest: Stale worker snapshots cannot undo pending pause or network-off commands
+ok 67 - Stale worker snapshots cannot undo pending pause or network-off commands
+  ---
+  duration_ms: 1.9866
+  type: 'test'
+  ...
+# Subtest: Paused GPU inspection packs existing activity without running neural passes
+ok 68 - Paused GPU inspection packs existing activity without running neural passes
+  ---
+  duration_ms: 8.9646
+  type: 'test'
+  ...
+# Subtest: GPU observation and control requests use one serial readback queue
+ok 69 - GPU observation and control requests use one serial readback queue
+  ---
+  duration_ms: 2.0404
+  type: 'test'
+  ...
+# Subtest: Snapshots from another model or engine session cannot overwrite an imported trial
+ok 70 - Snapshots from another model or engine session cannot overwrite an imported trial
+  ---
+  duration_ms: 4.508
+  type: 'test'
+  ...
+# Subtest: Pending mutation control is sent to workers and is not undone by a late snapshot
+ok 71 - Pending mutation control is sent to workers and is not undone by a late snapshot
+  ---
+  duration_ms: 8.1303
+  type: 'test'
+  ...
+# Subtest: Old GPU responses cannot be delivered to replacement workers
+ok 72 - Old GPU responses cannot be delivered to replacement workers
+  ---
+  duration_ms: 0.5393
+  type: 'test'
+  ...
+# Subtest: Legitimate pool restart keeps the same observer but an unrelated import does not
+ok 73 - Legitimate pool restart keeps the same observer but an unrelated import does not
+  ---
+  duration_ms: 2.1028
+  type: 'test'
+  ...
+# Subtest: Complete annotated MaleCNS bundle has verified counts and checksum
+ok 74 - Complete annotated MaleCNS bundle has verified counts and checksum
+  ---
+  duration_ms: 124.4205
+  type: 'test'
+  ...
+# Subtest: Full sparse graph drives real DNa outputs without exceeding its active budget
+ok 75 - Full sparse graph drives real DNa outputs without exceeding its active budget
+  ---
+  duration_ms: 1773.119
+  type: 'test'
+  ...
+# Subtest: Corrupted compact graph fails closed
+ok 76 - Corrupted compact graph fails closed
+  ---
+  duration_ms: 106.5107
+  type: 'test'
+  ...
+# Subtest: Policy readout uses real descending neurons, not sensor reconstruction or a driving calibration
+ok 77 - Policy readout uses real descending neurons, not sensor reconstruction or a driving calibration
+  ---
+  duration_ms: 315.7433
+  type: 'test'
+  ...
+# Subtest: Motor decoder has no raw sensor bypass: zero recurrent state means zero actions
+ok 78 - Motor decoder has no raw sensor bypass: zero recurrent state means zero actions
+  ---
+  duration_ms: 129.2169
+  type: 'test'
+  ...
+# Subtest: Deleting anatomical connections eliminates cold-start policy actions despite action biases
+ok 79 - Deleting anatomical connections eliminates cold-start policy actions despite action biases
+  ---
+  duration_ms: 231.5302
+  type: 'test'
+  ...
+# Subtest: Learned synaptic gains change recurrent activity without adding or replacing edges
+ok 80 - Learned synaptic gains change recurrent activity without adding or replacing edges
+  ---
+  duration_ms: 128.5574
+  type: 'test'
+  ...
+# Subtest: Identical sensory history yields identical actions regardless of circuit coordinates
+ok 81 - Identical sensory history yields identical actions regardless of circuit coordinates
+  ---
+  duration_ms: 174.5593
+  type: 'test'
+  ...
+# Subtest: A badly scored lap cannot bypass the real reward objective during evolution
+ok 82 - A badly scored lap cannot bypass the real reward objective during evolution
+  ---
+  duration_ms: 110.8887
+  type: 'test'
+  ...
+# Subtest: Optimizer is updated by ranked rollout rewards and changes trainable neural parameters
+ok 83 - Optimizer is updated by ranked rollout rewards and changes trainable neural parameters
+  ---
+  duration_ms: 144.7272
+  type: 'test'
+  ...
+# Subtest: RL checkpoints retain policy tensors; assisted 4.3 policies are explicitly rejected
+ok 84 - RL checkpoints retain policy tensors; assisted 4.3 policies are explicitly rejected
+  ---
+  duration_ms: 112.5638
+  type: 'test'
+  ...
+# Subtest: Zero mutation disables optimizer updates and does not invent learned parameters
+ok 85 - Zero mutation disables optimizer updates and does not invent learned parameters
+  ---
+  duration_ms: 135.6653
+  type: 'test'
+  ...
+# Subtest: V3 storico resta disponibile come grafo ridotto reale
+ok 86 - V3 storico resta disponibile come grafo ridotto reale
+  ---
+  duration_ms: 509.0421
+  type: 'test'
+  ...
+# Subtest: V2 compatto ricostruito riduce davvero il carico del V3
+ok 87 - V2 compatto ricostruito riduce davvero il carico del V3
+  ---
+  duration_ms: 117.2651
+  type: 'test'
+  ...
+# Subtest: monza: metric lap length, dimensions and Porsche footprint agree
+ok 88 - monza: metric lap length, dimensions and Porsche footprint agree
+  ---
+  duration_ms: 34.5731
+  type: 'test'
+  ...
+# Subtest: monza: every source point retained by one uniform transform, no corner smoothing
+ok 89 - monza: every source point retained by one uniform transform, no corner smoothing
+  ---
+  duration_ms: 3.2214
+  type: 'test'
+  ...
+# Subtest: monza: estimated width profile covers 100% of the lap and interpolates periodically
+ok 90 - monza: estimated width profile covers 100% of the lap and interpolates periodically
+  ---
+  duration_ms: 151.178
+  type: 'test'
+  ...
+# Subtest: monza: wall rays measure the variable road, not a fixed-width or centreline cue
+ok 91 - monza: wall rays measure the variable road, not a fixed-width or centreline cue
+  ---
+  duration_ms: 230.0854
+  type: 'test'
+  ...
+# Subtest: monaco: metric lap length, dimensions and Porsche footprint agree
+ok 92 - monaco: metric lap length, dimensions and Porsche footprint agree
+  ---
+  duration_ms: 3.4142
+  type: 'test'
+  ...
+# Subtest: monaco: every source point retained by one uniform transform, no corner smoothing
+ok 93 - monaco: every source point retained by one uniform transform, no corner smoothing
+  ---
+  duration_ms: 0.452
+  type: 'test'
+  ...
+# Subtest: monaco: estimated width profile covers 100% of the lap and interpolates periodically
+ok 94 - monaco: estimated width profile covers 100% of the lap and interpolates periodically
+  ---
+  duration_ms: 27.2913
+  type: 'test'
+  ...
+# Subtest: monaco: wall rays measure the variable road, not a fixed-width or centreline cue
+ok 95 - monaco: wall rays measure the variable road, not a fixed-width or centreline cue
+  ---
+  duration_ms: 130.4277
+  type: 'test'
+  ...
+# Subtest: le-mans: metric lap length, dimensions and Porsche footprint agree
+ok 96 - le-mans: metric lap length, dimensions and Porsche footprint agree
+  ---
+  duration_ms: 2.688
+  type: 'test'
+  ...
+# Subtest: le-mans: every source point retained by one uniform transform, no corner smoothing
+ok 97 - le-mans: every source point retained by one uniform transform, no corner smoothing
+  ---
+  duration_ms: 0.4292
+  type: 'test'
+  ...
+# Subtest: le-mans: estimated width profile covers 100% of the lap and interpolates periodically
+ok 98 - le-mans: estimated width profile covers 100% of the lap and interpolates periodically
+  ---
+  duration_ms: 44.1493
+  type: 'test'
+  ...
+# Subtest: le-mans: wall rays measure the variable road, not a fixed-width or centreline cue
+ok 99 - le-mans: wall rays measure the variable road, not a fixed-width or centreline cue
+  ---
+  duration_ms: 54.1371
+  type: 'test'
+  ...
+# Subtest: Variable corridor detects an outside car even without a wall crossing
+ok 100 - Variable corridor detects an outside car even without a wall crossing
+  ---
+  duration_ms: 22.9573
+  type: 'test'
+  ...
+# Subtest: Wide section never uses the legacy distance-to-centre termination
+ok 101 - Wide section never uses the legacy distance-to-centre termination
+  ---
+  duration_ms: 1.1645
+  type: 'test'
+  ...
+# Subtest: Monza global width range is sourced; local values remain explicit model estimates
+ok 102 - Monza global width range is sourced; local values remain explicit model estimates
+  ---
+  duration_ms: 3.4633
+  type: 'test'
+  ...
+# Subtest: Malformed variable-width data is rejected before starting a simulation
+ok 103 - Malformed variable-width data is rejected before starting a simulation
+  ---
+  duration_ms: 9.5583
+  type: 'test'
+  ...
+# Subtest: UI comparison matches compiled anatomy, solver and learning parameters of all four shipped models
+ok 104 - UI comparison matches compiled anatomy, solver and learning parameters of all four shipped models
+  ---
+  duration_ms: 3420.3748
+  type: 'test'
+  ...
+# Subtest: Comparison catalog is immutable and distinguishes V5 compute capacity from unchanged anatomy
+ok 105 - Comparison catalog is immutable and distinguishes V5 compute capacity from unchanged anatomy
+  ---
+  duration_ms: 2.5585
+  type: 'test'
+  ...
+# Subtest: Comparison builds only eight rows once, formats Italian numbers and updates only selected DOM state
+ok 106 - Comparison builds only eight rows once, formats Italian numbers and updates only selected DOM state
+  ---
+  duration_ms: 47.0698
+  type: 'test'
+  ...
+# Subtest: Unknown model or missing disclosure causes no UI mutation
+ok 107 - Unknown model or missing disclosure causes no UI mutation
+  ---
+  duration_ms: 0.3516
+  type: 'test'
+  ...
+# Subtest: Comparison wiring remains read-only, lightweight and outside the animation/learning loops
+ok 108 - Comparison wiring remains read-only, lightweight and outside the animation/learning loops
+  ---
+  duration_ms: 5.5268
+  type: 'test'
+  ...
+# Subtest: Every profile starts from the same explicit settings and seed
+ok 109 - Every profile starts from the same explicit settings and seed
+  ---
+  duration_ms: 2.6829
+  type: 'test'
+  ...
+# Subtest: Invalid settings cannot silently change the comparison
+ok 110 - Invalid settings cannot silently change the comparison
+  ---
+  duration_ms: 0.6155
+  type: 'test'
+  ...
+# Subtest: A failed generation is counted but never treated as two-lap success
+ok 111 - A failed generation is counted but never treated as two-lap success
+  ---
+  duration_ms: 0.591
+  type: 'test'
+  ...
+# Subtest: Two different one-lap cars do not count as two laps of one car
+ok 112 - Two different one-lap cars do not count as two laps of one car
+  ---
+  duration_ms: 0.2224
+  type: 'test'
+  ...
+# Subtest: A successful car is latched before other agents finish, not declared a finished generation
+ok 113 - A successful car is latched before other agents finish, not declared a finished generation
+  ---
+  duration_ms: 0.335
+  type: 'test'
+  ...
+# Subtest: The successful generation ends only after all cars naturally become inactive
+ok 114 - The successful generation ends only after all cars naturally become inactive
+  ---
+  duration_ms: 0.3427
+  type: 'test'
+  ...
+# Subtest: Diagnostic cars and fabricated incomplete lap records cannot satisfy the objective
+ok 115 - Diagnostic cars and fabricated incomplete lap records cannot satisfy the objective
+  ---
+  duration_ms: 0.4172
+  type: 'test'
+  ...
+# Subtest: Time and generations accumulate independently of the history retention window
+ok 116 - Time and generations accumulate independently of the history retention window
+  ---
+  duration_ms: 0.4605
+  type: 'test'
+  ...
+# Subtest: The exact physical terminal tick is observable before automatic reset
+ok 117 - The exact physical terminal tick is observable before automatic reset
+  ---
+  duration_ms: 173.0695
+  type: 'test'
+  ...
+# Subtest: Read-only trial telemetry leaves real seeded physics, rewards, policies and evolution unchanged
+ok 118 - Read-only trial telemetry leaves real seeded physics, rewards, policies and evolution unchanged
+  ---
+  duration_ms: 2036.6734
+  type: 'test'
+  ...
+# Subtest: The real-time budget censors a run, never forces evolution or invents success
+ok 119 - The real-time budget censors a run, never forces evolution or invents success
+  ---
+  duration_ms: 0.3579
+  type: 'test'
+  ...
+# Subtest: A budget reached while waiting for the successful generation remains censored
+ok 120 - A budget reached while waiting for the successful generation remains censored
+  ---
+  duration_ms: 0.341
+  type: 'test'
+  ...
+# Subtest: Zero budget is genuinely unlimited and a terminal snapshot remains immutable
+ok 121 - Zero budget is genuinely unlimited and a terminal snapshot remains immutable
+  ---
+  duration_ms: 0.3427
+  type: 'test'
+  ...
+# Subtest: All models are executed sequentially with identical immutable settings
+ok 122 - All models are executed sequentially with identical immutable settings
+  ---
+  duration_ms: 3.4099
+  type: 'test'
+  ...
+# Subtest: Budget/error results are exported honestly and one model error does not skip the rest
+ok 123 - Budget/error results are exported honestly and one model error does not skip the rest
+  ---
+  duration_ms: 5.5033
+  type: 'test'
+  ...
+# Subtest: Stop during preparation does not begin training or run pending profiles
+ok 124 - Stop during preparation does not begin training or run pending profiles
+  ---
+  duration_ms: 2.7517
+  type: 'test'
+  ...
+# Subtest: Reports are independent snapshots, not live references to test state
+ok 125 - Reports are independent snapshots, not live references to test state
+  ---
+  duration_ms: 0.6896
+  type: 'test'
+  ...
+# Subtest: V5 reuses verified real anatomy without modifying V4 or inventing neurons/edges
+ok 126 - V5 reuses verified real anatomy without modifying V4 or inventing neurons/edges
+  ---
+  duration_ms: 2.2411
+  type: 'test'
+  ...
+# Subtest: V5 actually reads 128 reachable descending neurons including 64 beyond the V4 core
+ok 127 - V5 actually reads 128 reachable descending neurons including 64 beyond the V4 core
+  ---
+  duration_ms: 563.2077
+  type: 'test'
+  ...
+# Subtest: V5 recurrent processing uses more than 8192 real cells, respects 32768 cap and produces mutually exclusive pedals
+ok 128 - V5 recurrent processing uses more than 8192 real cells, respects 32768 cap and produces mutually exclusive pedals
+  ---
+  duration_ms: 5566.7591
+  type: 'test'
+  ...
+# Subtest: V5 has no route/sensor motor bypass; absent real recurrence means zero actions even with biases
+ok 129 - V5 has no route/sensor motor bypass; absent real recurrence means zero actions even with biases
+  ---
+  duration_ms: 161.7021
+  type: 'test'
+  ...
+# Subtest: All 32 V5 synaptic gain groups are used on existing anatomical nodes
+ok 130 - All 32 V5 synaptic gain groups are used on existing anatomical nodes
+  ---
+  duration_ms: 170.0199
+  type: 'test'
+  ...
+# Subtest: V5 rewards train 346 parameters, preserving optimizer/history and exact-version share files
+ok 131 - V5 rewards train 346 parameters, preserving optimizer/history and exact-version share files
+  ---
+  duration_ms: 327.5982
+  type: 'test'
+  ...
+# Subtest: V4/V5 genome, checkpoint and progress compatibility is isolated despite shared anatomy
+ok 132 - V4/V5 genome, checkpoint and progress compatibility is isolated despite shared anatomy
+  ---
+  duration_ms: 251.6822
+  type: 'test'
+  ...
+# Subtest: V5 engine reuses one validated binary buffer while keeping separate profiles and cached descriptors
+ok 133 - V5 engine reuses one validated binary buffer while keeping separate profiles and cached descriptors
+  ---
+  duration_ms: 498.5573
+  type: 'test'
+  ...
+# Subtest: Native file layer writes a real shared file and opens validated content
+ok 134 - Native file layer writes a real shared file and opens validated content
+  ---
+  duration_ms: 499.806
+  type: 'test'
+  ...
+# Subtest: Cancel Save creates no file and does not change training
+ok 135 - Cancel Save creates no file and does not change training
+  ---
+  duration_ms: 149.268
+  type: 'test'
+  ...
+# Subtest: Cancel Open and replace confirmation keep the current trial intact
+ok 136 - Cancel Open and replace confirmation keep the current trial intact
+  ---
+  duration_ms: 162.0976
+  type: 'test'
+  ...
+# Subtest: Version mismatch is rejected before asking to replace anything
+ok 137 - Version mismatch is rejected before asking to replace anything
+  ---
+  duration_ms: 379.7793
+  type: 'test'
+  ...
+# Subtest: Damaged checksum and invalid model are rejected before confirmation
+ok 138 - Damaged checksum and invalid model are rejected before confirmation
+  ---
+  duration_ms: 466.2671
+  type: 'test'
+  ...
+# Subtest: Save appends the native extension and safely replaces an approved target
+ok 139 - Save appends the native extension and safely replaces an approved target
+  ---
+  duration_ms: 129.9303
+  type: 'test'
+  ...
+# Subtest: Failure to write releases the operation lock and leaves existing file intact
+ok 140 - Failure to write releases the operation lock and leaves existing file intact
+  ---
+  duration_ms: 160.4729
+  type: 'test'
+  ...
+# Subtest: Native file operations are serialized while the picker is open
+ok 141 - Native file operations are serialized while the picker is open
+  ---
+  duration_ms: 84.2443
+  type: 'test'
+  ...
+# Subtest: Directory and oversize selections are rejected without changing state
+ok 142 - Directory and oversize selections are rejected without changing state
+  ---
+  duration_ms: 190.248
+  type: 'test'
+  ...
+# Subtest: File round-trip preserves exact app version, format, model and checksum
+ok 143 - File round-trip preserves exact app version, format, model and checksum
+  ---
+  duration_ms: 628.3077
+  type: 'test'
+  ...
+# Subtest: Reject exact-version mismatch: 5.0.-1
+ok 144 - Reject exact-version mismatch: 5.0.-1
+  ---
+  duration_ms: 124.7964
+  type: 'test'
+  ...
+# Subtest: Reject exact-version mismatch: 5.0.1
+ok 145 - Reject exact-version mismatch: 5.0.1
+  ---
+  duration_ms: 119.2933
+  type: 'test'
+  ...
+# Subtest: Reject exact-version mismatch: 5.1.0
+ok 146 - Reject exact-version mismatch: 5.1.0
+  ---
+  duration_ms: 142.9601
+  type: 'test'
+  ...
+# Subtest: Reject exact-version mismatch: 5.0.0-beta
+ok 147 - Reject exact-version mismatch: 5.0.0-beta
+  ---
+  duration_ms: 111.6824
+  type: 'test'
+  ...
+# Subtest: Checksum covers header and training content; whitespace is harmless
+ok 148 - Checksum covers header and training content; whitespace is harmless
+  ---
+  duration_ms: 128.9961
+  type: 'test'
+  ...
+# Subtest: Malformed, oversized, unknown-schema and hostile-key files are rejected
+ok 149 - Malformed, oversized, unknown-schema and hostile-key files are rejected
+  ---
+  duration_ms: 100.894
+  type: 'test'
+  ...
+# Subtest: Capture observes state without RNG, brain, optimizer or car mutations
+ok 150 - Capture observes state without RNG, brain, optimizer or car mutations
+  ---
+  duration_ms: 479.5188
+  type: 'test'
+  ...
+# Subtest: Restore keeps optimizer, all genomes, archive, champion, history and settings
+ok 151 - Restore keeps optimizer, all genomes, archive, champion, history and settings
+  ---
+  duration_ms: 547.3607
+  type: 'test'
+  ...
+# Subtest: Empty training records keep the no-record sentinel, not a fake zero score
+ok 152 - Empty training records keep the no-record sentinel, not a fake zero score
+  ---
+  duration_ms: 92.0374
+  type: 'test'
+  ...
+# Subtest: Bad payload cannot replace existing simulation state
+ok 153 - Bad payload cannot replace existing simulation state
+  ---
+  duration_ms: 116.3817
+  type: 'test'
+  ...
+# Subtest: Reject invalid weights, missing genomes, bad stats and unknown fields
+ok 154 - Reject invalid weights, missing genomes, bad stats and unknown fields
+  ---
+  duration_ms: 123.3846
+  type: 'test'
+  ...
+# Subtest: 100-agent genomes are all saved, without reducing the neural graph
+ok 155 - 100-agent genomes are all saved, without reducing the neural graph
+  ---
+  duration_ms: 112.1279
+  type: 'test'
+  ...
+# Subtest: Only training mode is exported; manual test mode has a clear error
+ok 156 - Only training mode is exported; manual test mode has a clear error
+  ---
+  duration_ms: 48.3747
+  type: 'test'
+  ...
+# Subtest: Worker states retain independent RNGs, generations and optimizer values
+ok 157 - Worker states retain independent RNGs, generations and optimizer values
+  ---
+  duration_ms: 174.764
+  type: 'test'
+  ...
+# Subtest: Every installed model has a validated portable training descriptor
+ok 158 - Every installed model has a validated portable training descriptor
+  ---
+  duration_ms: 783.0317
+  type: 'test'
+  ...
+# Subtest: Real two-worker export/restore and invalid load preserve training isolation
+ok 159 - Real two-worker export/restore and invalid load preserve training isolation
+  ---
+  duration_ms: 557.7568
+  type: 'test'
+  ...
+# Subtest: RNG sequence is unchanged from the established generator, including high counter bits
+ok 160 - RNG sequence is unchanged from the established generator, including high counter bits
+  ---
+  duration_ms: 30.4955
+  type: 'test'
+  ...
+# Subtest: Only new high-water road earns dense progress; reverse/retrace cannot farm rewards
+ok 161 - Only new high-water road earns dense progress; reverse/retrace cannot farm rewards
+  ---
+  duration_ms: 19.1954
+  type: 'test'
+  ...
+# Subtest: Progress reward is dense before the first checkpoint, with no speed/survival bonus
+ok 162 - Progress reward is dense before the first checkpoint, with no speed/survival bonus
+  ---
+  duration_ms: 9.8485
+  type: 'test'
+  ...
+# Subtest: Finish line at spawn, a reverse crossing and a partial lap cannot earn a lap
+ok 163 - Finish line at spawn, a reverse crossing and a partial lap cannot earn a lap
+  ---
+  duration_ms: 31.9468
+  type: 'test'
+  ...
+# Subtest: All 32 ordered gates and a continuous finish crossing are needed for a timed lap
+ok 164 - All 32 ordered gates and a continuous finish crossing are needed for a timed lap
+  ---
+  duration_ms: 3.0115
+  type: 'test'
+  ...
+# Subtest: Two actual ordered laps terminate the episode; later steps cannot create more points
+ok 165 - Two actual ordered laps terminate the episode; later steps cannot create more points
+  ---
+  duration_ms: 83.9089
+  type: 'test'
+  ...
+# Subtest: Teleport and projection jumps do not produce progress, gates or lap rewards
+ok 166 - Teleport and projection jumps do not produce progress, gates or lap rewards
+  ---
+  duration_ms: 0.7541
+  type: 'test'
+  ...
+# Subtest: Changing to a nearby hairpin segment without corresponding motion is rejected
+ok 167 - Changing to a nearby hairpin segment without corresponding motion is rejected
+  ---
+  duration_ms: 0.3348
+  type: 'test'
+  ...
+# Subtest: A single bad projection can recover without new fake progress
+ok 168 - A single bad projection can recover without new fake progress
+  ---
+  duration_ms: 0.2946
+  type: 'test'
+  ...
+# Subtest: Collision and off-road steps cannot earn even a last-moment finish bonus
+ok 169 - Collision and off-road steps cannot earn even a last-moment finish bonus
+  ---
+  duration_ms: 25.8642
+  type: 'test'
+  ...
+# Subtest: Terminal failure/no-lap costs apply immediately and exactly once
+ok 170 - Terminal failure/no-lap costs apply immediately and exactly once
+  ---
+  duration_ms: 2.5198
+  type: 'test'
+  ...
+# Subtest: Missing-lap cost is strict but graded by genuine progress, not manually assigned bestProgress
+ok 171 - Missing-lap cost is strict but graded by genuine progress, not manually assigned bestProgress
+  ---
+  duration_ms: 12.304
+  type: 'test'
+  ...
+# Subtest: A crawling agent is stopped by recent ineffective pace, not a global episode time cap
+ok 172 - A crawling agent is stopped by recent ineffective pace, not a global episode time cap
+  ---
+  duration_ms: 37.5493
+  type: 'test'
+  ...
+# Subtest: Waiting/moving slowly is worse than early useful motion; an early crash is not a clean lap
+ok 173 - Waiting/moving slowly is worse than early useful motion; an early crash is not a clean lap
+  ---
+  duration_ms: 6.1842
+  type: 'test'
+  ...
+# Subtest: Faster laps improve score; slow-lap costs are relative and bounded, never an unlimited bonus
+ok 174 - Faster laps improve score; slow-lap costs are relative and bounded, never an unlimited bonus
+  ---
+  duration_ms: 48.0342
+  type: 'test'
+  ...
+# Subtest: Every slow lap is compared to the last-generation lap, including a slow second lap
+ok 175 - Every slow lap is compared to the last-generation lap, including a slow second lap
+  ---
+  duration_ms: 15.2893
+  type: 'test'
+  ...
+# Subtest: Slower-generation penalty affects actual rank, not merely the UI
+ok 176 - Slower-generation penalty affects actual rank, not merely the UI
+  ---
+  duration_ms: 64.2928
+  type: 'test'
+  ...
+# Subtest: Historical records exclude only the changing comparison cost and retain all intrinsic failures
+ok 177 - Historical records exclude only the changing comparison cost and retain all intrinsic failures
+  ---
+  duration_ms: 15.501
+  type: 'test'
+  ...
+# Subtest: Relative progress and pace have the same weight on short/long tracks and coordinate scales
+ok 178 - Relative progress and pace have the same weight on short/long tracks and coordinate scales
+  ---
+  duration_ms: 30.8465
+  type: 'test'
+  ...
+# Subtest: Time/reverse/risk/slip costs use simulated seconds, not render frames
+ok 179 - Time/reverse/risk/slip costs use simulated seconds, not render frames
+  ---
+  duration_ms: 1.01
+  type: 'test'
+  ...
+# Subtest: G forces and valid braking are not automatically punished
+ok 180 - G forces and valid braking are not automatically punished
+  ---
+  duration_ms: 0.5175
+  type: 'test'
+  ...
+# Subtest: High-speed impacts are penalized more, with bounded severity
+ok 181 - High-speed impacts are penalized more, with bounded severity
+  ---
+  duration_ms: 2.2808
+  type: 'test'
+  ...
+# Subtest: All category totals exactly reconcile to selection score and stable score
+ok 182 - All category totals exactly reconcile to selection score and stable score
+  ---
+  duration_ms: 7.8395
+  type: 'test'
+  ...
+# Subtest: Fitness outranks artificial laps/progress overrides and non-finite scores
+ok 183 - Fitness outranks artificial laps/progress overrides and non-finite scores
+  ---
+  duration_ms: 0.2826
+  type: 'test'
+  ...
+# Subtest: 1x/30x neural rollouts have identical rewards, ledger, physics and history
+ok 184 - 1x/30x neural rollouts have identical rewards, ledger, physics and history
+  ---
+  duration_ms: 2432.1507
+  type: 'test'
+  ...
+# Subtest: Changing reward observers cannot change identical sensor-to-brain motor outputs
+ok 185 - Changing reward observers cannot change identical sensor-to-brain motor outputs
+  ---
+  duration_ms: 107.7619
+  type: 'test'
+  ...
+# Subtest: Manual interrupted generations are finalized, penalized and update optimizer once
+ok 186 - Manual interrupted generations are finalized, penalized and update optimizer once
+  ---
+  duration_ms: 64.9555
+  type: 'test'
+  ...
+# Subtest: Saved training retains reward revision/history/reference; wrong or tampered scoring is rejected
+ok 187 - Saved training retains reward revision/history/reference; wrong or tampered scoring is rejected
+  ---
+  duration_ms: 133.2688
+  type: 'test'
+  ...
+# RL_TEST_BENCHMARK {"model":"v2","seed":7717,"generation1Progress":439.43956299109334,"generation12Progress":1255.4107002812727,"episodes":384,"warmStart":false}
+# Subtest: Official subset: size, unique IDs, integer weights, checksum
+ok 188 - Official subset: size, unique IDs, integer weights, checksum
+  ---
+  duration_ms: 44.8026
+  type: 'test'
+  ...
+# Subtest: All exported neurons have a real directed path to an output
+ok 189 - All exported neurons have a real directed path to an output
+  ---
+  duration_ms: 99.7392
+  type: 'test'
+  ...
+# Subtest: Dataset missing or corrupted: fail closed, never use a synthetic fallback
+ok 190 - Dataset missing or corrupted: fail closed, never use a synthetic fallback
+  ---
+  duration_ms: 3.7176
+  type: 'test'
+  ...
+# Subtest: Uniform fair starting pose and zero initial velocity for every car
+ok 191 - Uniform fair starting pose and zero initial velocity for every car
+  ---
+  duration_ms: 102.9167
+  type: 'test'
+  ...
+# Subtest: Zero motor commands: no movement, no route following
+ok 192 - Zero motor commands: no movement, no route following
+  ---
+  duration_ms: 19.4137
+  type: 'test'
+  ...
+# Subtest: Throttle and zero steer: strictly straight, then wall collision
+ok 193 - Throttle and zero steer: strictly straight, then wall collision
+  ---
+  duration_ms: 129.2303
+  type: 'test'
+  ...
+# Subtest: Rewards, penalties and lap time are part of the agent score
+ok 194 - Rewards, penalties and lap time are part of the agent score
+  ---
+  duration_ms: 82.7241
+  type: 'test'
+  ...
+# Subtest: Generation-end penalties punish no-lap agents and slower previous-generation laps
+ok 195 - Generation-end penalties punish no-lap agents and slower previous-generation laps
+  ---
+  duration_ms: 152.6417
+  type: 'test'
+  ...
+# Subtest: Each agent is stopped after two completed laps per generation
+ok 196 - Each agent is stopped after two completed laps per generation
+  ---
+  duration_ms: 30.5778
+  type: 'test'
+  ...
+# Subtest: Opposite steering causes opposite free headings and positions
+ok 197 - Opposite steering causes opposite free headings and positions
+  ---
+  duration_ms: 51.0072
+  type: 'test'
+  ...
+# Subtest: Real ray intersection and changed heading/position change sensor distances
+ok 198 - Real ray intersection and changed heading/position change sensor distances
+  ---
+  duration_ms: 3.0947
+  type: 'test'
+  ...
+# Subtest: Brakes reduce speed; cannot force reverse
+ok 199 - Brakes reduce speed; cannot force reverse
+  ---
+  duration_ms: 62.29
+  type: 'test'
+  ...
+# Subtest: Throttle and brake are mutually exclusive at the physical actuator
+ok 200 - Throttle and brake are mutually exclusive at the physical actuator
+  ---
+  duration_ms: 0.7712
+  type: 'test'
+  ...
+# Subtest: Neural readout keeps throttle and brake distinct before actuator arbitration
+ok 201 - Neural readout keeps throttle and brake distinct before actuator arbitration
+  ---
+  duration_ms: 0.5231
+  type: 'test'
+  ...
+# Subtest: Neural motor logits launch a fresh population without overlapping pedals
+ok 202 - Neural motor logits launch a fresh population without overlapping pedals
+  ---
+  duration_ms: 0.22
+  type: 'test'
+  ...
+# Subtest: Imported champion is carried into the next generation
+ok 203 - Imported champion is carried into the next generation
+  ---
+  duration_ms: 92.0367
+  type: 'test'
+  ...
+# Subtest: Raw progress remains observable but does not override penalized fitness elites
+ok 204 - Raw progress remains observable but does not override penalized fitness elites
+  ---
+  duration_ms: 90.1221
+  type: 'test'
+  ...
+# Subtest: Genome crossover preserves valid adapter shapes
+ok 205 - Genome crossover preserves valid adapter shapes
+  ---
+  duration_ms: 0.3882
+  type: 'test'
+  ...
+# Subtest: Dynamic vehicle physics exposes inertia, slip and G forces
+ok 206 - Dynamic vehicle physics exposes inertia, slip and G forces
+  ---
+  duration_ms: 15.0044
+  type: 'test'
+  ...
+# Subtest: Physics, real-wall and powertrain telemetry add seventeen channels without removing visual rays
+ok 207 - Physics, real-wall and powertrain telemetry add seventeen channels without removing visual rays
+  ---
+  duration_ms: 559.2364
+  type: 'test'
+  ...
+# Subtest: Road relay telemetry changes with the real circuit walls
+ok 208 - Road relay telemetry changes with the real circuit walls
+  ---
+  duration_ms: 90.1794
+  type: 'test'
+  ...
+# Subtest: Expanded ray and road adapter preserve previous checkpoints
+ok 209 - Expanded ray and road adapter preserve previous checkpoints
+  ---
+  duration_ms: 84.0421
+  type: 'test'
+  ...
+# Subtest: Cars are ghosted to each other: overlapping bodies do not collide
+ok 210 - Cars are ghosted to each other: overlapping bodies do not collide
+  ---
+  duration_ms: 23.5731
+  type: 'test'
+  ...
+# Subtest: Real graph participates: removing ALL connections eliminates motor outputs
+ok 211 - Real graph participates: removing ALL connections eliminates motor outputs
+  ---
+  duration_ms: 255.395
+  type: 'test'
+  ...
+# Subtest: Neural outputs depend on sensed obstacles, not a constant route command
+ok 212 - Neural outputs depend on sensed obstacles, not a constant route command
+  ---
+  duration_ms: 317.063
+  type: 'test'
+  ...
+# Subtest: Brain off is an exact zero-command ablation, including warm neural state
+ok 213 - Brain off is an exact zero-command ablation, including warm neural state
+  ---
+  duration_ms: 497.9371
+  type: 'test'
+  ...
+# Subtest: 0% mutation makes exact independent genome copies
+ok 214 - 0% mutation makes exact independent genome copies
+  ---
+  duration_ms: 0.4327
+  type: 'test'
+  ...
+# Subtest: Fixed-step speed multiplier: 1x and 4x produce identical simulated states
+ok 215 - Fixed-step speed multiplier: 1x and 4x produce identical simulated states
+  ---
+  duration_ms: 6545.1044
+  type: 'test'
+  ...
+# Subtest: 30x speed uses the same fixed-step simulation
+ok 216 - 30x speed uses the same fixed-step simulation
+  ---
+  duration_ms: 5716.2466
+  type: 'test'
+  ...
+# Subtest: Frame partitions cannot alter deterministic outcomes
+ok 217 - Frame partitions cannot alter deterministic outcomes
+  ---
+  duration_ms: 5138.5097
+  type: 'test'
+  ...
+# Subtest: Pause freezes time, cars and neural state; reset restores seed
+ok 218 - Pause freezes time, cars and neural state; reset restores seed
+  ---
+  duration_ms: 1678.9579
+  type: 'test'
+  ...
+# Subtest: Generations have no automatic simulation-time limit
+ok 219 - Generations have no automatic simulation-time limit
+  ---
+  duration_ms: 4598.5217
+  type: 'test'
+  ...
+# Subtest: Reward-trained recurrent V2 learns from a cold start without modifying anatomical topology
+ok 220 - Reward-trained recurrent V2 learns from a cold start without modifying anatomical topology
+  ---
+  duration_ms: 34931.5818
+  type: 'test'
+  ...
+# Subtest: The model-test entry is visible in the top bar, labeled, controlled and disabled until ready
+ok 221 - The model-test entry is visible in the top bar, labeled, controlled and disabled until ready
+  ---
+  duration_ms: 1.7313
+  type: 'test'
+  ...
+# Subtest: Opening the test reveals and scrolls to Start without advancing or resetting any simulation
+ok 222 - Opening the test reveals and scrolls to Start without advancing or resetting any simulation
+  ---
+  duration_ms: 2.2136
+  type: 'test'
+  ...
+# Subtest: Opening an active test focuses Stop, or the native summary when the action is disabled
+ok 223 - Opening an active test focuses Stop, or the native summary when the action is disabled
+  ---
+  duration_ms: 23.5103
+  type: 'test'
+  ...
+# Subtest: The requested champion/rules box and orphaned UI bindings/styles are removed, file saves remain
+ok 224 - The requested champion/rules box and orphaned UI bindings/styles are removed, file saves remain
+  ---
+  duration_ms: 0.697
+  type: 'test'
+  ...
+# Subtest: Automatic versioned champion persistence still works without the removed status element
+ok 225 - Automatic versioned champion persistence still works without the removed status element
+  ---
+  duration_ms: 7.0283
+  type: 'test'
+  ...
+# Subtest: Visual model preserves actual physical polygons: lab
+ok 226 - Visual model preserves actual physical polygons: lab
+  ---
+  duration_ms: 193.2217
+  type: 'test'
+  ...
+# Subtest: Visual model preserves actual physical polygons: monza
+ok 227 - Visual model preserves actual physical polygons: monza
+  ---
+  duration_ms: 204.4643
+  type: 'test'
+  ...
+# Subtest: Visual model preserves actual physical polygons: monaco
+ok 228 - Visual model preserves actual physical polygons: monaco
+  ---
+  duration_ms: 165.2103
+  type: 'test'
+  ...
+# Subtest: Visual model preserves actual physical polygons: le-mans
+ok 229 - Visual model preserves actual physical polygons: le-mans
+  ---
+  duration_ms: 65.5117
+  type: 'test'
+  ...
+# Subtest: Polyline sampling wraps both directions without cutting across corners
+ok 230 - Polyline sampling wraps both directions without cutting across corners
+  ---
+  duration_ms: 1.2894
+  type: 'test'
+  ...
+# Subtest: Paint spans retain original vertices across the closed-boundary seam
+ok 231 - Paint spans retain original vertices across the closed-boundary seam
+  ---
+  duration_ms: 0.8674
+  type: 'test'
+  ...
+# Subtest: Only explicit source-backed driver-side curb zones: monza
+ok 232 - Only explicit source-backed driver-side curb zones: monza
+  ---
+  duration_ms: 180.9272
+  type: 'test'
+  ...
+# Subtest: Only explicit source-backed driver-side curb zones: monaco
+ok 233 - Only explicit source-backed driver-side curb zones: monaco
+  ---
+  duration_ms: 141.8028
+  type: 'test'
+  ...
+# Subtest: Only explicit source-backed driver-side curb zones: le-mans
+ok 234 - Only explicit source-backed driver-side curb zones: le-mans
+  ---
+  duration_ms: 158.8239
+  type: 'test'
+  ...
+# Subtest: Unknown real circuits do not receive heuristic kerbs on either side
+ok 235 - Unknown real circuits do not receive heuristic kerbs on either side
+  ---
+  duration_ms: 107.3403
+  type: 'test'
+  ...
+# Subtest: Monaco omitted flat paint stays omitted and Le Mans paint is blue/yellow
+ok 236 - Monaco omitted flat paint stays omitted and Le Mans paint is blue/yellow
+  ---
+  duration_ms: 0.6014
+  type: 'test'
+  ...
+# Subtest: Camera projects and picks with identical world-space math
+ok 237 - Camera projects and picks with identical world-space math
+  ---
+  duration_ms: 0.5724
+  type: 'test'
+  ...
+# Subtest: Zoom preserves the world coordinate under the mouse, not the route
+ok 238 - Zoom preserves the world coordinate under the mouse, not the route
+  ---
+  duration_ms: 0.6968
+  type: 'test'
+  ...
+# Subtest: Panning, follow release, landmarks and reset change only camera state
+ok 239 - Panning, follow release, landmarks and reset change only camera state
+  ---
+  duration_ms: 0.7192
+  type: 'test'
+  ...
+# Subtest: Zoom and pan limits stay finite at tiny and large window sizes
+ok 240 - Zoom and pan limits stay finite at tiny and large window sizes
+  ---
+  duration_ms: 1.1518
+  type: 'test'
+  ...
+# Subtest: Visible tiles remain bounded independently of zoom, window size and DPR
+ok 241 - Visible tiles remain bounded independently of zoom, window size and DPR
+  ---
+  duration_ms: 0.8451
+  type: 'test'
+  ...
+# Subtest: LRU reuses existing tiles, disposes oldest pixels, and frees on circuit switch
+ok 242 - LRU reuses existing tiles, disposes oldest pixels, and frees on circuit switch
+  ---
+  duration_ms: 1.6147
+  type: 'test'
+  ...
+# Subtest: Map labels stay inside the viewport and do not overlap each other
+ok 243 - Map labels stay inside the viewport and do not overlap each other
+  ---
+  duration_ms: 1.0659
+  type: 'test'
+  ...
+# Subtest: Curve labels avoid the inspected car and its readout
+ok 244 - Curve labels avoid the inspected car and its readout
+  ---
+  duration_ms: 0.5482
+  type: 'test'
+  ...
+# Subtest: Scale bar reports simulation units, with a useful on-screen length
+ok 245 - Scale bar reports simulation units, with a useful on-screen length
+  ---
+  duration_ms: 0.9494
+  type: 'test'
+  ...
+# Subtest: 992 GT3 R official configuration, not the road GT3 or Cup
+ok 246 - 992 GT3 R official configuration, not the road GT3 or Cup
+  ---
+  duration_ms: 7.6246
+  type: 'test'
+  ...
+# Subtest: Estimated torque curve never exceeds nominal power
+ok 247 - Estimated torque curve never exceeds nominal power
+  ---
+  duration_ms: 1.548
+  type: 'test'
+  ...
+# Subtest: No pedals gives exact zero motion, including engine idle
+ok 248 - No pedals gives exact zero motion, including engine idle
+  ---
+  duration_ms: 50.5291
+  type: 'test'
+  ...
+# Subtest: Full throttle shifts through all six gears and stays below nominal rev limit
+ok 249 - Full throttle shifts through all six gears and stays below nominal rev limit
+  ---
+  duration_ms: 196.9005
+  type: 'test'
+  ...
+# Subtest: Power is applied only at the rear wheels
+ok 250 - Power is applied only at the rear wheels
+  ---
+  duration_ms: 10.576
+  type: 'test'
+  ...
+# Subtest: Shift has a real torque cut, finite duration and ratio-dependent RPM
+ok 251 - Shift has a real torque cut, finite duration and ratio-dependent RPM
+  ---
+  duration_ms: 6.0512
+  type: 'test'
+  ...
+# Subtest: Downshift protection rejects a mechanical overrev
+ok 252 - Downshift protection rejects a mechanical overrev
+  ---
+  duration_ms: 0.6711
+  type: 'test'
+  ...
+# Subtest: Neutral cannot drive; reverse is physical and forbidden while moving forward
+ok 253 - Neutral cannot drive; reverse is physical and forbidden while moving forward
+  ---
+  duration_ms: 14.0141
+  type: 'test'
+  ...
+# Subtest: 100 km/h braking stops without forcing reverse
+ok 254 - 100 km/h braking stops without forcing reverse
+  ---
+  duration_ms: 30.2098
+  type: 'test'
+  ...
+# Subtest: Coasting loses speed through drag, rolling resistance and engine braking
+ok 255 - Coasting loses speed through drag, rolling resistance and engine braking
+  ---
+  duration_ms: 34.0936
+  type: 'test'
+  ...
+# Subtest: Combined slip shares the available tyre force, not independent full grip
+ok 256 - Combined slip shares the available tyre force, not independent full grip
+  ---
+  duration_ms: 0.372
+  type: 'test'
+  ...
+# Subtest: Load transfer conserves total normal force and loads rear on acceleration
+ok 257 - Load transfer conserves total normal force and loads rear on acceleration
+  ---
+  duration_ms: 0.3418
+  type: 'test'
+  ...
+# Subtest: Opposite steering yields mirrored trajectories without any track data
+ok 258 - Opposite steering yields mirrored trajectories without any track data
+  ---
+  duration_ms: 68.7349
+  type: 'test'
+  ...
+# Subtest: Release steering retains yaw inertia rather than snapping onto a path
+ok 259 - Release steering retains yaw inertia rather than snapping onto a path
+  ---
+  duration_ms: 9.468
+  type: 'test'
+  ...
+# Subtest: Fuel use changes mass; tyre and brake thermal states respond to work
+ok 260 - Fuel use changes mass; tyre and brake thermal states respond to work
+  ---
+  duration_ms: 44.4596
+  type: 'test'
+  ...
+# Subtest: Aerodynamic forces grow quadratically with speed
+ok 261 - Aerodynamic forces grow quadratically with speed
+  ---
+  duration_ms: 0.3909
+  type: 'test'
+  ...
+# Subtest: Metric conversion changes only coordinates, not physical acceleration
+ok 262 - Metric conversion changes only coordinates, not physical acceleration
+  ---
+  duration_ms: 44.7857
+  type: 'test'
+  ...
+# Subtest: Published track lengths calibrate all maps without altering road polygons
+ok 263 - Published track lengths calibrate all maps without altering road polygons
+  ---
+  duration_ms: 58.7159
+  type: 'test'
+  ...
+# Subtest: Powertrain sensors are real measurements appended to the old road order
+ok 264 - Powertrain sensors are real measurements appended to the old road order
+  ---
+  duration_ms: 124.9194
+  type: 'test'
+  ...
+# Subtest: Manually edited episodes are excluded from learning and champion selection
+ok 265 - Manually edited episodes are excluded from learning and champion selection
+  ---
+  duration_ms: 165.9642
+  type: 'test'
+  ...
+# Subtest: All edited episodes restart without an optimizer update
+ok 266 - All edited episodes restart without an optimizer update
+  ---
+  duration_ms: 86.8948
+  type: 'test'
+  ...
+# Subtest: Invalid time step fails closed
+ok 267 - Invalid time step fails closed
+  ---
+  duration_ms: 1.1106
+  type: 'test'
+  ...
+# Subtest: TC actually reduces shaft torque from measured rear slip
+ok 268 - TC actually reduces shaft torque from measured rear slip
+  ---
+  duration_ms: 69.8965
+  type: 'test'
+  ...
+# Subtest: ABS releases individual brakes and prevents sustained wheel lock
+ok 269 - ABS releases individual brakes and prevents sustained wheel lock
+  ---
+  duration_ms: 28.0641
+  type: 'test'
+  ...
+# Subtest: Repeated aggressive steering and braking stay finite with or without aids
+ok 270 - Repeated aggressive steering and braking stay finite with or without aids
+  ---
+  duration_ms: 2459.2754
+  type: 'test'
+  ...
+# Subtest: Terminated cars have zero body/wheel speeds, with last force sample retained
+ok 271 - Terminated cars have zero body/wheel speeds, with last force sample retained
+  ---
+  duration_ms: 60.8347
+  type: 'test'
+  ...
+# Subtest: Map scale bar measures metres with the same per-track metric conversion
+ok 272 - Map scale bar measures metres with the same per-track metric conversion
+  ---
+  duration_ms: 5.1857
+  type: 'test'
+  ...
+1..272
+# tests 272
+# suites 0
+# pass 272
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63563.4734

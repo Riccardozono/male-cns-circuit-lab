@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "version": "4.6.0",
+  "generatedAt": "2026-09-30T11:45:50.467Z",
+  "physicsRevision": "992-gt3r-si-1",
+  "official": {
+    "spec": {
+      "id": "porsche-911-gt3-r-992",
+      "name": "Porsche 911 GT3 R (992)",
+      "modelYear": 2026,
+      "source": "https://newsroom.porsche.com/dam/jcr%3A3b5e8287-01fb-481f-9d5c-2add88364f30/250808e_Technical%20Data%20911%20GT3%20R26.pdf",
+      "baseMassKg": 1265,
+      "lengthM": 4.619,
+      "widthM": 2.05,
+      "wheelbaseM": 2.507,
+      "displacementCc": 4194,
+      "maxPowerW": 416000,
+      "maxRpm": 9250,
+      "gears": 6,
+      "drive": "RWD",
+      "tankLitres": 117,
+      "frontTyre": "30/68-18",
+      "rearTyre": "31/71-18",
+      "frontRadiusM": 0.34,
+      "rearRadiusM": 0.355,
+      "frontDiscMm": 390,
+      "rearDiscMm": 370,
+      "notice": "Dati dimensionali Porsche 2026; potenza e massa dipendono dal BoP. Rapporti, coppia, aero, gomme e tarature sono stime del simulatore, non dati di omologazione WEC."
+    },
+    "primarySheet": {
+      "url": "https://newsroom.porsche.com/dam/jcr%3A3b5e8287-01fb-481f-9d5c-2add88364f30/250808e_Technical%20Data%20911%20GT3%20R26.pdf",
+      "dated": "2025-08-08",
+      "localResearchFile": "tmp/pdfs/porsche-992/technical-data-gt3-r-2026.pdf",
+      "sha256": "e73140237efcf3a470233fe6315eadd560c75ef3a88536789483e0d82a0d2df3",
+      "visuallyInspectedPages": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "currentPage": "https://racing.porsche.com/en-US/cars/911-gt3-r-2026",
+    "derivations": {
+      "tyreRadii": "Nominal 68/71 cm outside diameter divided by two. Not a measured effective rolling radius.",
+      "width": "2.050 m maximum of published front 2.039 m / rear 2.050 m."
+    }
+  },
+  "estimatedModelChoices": {
+    "driverKg": 75,
+    "fuelDensity": 0.745,
+    "startFuelL": 30,
+    "frontWeight": 0.4,
+    "cgHeightM": 0.32,
+    "frontTrackM": 1.68,
+    "rearTrackM": 1.66,
+    "yawInertia": 1700,
+    "airDensity": 1.225,
+    "dragArea": 1.05,
+    "downforceArea": 3.2,
+    "aeroFront": 0.43,
+    "rollingCoefficient": 0.012,
+    "gearRatios": [
+      0,
+      2.77,
+      2.1,
+      1.68,
+      1.39,
+      1.19,
+      1.03
+    ],
+    "reverseRatio": 3,
+    "finalDrive": 3.9,
+    "efficiency": 0.94,
+    "idleRpm": 1200,
+    "launchRpm": 2600,
+    "upshiftRpm": 8750,
+    "downshiftRpm": 4200,
+    "shiftSeconds": 0.085,
+    "shiftCooldown": 0.18,
+    "engineBrakeNm": 60,
+    "brakeTorqueNm": 5500,
+    "brakeBias": 0.58,
+    "tyreMu": 1.65,
+    "corneringFactor": 20,
+    "longitudinalFactor": 18,
+    "wheelInertia": 1.65,
+    "relaxationMetres": 0.35,
+    "ambientC": 25,
+    "initialTyreC": 80,
+    "coldPressureBar": 1.45,
+    "loadSensitivity": 0.1,
+    "brakeHeatCapacity": 4800,
+    "tyreHeatCapacity": 14500,
+    "diffPreloadNm": 65,
+    "diffLock": 0.28,
+    "pitchInertia": 600,
+    "rollInertia": 420,
+    "pitchStiffness": 140000,
+    "rollStiffness": 110000,
+    "pitchDamping": 9000,
+    "rollDamping": 7500,
+    "physicsHz": 240
+  },
+  "estimatedTorqueCurveNm": [
+    [
+      0,
+      0
+    ],
+    [
+      1200,
+      230
+    ],
+    [
+      3000,
+      405
+    ],
+    [
+      5000,
+      510
+    ],
+    [
+      6500,
+      550
+    ],
+    [
+      8000,
+      520
+    ],
+    [
+      9250,
+      420
+    ],
+    [
+      10000,
+      0
+    ]
+  ],
+  "metrics": {
+    "monza": {
+      "lengthM": 5793,
+      "referenceMps": 45,
+      "source": "https://www.monzanet.it/en/circuit/"
+    },
+    "monaco": {
+      "lengthM": 3337,
+      "referenceMps": 32,
+      "source": "https://www.formula1.com/en/information/monaco-circuit-de-monaco-monte-carlo.2ZWRtIcSI6ZzVGX1uGRpkJ"
+    },
+    "le-mans": {
+      "lengthM": 13626,
+      "referenceMps": 53,
+      "source": "https://www.24h-lemans.com/en/info/the-race"
+    }
+  },
+  "algorithms": {
+    "body": "SI planar Newton/Euler, four body/yaw contact velocities, wheel angular dynamics at 240 Hz, fixed 60 Hz episode tick.",
+    "tyres": "Estimated combined-slip tanh force circle, implicit monotonic wheel solve; load/thermal/pressure/wear sensitivity. Not measured Michelin Pacejka coefficients.",
+    "shifts": "RPM-only automatic sequential assist or diagnostic manual request; finite torque cut, neutral, reverse, overrev protection.",
+    "aids": "Own estimated per-wheel ABS and rear-slip TC. Not Bosch Generation 5 software.",
+    "suspension": "Quasi-static load transfer plus sprung-body pitch/roll spring-damper response on flat ground; not full 3D wheel suspension.",
+    "learning": "28 sensor channels, 202 trainable parameters, actions/recurrent propagation at 10 Hz. Manual vehicle interventions excluded from training and champions."
+  },
+  "retainedFiles": {
+    "outputs/data/circuits.json": "e2048c1eef14fcb5aebf1edcbf4e03450692753438ea9736637614a0a56dd94f",
+    "outputs/data/curbs.js": "73a84317c1e3dc2d53940e9cddde49df950a01f46c895701e59c94d2bb41847a",
+    "outputs/data/connectome-full.bin": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9",
+    "outputs/data/connectome-full.json": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87",
+    "outputs/data/connectome.json": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+    "outputs/data/connectome.js": "7faff171097b2a2b15c365e1f184fbeeba6d168ae438384a32564fdce0b048ef"
+  },
+  "boundaries": [
+    "Power/base weight depend on BoP; no event-specific BoP supplied. Driver/fuel mass is added by model choice, not a claimed homologated running weight.",
+    "Lap lengths calibrated to official references by uniform map conversion. Actual local widths, radii, elevation and track surface are not surveyed.",
+    "No other-car contacts or aerodynamic wake. Wall contact terminates the episode, not deformable crash/rebound simulation.",
+    "No measured tyre/engine/aero/damper calibration, full 3D suspension, bumps, physical curb elevations, weather, damage, sound or pit strategy.",
+    "Official subset export metadata records historical 22 sensor channels. New six powertrain channels are runtime measurements, not newly identified anatomical sensory mappings.",
+    "Loading 166700 neurons does not mean updating them all simultaneously: original sparse 8192-slot budget and two recurrent passes retained."
+  ]
+}

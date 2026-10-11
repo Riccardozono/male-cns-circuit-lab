@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "appVersion": "5.1.0",
+  "input": "2024-porsche-992-gt3-r.zip / source/porsche_992_gt3_r.glb",
+  "originalSha256": "9c0f0c4f955e2006ceeac25e1385947b81fb658560d22f17b0116ea28335c255",
+  "derivedSha256": "31c581e6799d53c9b576542e198fc1590412f1c77746c49e576f1cca4be26779",
+  "author": "MattDoesBlender (https://sketchfab.com/MattDoesBlender)",
+  "source": "https://sketchfab.com/3d-models/porsche-992-gt3-r-03ea07f7972648aa9350853b2a1a942a",
+  "license": "CC-BY-NC-SA-4.0 (http://creativecommons.org/licenses/by-nc-sa/4.0/)",
+  "licenseUrl": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "originalTriangles": 489304,
+  "exteriorTriangles": 192273,
+  "lods": [
+    {
+      "lod": 0,
+      "parts": 38,
+      "triangles": 192273
+    },
+    {
+      "lod": 1,
+      "parts": 38,
+      "triangles": 16832
+    },
+    {
+      "lod": 2,
+      "parts": 38,
+      "triangles": 5548
+    }
+  ],
+  "sourceWorldBounds": {
+    "min": [
+      -0.010189046631998266,
+      0.00020001679211817101,
+      -0.023839153710622615
+    ],
+    "max": [
+      0.010301592119747571,
+      0.012734602405102496,
+      0.02383916324736557
+    ]
+  },
+  "normalization": {
+    "frontAxis": "+Z to +X",
+    "lengthM": 4.619,
+    "widthM": 2.05,
+    "heightM": 1.214330845557968,
+    "scale": [
+      96.87841968226432,
+      96.87841968226432,
+      100.04568548773699
+    ],
+    "wheelPivots": {
+      "LF": [
+        1.2606737263595735,
+        0.3298375028959528,
+        -0.8358329364177614
+      ],
+      "LR": [
+        -1.177353354568487,
+        0.34351676201621073,
+        -0.829238694698418
+      ],
+      "RR": [
+        -1.1774385847665454,
+        0.34362828018694264,
+        0.8256919100897945
+      ],
+      "RF": [
+        1.2606737263595735,
+        0.3298375028959528,
+        0.8470926268881923
+      ]
+    }
+  },
+  "changes": "Exterior-only LODs, merged materials, normalized to simulator dimensions, hidden cockpit and alternate blur/static rims omitted. Derived asset licensed CC BY-NC-SA 4.0.",
+  "boundary": "User-supplied third-party visual model. Metadata credits and license retained. Not official Porsche CAD or validated homologation geometry. Physical solver and collision dimensions unchanged."
+}

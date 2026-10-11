@@ -1,0 +1,10 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{spawnSync}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),asset=path.join(root,'outputs/assets/porsche-992-gt3r-top-v1.png'),backup=path.join(__dirname,'pre-v510-sprite.png'),prompt=path.join(__dirname,'pre-existing-car-prompt.txt');
+const data=JSON.parse(fs.readFileSync(path.join(root,'outputs/assets/car-visual-provenance-v1.json'),'utf8'));fs.writeFileSync(prompt,data.prompt);
+if(!fs.existsSync(backup))fs.copyFileSync(asset,backup);
+const idat=file=>{const b=fs.readFileSync(file),chunks=[];for(let offset=8;offset<b.length;){const n=b.readUInt32BE(offset),type=b.toString('ascii',offset+4,offset+8);if(type==='IDAT')chunks.push(b.subarray(offset+8,offset+8+n));offset+=n+12;}return crypto.createHash('sha256').update(Buffer.concat(chunks)).digest('hex');};
+const before=idat(asset),launcher='C:\\Users\\utente\\.agents\\skills\\impeccable\\scripts\\impeccable.cmd';
+const result=spawnSync('powershell.exe',['-NoProfile','-Command',`& '${launcher}' embed-prompt '${asset}' --prompt-file '${prompt}'`],{cwd:root,windowsHide:true,encoding:'utf8'});process.stdout.write(result.stdout);process.stderr.write(result.stderr);
+const after=idat(asset),out=path.join(root,'outputs/verification-v510/raster-provenance.json');fs.writeFileSync(out,JSON.stringify({beforeIdatSha256:before,afterIdatSha256:after,pixelsUnchanged:before===after,originalPreservedAt:backup,provenanceSource:'outputs/assets/car-visual-provenance-v1.json',exitCode:result.status},null,2));
+if(result.status!==0||before!==after)throw Error('Prompt metadata verification failed');

@@ -1,0 +1,11 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),args=process.argv.slice(2),arg=(prefix,fallback)=>args.find(a=>a.startsWith(prefix))?.slice(prefix.length)||fallback;
+const exe=arg('--exe=',path.join(root,'node_modules','electron','dist','electron.exe')),out=path.resolve(arg('--out=',path.join(root,'outputs','verification-v510','source-3d'))),kind=arg('--kind=','ui');
+fs.mkdirSync(out,{recursive:true});const env={...process.env,MALE_CNS_FORCE_CPU_FALLBACK:args.includes('--cpu')?'1':'0'};delete env.ELECTRON_RUN_AS_NODE;
+const flags=kind==='progress'?['--progress-smoke','--progress-output-dir='+out]:kind==='test'?['--model-test-smoke','--model-test-output-dir='+out]:['--ui-smoke','--circuit-3d-smoke','--ui-output-dir='+out,...(args.includes('--capture')?['--capture']:[])];
+const profile=path.join(os.tmpdir(),'male-cns-v510-'+crypto.randomUUID());
+const child=spawn(exe,[...(exe.endsWith(path.join('electron','dist','electron.exe'))?[root]:[]),...flags,'--user-data-dir='+profile],{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+child.stdout.pipe(fs.createWriteStream(path.join(out,'stdout.log')));child.stderr.pipe(fs.createWriteStream(path.join(out,'stderr.log')));child.stdout.on('data',b=>process.stdout.write(b));
+const guard=setTimeout(()=>{console.error('Only our disposable QA process exceeded its wall guard');child.kill();},300000);
+child.on('error',error=>{clearTimeout(guard);console.error(error);process.exitCode=1;});child.on('exit',code=>{clearTimeout(guard);console.log(JSON.stringify({exitCode:code,output:out,kind}));process.exitCode=code===0?0:1;});

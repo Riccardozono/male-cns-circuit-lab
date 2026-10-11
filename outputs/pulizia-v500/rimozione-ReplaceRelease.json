@@ -1,0 +1,17 @@
+{
+  "phase": "ReplaceRelease",
+  "root": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo",
+  "completedAt": "2026-10-01T13:23:55.7398890Z",
+  "targets": [
+    {
+      "relative": "dist-model-ui-v500",
+      "status": "Old release recycled; validated stage moved into same path",
+      "bytes": 233476173.0
+    }
+  ],
+  "bytes": 233476173.0,
+  "saveCount": 104,
+  "protectedFilesUnchanged": true,
+  "recycleBinEmptied": false,
+  "permanentDeletionUsed": false
+}

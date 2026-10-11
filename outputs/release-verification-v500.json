@@ -1,0 +1,4468 @@
+{
+  "generatedAt": "2026-10-01T11:42:01.804Z",
+  "version": "5.0.0",
+  "passed": true,
+  "files": [
+    {
+      "file": "outputs/rewards.js",
+      "sourceSha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a",
+      "packagedSha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a",
+      "identical": true
+    },
+    {
+      "file": "outputs/vehicle-992.js",
+      "sourceSha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52",
+      "packagedSha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome-full.json",
+      "sourceSha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87",
+      "packagedSha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome-full.bin",
+      "sourceSha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9",
+      "packagedSha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/connectome.json",
+      "sourceSha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+      "packagedSha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698",
+      "identical": true
+    },
+    {
+      "file": "outputs/legacy-models.js",
+      "sourceSha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f",
+      "packagedSha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/circuits.json",
+      "sourceSha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4",
+      "packagedSha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/circuits.js",
+      "sourceSha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287",
+      "packagedSha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287",
+      "identical": true
+    },
+    {
+      "file": "outputs/data/curbs.js",
+      "sourceSha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85",
+      "packagedSha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85",
+      "identical": true
+    },
+    {
+      "file": "outputs/track-renderer.js",
+      "sourceSha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd",
+      "packagedSha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd",
+      "identical": true
+    },
+    {
+      "file": "outputs/car-renderer.js",
+      "sourceSha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef",
+      "packagedSha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef",
+      "identical": true
+    },
+    {
+      "file": "outputs/agent-selection.js",
+      "sourceSha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822",
+      "packagedSha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822",
+      "identical": true
+    },
+    {
+      "file": "outputs/brain-atlas.js",
+      "sourceSha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a",
+      "packagedSha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a",
+      "identical": true
+    },
+    {
+      "file": "outputs/desktop-state.js",
+      "sourceSha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc",
+      "packagedSha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc",
+      "identical": true
+    },
+    {
+      "file": "outputs/assets/porsche-992-gt3r-top-v1.png",
+      "sourceSha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b",
+      "packagedSha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b",
+      "identical": true
+    },
+    {
+      "file": "outputs/model-profiles.js",
+      "sourceSha256": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb",
+      "packagedSha256": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb",
+      "identical": true
+    },
+    {
+      "file": "outputs/neural-learning.js",
+      "sourceSha256": "6c884645ec92cfda2d275a2f82dae376b3b47afbc91e8cba3ce418483a7900e0",
+      "packagedSha256": "6c884645ec92cfda2d275a2f82dae376b3b47afbc91e8cba3ce418483a7900e0",
+      "identical": true
+    },
+    {
+      "file": "outputs/simulation.js",
+      "sourceSha256": "430d52490cb053d265da73d7ffefff88c50854711c3fec17a7f2dcf1206eb434",
+      "packagedSha256": "430d52490cb053d265da73d7ffefff88c50854711c3fec17a7f2dcf1206eb434",
+      "identical": true
+    },
+    {
+      "file": "outputs/progress-save.js",
+      "sourceSha256": "18befe5c991c00e9fc777bd49bd6ac4864566af2622ef0e71baf72e0f461b2b9",
+      "packagedSha256": "18befe5c991c00e9fc777bd49bd6ac4864566af2622ef0e71baf72e0f461b2b9",
+      "identical": true
+    },
+    {
+      "file": "outputs/desktop-runtime.js",
+      "sourceSha256": "69f406899714dfd37897786adcedba98393594f9dffcfd43a90bc57229601b27",
+      "packagedSha256": "69f406899714dfd37897786adcedba98393594f9dffcfd43a90bc57229601b27",
+      "identical": true
+    },
+    {
+      "file": "desktop/engine.cjs",
+      "sourceSha256": "628a499657022ca145a065321e99fa786ea2041b755a423b141dc74af7ec8014",
+      "packagedSha256": "628a499657022ca145a065321e99fa786ea2041b755a423b141dc74af7ec8014",
+      "identical": true
+    },
+    {
+      "file": "desktop/worker.cjs",
+      "sourceSha256": "490351f9722fa4bf653b9703e1741dbc12a8bba568bcd99a25868920668886e1",
+      "packagedSha256": "490351f9722fa4bf653b9703e1741dbc12a8bba568bcd99a25868920668886e1",
+      "identical": true
+    },
+    {
+      "file": "desktop/main.cjs",
+      "sourceSha256": "48b5aca0b13f78b6be4d7609a1b627c403a979455dc42ecc513187cbba274ab0",
+      "packagedSha256": "48b5aca0b13f78b6be4d7609a1b627c403a979455dc42ecc513187cbba274ab0",
+      "identical": true
+    },
+    {
+      "file": "desktop/model-benchmark.cjs",
+      "sourceSha256": "ab6b68a9e4862d523db6a8a0e4b013fd751e6f6341087db5977306c2135832b4",
+      "packagedSha256": "ab6b68a9e4862d523db6a8a0e4b013fd751e6f6341087db5977306c2135832b4",
+      "identical": true
+    },
+    {
+      "file": "desktop/rewards-smoke.cjs",
+      "sourceSha256": "ff1ab297aeb2b04a2d186829655b3dde71532fbeecc81707864dd93648675974",
+      "packagedSha256": "ff1ab297aeb2b04a2d186829655b3dde71532fbeecc81707864dd93648675974",
+      "identical": true
+    },
+    {
+      "file": "desktop/progress-smoke.cjs",
+      "sourceSha256": "9a88f41d02aae2f45bb111d4ebcfbf979da94d44d2afc5d53f41481e1b3fbc98",
+      "packagedSha256": "9a88f41d02aae2f45bb111d4ebcfbf979da94d44d2afc5d53f41481e1b3fbc98",
+      "identical": true
+    },
+    {
+      "file": "outputs/index.html",
+      "sourceSha256": "4ae2fa06d68dd825994664cb790f0c24934ad9ff2a2f0f93eb01b8c431f9110d",
+      "packagedSha256": "4ae2fa06d68dd825994664cb790f0c24934ad9ff2a2f0f93eb01b8c431f9110d",
+      "identical": true
+    },
+    {
+      "file": "outputs/app.js",
+      "sourceSha256": "f369d85f7a86aadad830f6ea9ddc543bdec430beb4fe396124cde8cb3d4d8705",
+      "packagedSha256": "f369d85f7a86aadad830f6ea9ddc543bdec430beb4fe396124cde8cb3d4d8705",
+      "identical": true
+    },
+    {
+      "file": "outputs/styles.css",
+      "sourceSha256": "fc5d662884a403694159c6c1dad53e100832b2bed729a24d12b3ac1745efceff",
+      "packagedSha256": "fc5d662884a403694159c6c1dad53e100832b2bed729a24d12b3ac1745efceff",
+      "identical": true
+    },
+    {
+      "file": "outputs/README.md",
+      "sourceSha256": "7aaed3e3fc66e5ac810a6d3522df87329914211406739952a19ef631927af9b4",
+      "packagedSha256": "7aaed3e3fc66e5ac810a6d3522df87329914211406739952a19ef631927af9b4",
+      "identical": true
+    },
+    {
+      "file": "outputs/MODELLO-V5.md",
+      "sourceSha256": "8a6742745ba5a33dbd2dd1fb3bf29b6f35e54274677649ea8db5f3be216c497a",
+      "packagedSha256": "8a6742745ba5a33dbd2dd1fb3bf29b6f35e54274677649ea8db5f3be216c497a",
+      "identical": true
+    },
+    {
+      "file": "outputs/VERIFICA-v500.md",
+      "sourceSha256": "3dbdd54fff02a1f55bf79ef1a19d4899a783d53c35b10c34bb8fb5a977d3f8a6",
+      "packagedSha256": "3dbdd54fff02a1f55bf79ef1a19d4899a783d53c35b10c34bb8fb5a977d3f8a6",
+      "identical": true
+    },
+    {
+      "file": "outputs/model-core-verification-v500.json",
+      "sourceSha256": "1a1a45ec6a2567262a5848e592efc7b787612ae1cc0871f2cb6979dfcbb20572",
+      "packagedSha256": "1a1a45ec6a2567262a5848e592efc7b787612ae1cc0871f2cb6979dfcbb20572",
+      "identical": true
+    },
+    {
+      "file": "outputs/tests/model-v5.test.cjs",
+      "sourceSha256": "ee39e503f5a0a84864d1c9628b2696ba950a3d602f397322271f34878d6d746e",
+      "packagedSha256": "ee39e503f5a0a84864d1c9628b2696ba950a3d602f397322271f34878d6d746e",
+      "identical": true
+    },
+    {
+      "file": "outputs/test-results-v500.tap",
+      "sourceSha256": "ef07799803706f47176b5e9744b92e73007e617a3a428064314169bcadf468d8",
+      "packagedSha256": "ef07799803706f47176b5e9744b92e73007e617a3a428064314169bcadf468d8",
+      "identical": true
+    }
+  ],
+  "manifest": [
+    {
+      "field": "name",
+      "identical": true,
+      "source": "male-cns-circuit-lab",
+      "packaged": "male-cns-circuit-lab"
+    },
+    {
+      "field": "version",
+      "identical": true,
+      "source": "5.0.0",
+      "packaged": "5.0.0"
+    },
+    {
+      "field": "description",
+      "identical": true,
+      "source": "MAL-E CNS Circuit Lab: desktop evolutionary driving simulator powered by the annotated MaleCNS connectome.",
+      "packaged": "MAL-E CNS Circuit Lab: desktop evolutionary driving simulator powered by the annotated MaleCNS connectome."
+    },
+    {
+      "field": "private",
+      "identical": true,
+      "source": true,
+      "packaged": true
+    },
+    {
+      "field": "main",
+      "identical": true,
+      "source": "desktop/main.cjs",
+      "packaged": "desktop/main.cjs"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+      "bytes": 116617465,
+      "sha256": "6974a3348b25164a248563b469137de8bed5c3a789e61a194b3386d986a4dac1"
+    },
+    {
+      "file": "dist-model-v500/MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+      "bytes": 116847550,
+      "sha256": "086171ec7aa79f09a83c51e7f31c1a5e40f4d7b833e419ea18153fe4957d28a0"
+    }
+  ],
+  "signatures": [
+    {
+      "Path": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-v500\\MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe",
+      "Status": "NotSigned",
+      "StatusMessage": "The file C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-v500\\MAL-E-CNS-Circuit-Lab-portable-5.0.0-x64.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170"
+    },
+    {
+      "Path": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-v500\\MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe",
+      "Status": "NotSigned",
+      "StatusMessage": "The file C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\dist-model-v500\\MAL-E-CNS-Circuit-Lab-setup-5.0.0-x64.exe is not digitally signed. You cannot run this script on the current system. For more information about running scripts and setting execution policy, see about_Execution_Policies at https://go.microsoft.com/fwlink/?LinkID=135170"
+    }
+  ],
+  "tests": {
+    "file": "outputs/test-results-v500.tap",
+    "tests": 245,
+    "passed": 245,
+    "failed": 0,
+    "skipped": 0,
+    "sha256": "ef07799803706f47176b5e9744b92e73007e617a3a428064314169bcadf468d8"
+  },
+  "core": {
+    "file": "outputs/model-core-verification-v500.json",
+    "generatedAt": "2026-10-01T11:24:37.519Z",
+    "version": "5.0.0",
+    "baselineVersion": "4.8.0",
+    "passed": true,
+    "files": [
+      {
+        "file": "outputs/rewards.js",
+        "identical": true,
+        "sha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a"
+      },
+      {
+        "file": "outputs/vehicle-992.js",
+        "identical": true,
+        "sha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52"
+      },
+      {
+        "file": "outputs/data/connectome-full.json",
+        "identical": true,
+        "sha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87"
+      },
+      {
+        "file": "outputs/data/connectome-full.bin",
+        "identical": true,
+        "sha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9"
+      },
+      {
+        "file": "outputs/data/connectome.json",
+        "identical": true,
+        "sha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698"
+      },
+      {
+        "file": "outputs/legacy-models.js",
+        "identical": true,
+        "sha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f"
+      },
+      {
+        "file": "outputs/data/circuits.json",
+        "identical": true,
+        "sha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4"
+      },
+      {
+        "file": "outputs/data/circuits.js",
+        "identical": true,
+        "sha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287"
+      },
+      {
+        "file": "outputs/data/curbs.js",
+        "identical": true,
+        "sha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85"
+      },
+      {
+        "file": "outputs/track-renderer.js",
+        "identical": true,
+        "sha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd"
+      },
+      {
+        "file": "outputs/car-renderer.js",
+        "identical": true,
+        "sha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef"
+      },
+      {
+        "file": "outputs/agent-selection.js",
+        "identical": true,
+        "sha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822"
+      },
+      {
+        "file": "outputs/brain-atlas.js",
+        "identical": true,
+        "sha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a"
+      },
+      {
+        "file": "outputs/desktop-state.js",
+        "identical": true,
+        "sha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc"
+      },
+      {
+        "file": "outputs/assets/porsche-992-gt3r-top-v1.png",
+        "identical": true,
+        "sha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b"
+      }
+    ],
+    "parity": [
+      {
+        "modelId": "v2",
+        "physicsTicks": 36,
+        "neuralTicks": 6,
+        "population": 4,
+        "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+      },
+      {
+        "modelId": "v3",
+        "physicsTicks": 36,
+        "neuralTicks": 6,
+        "population": 4,
+        "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+      },
+      {
+        "modelId": "v4",
+        "physicsTicks": 36,
+        "neuralTicks": 6,
+        "population": 4,
+        "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+      }
+    ],
+    "boundary": "Exact seeded CPU equality of V2/V3/V4 rollout and evolution, not proof of every seed or GPU atomic ordering. Anatomy, rewards, physics, geometry, renderer and atlas retained byte-for-byte."
+  },
+  "previousArtifacts": [
+    {
+      "file": "dist-rewards-v480/MAL-E-CNS-Circuit-Lab-portable-4.8.0-x64.exe",
+      "identical": true,
+      "sha256": "0733eab2187d7597c90e4d3c813b447458eb7389d3393c14a83a95d4dceae3c1"
+    },
+    {
+      "file": "dist-rewards-v480/MAL-E-CNS-Circuit-Lab-setup-4.8.0-x64.exe",
+      "identical": true,
+      "sha256": "e64d5fae44a0a290ae6d54ab5c16c310867e5e7dc919011d1b94c6e2a4ec55b9"
+    }
+  ],
+  "visualReview": {
+    "file": "outputs/model-source-v500/rewards-smoke.json",
+    "passed": true,
+    "views": {
+      "desktop-rewards": {
+        "width": 1540,
+        "height": 980,
+        "documentWidth": 1525,
+        "overflow": [],
+        "ledgerRows": 16,
+        "file": "desktop-rewards.png"
+      },
+      "narrow-rewards": {
+        "width": 390,
+        "height": 844,
+        "documentWidth": 375,
+        "overflow": [],
+        "ledgerRows": 16,
+        "file": "narrow-rewards.png"
+      },
+      "split": {
+        "file": "split-map-atlas.png"
+      }
+    }
+  },
+  "diagnostics": {
+    "gpu": {
+      "checks": [
+        {
+          "name": "Exact app/reward version",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.1276947928229682,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3013.856650645214,
+            "actual": -3013.856650645214,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -18 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12777293430827674,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3017.479563836247,
+            "actual": -3017.4795638362466,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -7 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12774641695363292,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3006.7557071929405,
+            "actual": -3006.7557071929405,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12780608406007338,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3014.229040878438,
+            "actual": -3014.229040878438,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -21 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12777278718702548,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3020.120262726207,
+            "actual": -3020.1202627262064,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -8 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12777037085594625,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3008.271908574097,
+            "actual": -3008.271908574097,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6151692867279053
+          }
+        },
+        {
+          "name": "v4/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -19 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12775224533796528,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3018.397948950559,
+            "actual": -3018.397948950559,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6046937704086304
+          }
+        },
+        {
+          "name": "v4/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -20 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12774253671862532,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3019.8155641931194,
+            "actual": -3019.8155641931194,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.5171661972999573
+          }
+        },
+        {
+          "name": "v4/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -8 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12775614866411167,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3008.08853155855,
+            "actual": -3008.08853155855,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 128,
+            "maxActivity": 0.10188671201467514
+          }
+        },
+        {
+          "name": "monza: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "monza: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "monza: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -19 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.1299961571964945,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3018.43503820466,
+            "actual": -3018.4350382046605,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5383515954017639
+          }
+        },
+        {
+          "name": "monaco: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "monaco: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "monaco: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -23 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.12997371922848386,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3022.667534779707,
+            "actual": -3022.667534779707,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5123205184936523
+          }
+        },
+        {
+          "name": "le-mans: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "le-mans: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "le-mans: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -9 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.1299781522797413,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3009.2484412115405,
+            "actual": -3009.2484412115405,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "Highest net score wins over an artificially assigned faster lap",
+          "passed": true
+        },
+        {
+          "name": "No duplicate control IDs",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3013.856650645214,
+          "baseBest": -3013.856650645214,
+          "bestProgress": 0.12140380174622926,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v2",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3017.4795638362466,
+          "baseBest": -3017.4795638362466,
+          "bestProgress": 0.14511591204847984,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v2",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3006.7557071929405,
+          "baseBest": -3006.7557071929405,
+          "bestProgress": 0.11612230192667866,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3014.229040878438,
+          "baseBest": -3014.229040878438,
+          "bestProgress": 0.13686103156071236,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3020.1202627262064,
+          "baseBest": -3020.1202627262064,
+          "bestProgress": 0.2764472125942639,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3008.271908574097,
+          "baseBest": -3008.271908574097,
+          "bestProgress": 0.20616229949767995,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 265810916,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6151692867279053
+          },
+          "generation": 1,
+          "bestScore": -3018.397948950559,
+          "baseBest": -3018.397948950559,
+          "bestProgress": 0.23678028783776728,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 265810916,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.6046937704086304
+          },
+          "generation": 1,
+          "bestScore": -3019.8155641931194,
+          "baseBest": -3019.8155641931194,
+          "bestProgress": 0.17924371343085,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 265810916,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.5171661972999573
+          },
+          "generation": 1,
+          "bestScore": -3008.08853155855,
+          "baseBest": -3008.08853155855,
+          "bestProgress": 0.18094483503548292,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 305634532,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 128,
+            "maxActivity": 0.10188671201467514
+          },
+          "generation": 1,
+          "bestScore": -3018.4350382046605,
+          "baseBest": -3018.4350382046605,
+          "bestProgress": 0.2009706130020329,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 305634532,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5383515954017639
+          },
+          "generation": 1,
+          "bestScore": -3022.667534779707,
+          "baseBest": -3022.667534779707,
+          "bestProgress": 0.19307273869004676,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 305634532,
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5123205184936523
+          },
+          "generation": 1,
+          "bestScore": -3009.2484412115405,
+          "baseBest": -3009.2484412115405,
+          "bestProgress": 0.19679001374029903,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        }
+      ],
+      "version": "5.0.0",
+      "forceCpuFallback": false,
+      "boundary": "Real 100-agent neural motion, reward ledgers and interrupted-generation selection across 4 models/3 tracks. Not a learned-lap/convergence or FPS benchmark.",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T11:33:50.872Z",
+      "consoleErrors": [],
+      "passed": true,
+      "file": "outputs/model-portable-v500/rewards-smoke.json",
+      "sha256": "1df15695a390f2585f27d91bbc86d84fadc1f102885e532532431f900dbea801"
+    },
+    "cpu": {
+      "checks": [
+        {
+          "name": "Exact app/reward version",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12770532450898245,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3014.238216406904,
+            "actual": -3014.238216406904,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -17 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.1277655038996042,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3017.021326187326,
+            "actual": -3017.021326187326,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -7 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v2/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v2/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12773338106875598,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v2/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3007.1388532747014,
+            "actual": -3007.1388532747014,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v2/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12780608406007338,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3014.229040878438,
+            "actual": -3014.229040878438,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -21 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12777278718702548,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3020.120262726207,
+            "actual": -3020.1202627262064,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -8 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v3/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v3/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12777037085594625,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v3/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3008.271908574097,
+            "actual": -3008.271908574097,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v3/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "v4/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.1277084241915857,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3014.224696813005,
+            "actual": -3014.2246968130053,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "v4/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -18 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.12774340196633402,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3017.489097093607,
+            "actual": -3017.489097093607,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "v4/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -8 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v4/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v4/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 202,
+            "meanExploration": 0.1277491318864317,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v4/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3008.2786318915237,
+            "actual": -3008.2786318915237,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v4/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "monza: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "monza: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "monza: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -14 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/monza: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/monza: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.1299919720773773,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/monza: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3014.247325814333,
+            "actual": -3014.2473258143336,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/monza: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "monaco: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "monaco: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "monaco: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -20 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/monaco: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/monaco: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.12997235175383492,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/monaco: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3019.867304129281,
+            "actual": -3019.867304129281,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/monaco: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: 100 real cars move without pedal overlap",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: real brain/sensors/physics/score finite",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: ledger reconciles from worker",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: actual map/physics walls retained",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: expected GPU/CPU backend",
+          "passed": true,
+          "detail": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          }
+        },
+        {
+          "name": "le-mans: V5 real capacity and learned parameters",
+          "passed": true
+        },
+        {
+          "name": "le-mans: V5 real inspected neurons exceed V4 budget",
+          "passed": true,
+          "detail": {
+            "active": 32768,
+            "budget": 32768
+          }
+        },
+        {
+          "name": "le-mans: V5 copy explains anatomical vs compute capacity",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: inspector shows true scoring/reference",
+          "passed": true,
+          "detail": {
+            "context": "Checkpoint 0/64 · punteggio stabile -7 pt. Netto = ricompense − penalità.",
+            "rows": 16,
+            "note": "Massimo 2 giri. Selezione per punteggio netto: progresso nuovo, giri validi e ritmo, meno tutte le penalità. 0 giri: da −2.000 a −3.000 pt; giro più lento della generazione precedente: fino a −3.000 pt per giro."
+          }
+        },
+        {
+          "name": "v5/le-mans: reading scores/map/atlas does not change training",
+          "passed": true
+        },
+        {
+          "name": "v5/le-mans: all 100 episodes affect optimizer exactly once",
+          "passed": true,
+          "detail": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 1,
+            "episodes": 100,
+            "parameters": 346,
+            "meanExploration": 0.12997440483779307,
+            "warmStart": false
+          }
+        },
+        {
+          "name": "v5/le-mans: terminal penalties determine the actual selected rollout",
+          "passed": true,
+          "detail": {
+            "expected": -3007.335768796395,
+            "actual": -3007.335768796395,
+            "noLapCount": 100
+          }
+        },
+        {
+          "name": "v5/le-mans: real generation history reconciles and stores reference",
+          "passed": true
+        },
+        {
+          "name": "Highest net score wins over an artificially assigned faster lap",
+          "passed": true
+        },
+        {
+          "name": "No duplicate control IDs",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3014.238216406904,
+          "baseBest": -3014.238216406904,
+          "bestProgress": 0.12800205882648014,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v2",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3017.021326187326,
+          "baseBest": -3017.021326187326,
+          "bestProgress": 0.13330575115043816,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v2",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 1121,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3007.1388532747014,
+          "baseBest": -3007.1388532747014,
+          "bestProgress": 0.12933088379320382,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3014.229040878438,
+          "baseBest": -3014.229040878438,
+          "bestProgress": 0.13686103156071236,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3020.1202627262064,
+          "baseBest": -3020.1202627262064,
+          "bestProgress": 0.2764472125942639,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 7721,
+          "solver": null,
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "not-used",
+            "backend": null,
+            "workerCount": 0,
+            "error": null,
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3008.271908574097,
+          "baseBest": -3008.271908574097,
+          "bestProgress": 0.20616229949767995,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3014.2246968130053,
+          "baseBest": -3014.2246968130053,
+          "bestProgress": 0.14105522673632004,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3017.489097093607,
+          "baseBest": -3017.489097093607,
+          "bestProgress": 0.13981383207935205,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "readoutNeurons": 64,
+          "gainGroups": 16,
+          "parameters": 202,
+          "inspectedActiveNeurons": 8192,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3008.2786318915237,
+          "baseBest": -3008.2786318915237,
+          "bestProgress": 0.1908936456253439,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monza",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3014.2473258143336,
+          "baseBest": -3014.2473258143336,
+          "bestProgress": 0.11920692595324012,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monaco",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3019.867304129281,
+          "baseBest": -3019.867304129281,
+          "bestProgress": 0.1504676855994306,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "le-mans",
+          "population": 100,
+          "neurons": 166700,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "readoutNeurons": 128,
+          "gainGroups": 32,
+          "parameters": 346,
+          "inspectedActiveNeurons": 32768,
+          "gpuBufferBytes": 0,
+          "gpu": {
+            "state": "fallback",
+            "backend": null,
+            "workerCount": 0,
+            "error": "Nessun adapter WebGPU disponibile.",
+            "adapter": null
+          },
+          "generation": 1,
+          "bestScore": -3007.335768796395,
+          "baseBest": -3007.335768796395,
+          "bestProgress": 0.12380240080475531,
+          "laps": 0,
+          "optimizerUpdates": 1,
+          "episodes": 100
+        }
+      ],
+      "version": "5.0.0",
+      "forceCpuFallback": true,
+      "boundary": "Real 100-agent neural motion, reward ledgers and interrupted-generation selection across 4 models/3 tracks. Not a learned-lap/convergence or FPS benchmark.",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T11:38:30.847Z",
+      "consoleErrors": [],
+      "passed": true,
+      "file": "outputs/model-cpu-v500/final/rewards-smoke.json",
+      "sha256": "39f544c8a79145db3c9d69e9746eaceeeebd0492fedd5bc4845ae4decbea931d"
+    },
+    "progress": {
+      "version": "5.0.0",
+      "runtimeVersion": "5.0.0",
+      "generatedAt": "2026-10-01T11:33:22.807Z",
+      "forceCpuFallback": false,
+      "checks": [
+        {
+          "name": "UI and native app report the same exact version",
+          "passed": true
+        },
+        {
+          "name": "v2: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 230202,
+            "workers": 2
+          }
+        },
+        {
+          "name": "v2: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            },
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v2: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v2.malecns-save · 2 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v2: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v2",
+            "circuit": "monza",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1697.456424,
+            "y": 1380.786835,
+            "startX": 1697.456424,
+            "startY": 1380.786835,
+            "speed": 0,
+            "selector": "v2",
+            "status": "Caricato progress-v2.malecns-save · V2 · Monza · gen. 3 · 2 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v2: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "b2595d929ba2017a72958df449b2cb4eaf1c2e05c44d741f6890ca626681ea04",
+            "after": "b2595d929ba2017a72958df449b2cb4eaf1c2e05c44d741f6890ca626681ea04"
+          }
+        },
+        {
+          "name": "v2: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v2: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v3: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 119660,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v3: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v3: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v3.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v3: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v3",
+            "circuit": "monaco",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 142.983295,
+            "y": 802.394199,
+            "startX": 142.983295,
+            "startY": 802.394199,
+            "speed": 0,
+            "selector": "v3",
+            "status": "Caricato progress-v3.malecns-save · V3 · Monaco · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v3: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220",
+            "after": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220"
+          }
+        },
+        {
+          "name": "v3: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v3: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v4: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 128973,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v4: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v4: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v4.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v4: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v4",
+            "circuit": "le-mans",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1174.324402,
+            "y": 2797.14342,
+            "startX": 1174.324402,
+            "startY": 2797.14342,
+            "speed": 0,
+            "selector": "v4",
+            "status": "Caricato progress-v4.malecns-save · V4 · Le Mans · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v4: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "3a7666d638446d5e8d8eab67cab6404244952dc475053c33366ad19c9f4c8a00",
+            "after": "3a7666d638446d5e8d8eab67cab6404244952dc475053c33366ad19c9f4c8a00"
+          }
+        },
+        {
+          "name": "v4: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v4: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v4 restored GPU/CPU path is active",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.527649998664856
+          }
+        },
+        {
+          "name": "v5: UI creates a valid portable file for every worker",
+          "passed": true,
+          "detail": {
+            "bytes": 185964,
+            "workers": 1
+          }
+        },
+        {
+          "name": "v5: learned optimizer and real histories are present",
+          "passed": true,
+          "detail": [
+            {
+              "generation": 3,
+              "updates": 2,
+              "episodes": 8
+            }
+          ]
+        },
+        {
+          "name": "v5: saved file name and version are visible",
+          "passed": true,
+          "detail": "Salvato progress-v5.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+        },
+        {
+          "name": "v5: loading selects saved model/circuit, paused at start",
+          "passed": true,
+          "detail": {
+            "model": "v5",
+            "circuit": "monza",
+            "running": false,
+            "elapsed": 0,
+            "population": 4,
+            "x": 1697.456424,
+            "y": 1380.786835,
+            "startX": 1697.456424,
+            "startY": 1380.786835,
+            "speed": 0,
+            "selector": "v5",
+            "status": "Caricato progress-v5.malecns-save · V5 · Monza · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+          }
+        },
+        {
+          "name": "v5: all saved training parameters round-trip exactly",
+          "passed": true,
+          "detail": {
+            "before": "48c487b6e6085793b8439fcc94ee9f848731f17eb5926aa8c7ac6dd5205b52d4",
+            "after": "48c487b6e6085793b8439fcc94ee9f848731f17eb5926aa8c7ac6dd5205b52d4"
+          }
+        },
+        {
+          "name": "v5: UI settings match the restored worker settings",
+          "passed": true
+        },
+        {
+          "name": "v5: loaded controller continues with finite real telemetry",
+          "passed": true
+        },
+        {
+          "name": "v5 restored GPU/CPU path is active",
+          "passed": true,
+          "detail": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.721386194229126
+          }
+        },
+        {
+          "name": "Cancel Save preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Cancel Open preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Cancel replacement preserves current trial",
+          "passed": true
+        },
+        {
+          "name": "Different patch version is rejected without changing the trial",
+          "passed": true,
+          "detail": "Salvataggio della versione 4.6.1: richiede esattamente quella versione. Questa app è 5.0.0."
+        },
+        {
+          "name": "Checksum mismatch is rejected without changing the trial",
+          "passed": true,
+          "detail": "File danneggiato o modificato: checksum SHA-256 non corrispondente."
+        },
+        {
+          "name": "Malformed policy is rejected without changing the trial",
+          "passed": true,
+          "detail": "Policy neurale incompatibile."
+        },
+        {
+          "name": "100 agents and full v4 graph are portable",
+          "passed": true
+        },
+        {
+          "name": "v4: 100-agent file restores all cars without trimming",
+          "passed": true
+        },
+        {
+          "name": "v4: 100-agent imported trial runs with exclusive pedals and finite physics",
+          "passed": true
+        },
+        {
+          "name": "100 agents and full v5 graph are portable",
+          "passed": true
+        },
+        {
+          "name": "v5: 100-agent file restores all cars without trimming",
+          "passed": true
+        },
+        {
+          "name": "v5: 100-agent imported trial runs with exclusive pedals and finite physics",
+          "passed": true
+        },
+        {
+          "name": "No duplicate DOM IDs",
+          "passed": true
+        },
+        {
+          "name": "All expected native picker/confirmation calls completed",
+          "passed": true
+        }
+      ],
+      "cases": [
+        {
+          "modelId": "v2",
+          "circuitId": "monza",
+          "file": "progress-v2.malecns-save",
+          "bytes": 230202,
+          "workers": 2,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "a8db5495701f85db8727834a799f95ed6a09d122fe94e107a2f6ac7622c7265c"
+        },
+        {
+          "modelId": "v3",
+          "circuitId": "monaco",
+          "file": "progress-v3.malecns-save",
+          "bytes": 119660,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "e0e3e8b1b212b44613359b488a36cc437cc9b0056734d37006f1c5c5e40f4512"
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "le-mans",
+          "file": "progress-v4.malecns-save",
+          "bytes": 128973,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "bfdf4157d445371b189333d0e9f66f8da357d4ee4ebb5b830c8b256cab0f60af"
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monza",
+          "file": "progress-v5.malecns-save",
+          "bytes": 185964,
+          "workers": 1,
+          "savedGeneration": 3,
+          "optimizerUpdates": 2,
+          "sha256": "122f8c865ef991e15df307830ad31bb626b23f5c421d32fb25de0ca8d21de457"
+        }
+      ],
+      "views": {},
+      "consoleErrors": [],
+      "boundary": "Training-state round trips, forced early generations and short native runtime checks. Not exact mid-lap/GPU continuation, cryptographic authentication or learning-convergence evidence.",
+      "passed": true,
+      "file": "outputs/progress-portable-v500/progress-smoke.json",
+      "sha256": "a02a971ae044dc8c0b8055d9b14feaf25cc7e17ba332431449da722f3494ef92"
+    },
+    "learning": {
+      "cases": [
+        {
+          "modelId": "v4",
+          "circuitId": "lab",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 5.089,
+          "observedSimSeconds": 40.53333333333348,
+          "observedSimWallRatio": 7.964891596253385,
+          "peakActiveNeurons": 8192,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 202,
+          "readoutNeurons": 64,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 7721,
+            "maxActivity": 0
+          },
+          "gpuBufferBytes": 120469348,
+          "bestProgress": 130.6786650269525,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12696741567886008,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4655.5498320907145,
+              "mean": -4924.57556830244,
+              "reward": 242.3870595285888,
+              "penalty": 4897.936891619303,
+              "laps": 0,
+              "bestProgress": 96.71475886103671,
+              "meanProgress": 9.300492869501044,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 202,
+                "meanExploration": 0.1283102587131405,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4655.5498320907145,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 226.7620595285888,
+                  "checkpoints": 15.625,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 768.106663103045,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 12.158020098478039,
+                  "slip": 0,
+                  "collision": 1163.024620323499,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2954.647588094282,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4583.68169521879,
+              "mean": -4855.905292389376,
+              "reward": 257.8030366472218,
+              "penalty": 4841.484731866012,
+              "laps": 0,
+              "bestProgress": 130.6786650269525,
+              "meanProgress": 41.21723911184898,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 202,
+                "meanExploration": 0.12696741567886008,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4583.68169521879,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 242.1780366472218,
+                  "checkpoints": 15.625,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 676.1964640992616,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 14.079208234486655,
+                  "slip": 0,
+                  "collision": 1199.6446668617084,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2951.5643926705557,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monza",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 7.423400000000372,
+          "observedSimSeconds": 51.93333333333294,
+          "observedSimWallRatio": 6.99589586083605,
+          "peakActiveNeurons": 8192,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 202,
+          "readoutNeurons": 64,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.749753475189209
+          },
+          "gpuBufferBytes": 120469348,
+          "bestProgress": 760.4659164434481,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12546772791567015,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4225.774112962863,
+              "mean": -4604.260078508213,
+              "reward": 34.12673728750552,
+              "penalty": 4259.900850250368,
+              "laps": 0,
+              "bestProgress": 39.539237822189136,
+              "meanProgress": 7.086365698837208,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 202,
+                "meanExploration": 0.12810810054603977,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4225.774112962863,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 34.12673728750552,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 242.36147073512453,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.32168894346202004,
+                  "slip": 0,
+                  "collision": 1024.0430380292833,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2993.1746525424987,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4225.895397704724,
+              "mean": -4492.792042521944,
+              "reward": 34.18345498030097,
+              "penalty": 4260.078852685025,
+              "laps": 0,
+              "bestProgress": 760.4659164434481,
+              "meanProgress": 69.71767682349667,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 1,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 202,
+                "meanExploration": 0.12546772791567015,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4225.895397704724,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 34.18345498030097,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 242.36147073512453,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.3156795003064625,
+                  "slip": 0,
+                  "collision": 1024.2383934456548,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2993.1633090039395,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "monaco",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 5.393,
+          "observedSimSeconds": 28.933333333333913,
+          "observedSimWallRatio": 5.364979294146841,
+          "peakActiveNeurons": 8192,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 202,
+          "readoutNeurons": 64,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 8192,
+            "maxActivity": 0.474611759185791
+          },
+          "gpuBufferBytes": 120469348,
+          "bestProgress": 75.8985334128983,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12701156634037625,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4220.800739225197,
+              "mean": -4653.848750662226,
+              "reward": 45.13999909903029,
+              "penalty": 4265.940738324227,
+              "laps": 0,
+              "bestProgress": 33.70357666989175,
+              "meanProgress": 6.388788475881052,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 202,
+                "meanExploration": 0.12810810054603977,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4220.800739225197,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 45.13999909903029,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 271.8609529230733,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.03332943563216424,
+                  "slip": 0,
+                  "collision": 1003.0744557853279,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2990.972000180194,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4199.8856240637715,
+              "mean": -4506.808593210288,
+              "reward": 51.79761319591148,
+              "penalty": 4251.683237259683,
+              "laps": 0,
+              "bestProgress": 75.8985334128983,
+              "meanProgress": 21.018688649777797,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 202,
+                "meanExploration": 0.12701156634037625,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4199.8856240637715,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 51.79761319591148,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 217.6805513705037,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.4558091770819858,
+                  "slip": 0,
+                  "collision": 1043.9063993512793,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2989.640477360818,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v4",
+          "circuitId": "le-mans",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 4.9705,
+          "observedSimSeconds": 30.800000000000644,
+          "observedSimWallRatio": 6.1965597022433645,
+          "peakActiveNeurons": 8192,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 202,
+          "readoutNeurons": 64,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 2,
+            "activityThreshold": 0.001,
+            "edgeContributionThreshold": 0.000001,
+            "activeNeuronBudget": 8192
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 7721,
+            "maxActivity": 0.0010021600173786283
+          },
+          "gpuBufferBytes": 120469348,
+          "bestProgress": 123.1528195433534,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 3,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 202,
+            "meanExploration": 0.12493016822748083,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4126.992460592851,
+              "mean": -4477.32713492698,
+              "reward": 14.300751581391122,
+              "penalty": 4141.293212174242,
+              "laps": 0,
+              "bestProgress": 38.972408200053074,
+              "meanProgress": 6.896962373022299,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 202,
+                "meanExploration": 0.12810810054603977,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4126.992460592851,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 14.300751581391122,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 121.16174962606118,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.27267421437988654,
+                  "slip": 0,
+                  "collision": 1022.7189386500797,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2997.139849683722,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4127.284394626284,
+              "mean": -4354.455735457779,
+              "reward": 14.343007469782696,
+              "penalty": 4141.627402096066,
+              "laps": 0,
+              "bestProgress": 123.1528195433534,
+              "meanProgress": 29.8567949448888,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 1,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 3,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 202,
+                "meanExploration": 0.12493016822748083,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4127.284394626284,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 14.343007469782696,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 121.16174962606118,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.29185608777667366,
+                  "slip": 0,
+                  "collision": 1023.042397876185,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2997.1313985060433,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "lab",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 15.377700000000186,
+          "observedSimSeconds": 68.93333333333197,
+          "observedSimWallRatio": 4.482681632060135,
+          "peakActiveNeurons": 32768,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 346,
+          "readoutNeurons": 128,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.6504439115524292
+          },
+          "gpuBufferBytes": 133480292,
+          "bestProgress": 1492.1146099887974,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1291397991839522,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4649.386370390223,
+              "mean": -4889.03507370195,
+              "reward": 150.90572197931164,
+              "penalty": 4800.292092369535,
+              "laps": 0,
+              "bestProgress": 159.7312419043057,
+              "meanProgress": 23.26497655868315,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 346,
+                "meanExploration": 0.13023474444242233,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4649.386370390223,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 150.90572197931164,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 731.9990849229872,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 9.49548767844941,
+                  "slip": 0,
+                  "collision": 1088.9786641639603,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2969.8188556041378,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -2354.0521269965325,
+              "mean": -4583.563827927234,
+              "reward": 3842.233437258197,
+              "penalty": 6196.285564254729,
+              "laps": 0,
+              "bestProgress": 1492.1146099887974,
+              "meanProgress": 137.73185503777708,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 346,
+                "meanExploration": 0.1291397991839522,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -2354.0521269965325,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 3498.483437258194,
+                  "checkpoints": 343.75,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 2371.6113850082406,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 31.756889905467684,
+                  "slip": 0,
+                  "collision": 1492.6139767926593,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2300.3033125483616,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monza",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 12.73419999999972,
+          "observedSimSeconds": 39.73333333333361,
+          "observedSimWallRatio": 3.120206478093204,
+          "peakActiveNeurons": 32768,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 346,
+          "readoutNeurons": 128,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.738972544670105
+          },
+          "gpuBufferBytes": 133480292,
+          "bestProgress": 331.7712598973122,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1274265905663698,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4163.423026738219,
+              "mean": -4546.954900792545,
+              "reward": 19.710931065069996,
+              "penalty": 4183.133957803289,
+              "laps": 0,
+              "bestProgress": 66.40340554533685,
+              "meanProgress": 12.187289589467534,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 346,
+                "meanExploration": 0.13025231429278802,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4163.423026738219,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 19.710931065069996,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 203.90989124349414,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.40009986013014653,
+                  "slip": 0,
+                  "collision": 982.7661529126784,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2996.057813786986,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4163.518612215202,
+              "mean": -4406.033306182772,
+              "reward": 19.720230529314893,
+              "penalty": 4183.238842744517,
+              "laps": 0,
+              "bestProgress": 331.7712598973122,
+              "meanProgress": 54.6723279460968,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 1,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 346,
+                "meanExploration": 0.1274265905663698,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4163.518612215202,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 19.720230529314893,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 203.90989124349414,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.40501277783687395,
+                  "slip": 0,
+                  "collision": 982.8679848290485,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2996.055953894137,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "monaco",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 11.15719999999972,
+          "observedSimSeconds": 30.63333333333399,
+          "observedSimWallRatio": 2.7456112047229375,
+          "peakActiveNeurons": 32768,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 346,
+          "readoutNeurons": 128,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5763140916824341
+          },
+          "gpuBufferBytes": 133480292,
+          "bestProgress": 107.7896424526456,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1274711277168062,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4171.63170657255,
+              "mean": -4567.040362749554,
+              "reward": 28.69282913302409,
+              "penalty": 4200.324535705574,
+              "laps": 0,
+              "bestProgress": 41.071397336660525,
+              "meanProgress": 10.780942175315094,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 346,
+                "meanExploration": 0.130307594432459,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4171.63170657255,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 28.69282913302409,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 230.62631103350705,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.2620578230552403,
+                  "slip": 0,
+                  "collision": 975.1747326756166,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2994.261434173395,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4171.6963014986995,
+              "mean": -4402.933013159582,
+              "reward": 28.72471999217426,
+              "penalty": 4200.4210214908735,
+              "laps": 0,
+              "bestProgress": 107.7896424526456,
+              "meanProgress": 28.930743530915514,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 1,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 346,
+                "meanExploration": 0.1274711277168062,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4171.6963014986995,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 28.72471999217426,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 230.62631103350705,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.2849665696987281,
+                  "slip": 0,
+                  "collision": 975.2546878861025,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2994.255056001565,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        },
+        {
+          "modelId": "v5",
+          "circuitId": "le-mans",
+          "seed": 7717,
+          "population": 16,
+          "mutation": 0.16,
+          "requestedSpeed": 30,
+          "completedGenerations": 2,
+          "censored": false,
+          "wallSeconds": 9.634199999999721,
+          "observedSimSeconds": 33.43333333333403,
+          "observedSimWallRatio": 3.4702760305302984,
+          "peakActiveNeurons": 32768,
+          "neurons": 166700,
+          "connections": 6242118,
+          "parameters": 346,
+          "readoutNeurons": 128,
+          "solver": {
+            "kind": "event-driven sparse rate reservoir",
+            "iterationsPerControlTick": 4,
+            "activityThreshold": 0.0005,
+            "edgeContributionThreshold": 5e-7,
+            "activeNeuronBudget": 32768
+          },
+          "gpu": {
+            "state": "active",
+            "backend": "WebGPU",
+            "workerCount": 1,
+            "error": null,
+            "adapter": {
+              "label": "nvidia lovelace",
+              "vendor": "nvidia",
+              "architecture": "lovelace",
+              "device": null,
+              "description": null
+            },
+            "activeCount": 32768,
+            "maxActivity": 0.5836597084999084
+          },
+          "gpuBufferBytes": 133480292,
+          "bestProgress": 119.06831741343493,
+          "completedLaps": 0,
+          "optimizer": {
+            "algorithm": "diagonal evolution strategy",
+            "version": 5,
+            "updates": 2,
+            "episodes": 32,
+            "parameters": 346,
+            "meanExploration": 0.1268580522810006,
+            "warmStart": false
+          },
+          "history": [
+            {
+              "generation": 1,
+              "best": -4075.058191218544,
+              "mean": -4424.064041549797,
+              "reward": 8.390862752175106,
+              "penalty": 4083.449053970719,
+              "laps": 0,
+              "bestProgress": 61.58963564508791,
+              "meanProgress": 11.878082637139421,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 1,
+                "episodes": 16,
+                "parameters": 346,
+                "meanExploration": 0.13025231429278802,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4075.058191218544,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 8.390862752175106,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 101.71363572139677,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.4847434705524067,
+                  "slip": 0,
+                  "collision": 982.928847329205,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2998.321827449565,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            },
+            {
+              "generation": 2,
+              "best": -4074.784638184549,
+              "mean": -4291.226119088521,
+              "reward": 8.37048633154438,
+              "penalty": 4083.155124516093,
+              "laps": 0,
+              "bestProgress": 119.06831741343493,
+              "meanProgress": 37.571088745655565,
+              "bestLapTime": null,
+              "noLapCount": 16,
+              "slowerLapCount": 0,
+              "stagnation": 0,
+              "mutationAmount": 0.16,
+              "immigrantCount": 0,
+              "hallOfFame": 4,
+              "learning": {
+                "algorithm": "diagonal evolution strategy",
+                "version": 5,
+                "updates": 2,
+                "episodes": 32,
+                "parameters": 346,
+                "meanExploration": 0.1268580522810006,
+                "warmStart": false
+              },
+              "rewardRevision": "episodic-2",
+              "baseBest": -4074.784638184549,
+              "previousBestLapTime": null,
+              "rewardBreakdown": {
+                "rewards": {
+                  "progress": 8.37048633154438,
+                  "checkpoints": 0,
+                  "lap": 0,
+                  "pace": 0
+                },
+                "penalties": {
+                  "time": 101.51915458235013,
+                  "slowLap": 0,
+                  "reverse": 0,
+                  "risk": 0.4211441829713551,
+                  "slip": 0,
+                  "collision": 982.8889230170805,
+                  "offTrack": 0,
+                  "stall": 0,
+                  "slowProgress": 0,
+                  "noLap": 2998.3259027336912,
+                  "regression": 0,
+                  "invalid": 0
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "version": "5.0.0",
+      "warmStart": false,
+      "forcedGenerations": false,
+      "boundary": "Two naturally finished generations per V4/V5 and circuit, 16 cars, one seed. Censored means the wall-time guard ended the observation, never a forced training completion. Throughput observed from snapshots may undercount inter-generation tails. Does not establish long-run convergence or superiority.",
+      "generatedAt": "2026-10-01T11:41:01.184Z",
+      "consoleErrors": [],
+      "forceCpuFallback": false,
+      "passed": true,
+      "file": "outputs/model-benchmark-v500/portable/model-benchmark.json",
+      "sha256": "e02ad6feced93d4868493c2bfec0ea22e97a281558e150d5dfc01b9c85f47614"
+    }
+  },
+  "learningComplete": true,
+  "boundary": "Real final Windows portable GPU/CPU 100-agent matrices, all four models, all real circuits; progress files and natural V4/V5 generation checks. Capacity/runtime is not convergence. Two cold generations/one seed do not prove superiority; observed throughput is approximate. Installer built, not installed. Older artifacts and saves preserved."
+}

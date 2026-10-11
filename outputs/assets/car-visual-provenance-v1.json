@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "asset": "porsche-992-gt3r-top-v1.png",
+  "assetRevision": "992-top-sprite-1",
+  "applicationVersion": "4.6.1",
+  "generatedAt": "2026-09-30",
+  "mode": "built-in image_gen tool",
+  "type": "Generated transparent raster illustration, orthographic top-down car sprite",
+  "subject": "Porsche 911 GT3 R (992), illustrative interpretation",
+  "reference": {
+    "page": "https://racing.porsche.com/en-US/cars/911-gt3-r-2026",
+    "viewedPhoto": "https://res.cloudinary.com/dmwcbhehi/image/upload/w_1200,f_png/v1/05_Bildergalerie_911_GT3_R_qeorhh",
+    "accessDate": "2026-09-30",
+    "use": "Manually inspected design reference; official photograph not distributed as the game sprite"
+  },
+  "prompt": "Create ONE production-ready transparent-background game sprite: a highly detailed premium 3D-rendered PORSCHE 911 GT3 R (992 generation, 2026 racing version), in a STRICT ORTHOGRAPHIC TOP-DOWN view. This is a car sprite for a local driving simulator, not a poster. Camera directly overhead at exactly 90 degrees: absolutely no perspective, no visible sidewalls of the car, no tilt. Long axis horizontal, FRONT/NOSE pointing to the RIGHT, REAR/WING to the LEFT. Whole vehicle completely visible, centered with even 8% transparent margin, no cropping. Silhouette proportions approximately 2.25 length to 1 width, broad 992 racing fenders, rounded 911 nose and oval LED headlights, front splitter, subtle front wheel arch louvers, hood vents, black curved windscreen with a single fine wiper, satin pearl white / light cool-grey painted body and roof with NO livery stripes, black glazing, clear roof/cabin separation, side mirrors, sculpted rear engine cover vents, broad black carbon-fiber swan-neck rear wing behind the cabin, and slim red rear lamp elements. Four slick tyres should be largely covered by the wheel arches as in a true overhead view, showing only a minimal black edge; front wheels straight. Authentic GT3 R shape, NOT the street GT3, NOT an open-wheel racer, NOT a toy. Tiny readable panel gaps and physically plausible soft shading make roof, bonnet and fenders volumetric. Bright controlled neutral studio lighting on the car only, balanced symmetrical illumination, high contrast fine details that remain readable when downsampled to 64–256 px. No racing number, no words, no logos, no sponsor decals, no floor, no pedestal, no scenery, no cast shadow outside the car, no glow, no checkerboard painted into the image. True transparent alpha outside the precise natural silhouette. Single car only, sharp high-resolution cutout, landscape composition.",
+  "orientation": "nose to the right (+X), rear wing to the left",
+  "rendering": {
+    "carLengthUnits": 24,
+    "widthToLengthRatio": "2.05 / 4.619",
+    "bodyProportions": "Display follows the existing SI bounding footprint; rendered contours are illustrative, not surveyed CAD",
+    "paint": "Read-only runtime tint of bright neutral pixels; alpha and dark glazing/carbon retained",
+    "mips": [
+      64,
+      256,
+      512
+    ],
+    "maximumColours": 8,
+    "cachePixelBytesLimit": 6291456,
+    "farZoom": "colour dot only below 8 screen pixels; no full-size asset per distant car"
+  },
+  "boundary": "Not an official Porsche asset, licensed 3D mesh, photogrammetric scan or engineering CAD. Graphics do not feed the driving policy, change physics, wall sensing, rewards, checkpoints or neuron counts. Raster cache bound excludes source decoding, other canvases and GPU-driver allocations."
+}

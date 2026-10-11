@@ -1,0 +1,639 @@
+{
+  "baseline": false,
+  "seed": 1089,
+  "population": 32,
+  "generations": 12,
+  "seconds": 41.257274100000004,
+  "history": [
+    {
+      "generation": 1,
+      "best": -3430.6895077883114,
+      "mean": -4296.3818467269075,
+      "reward": 693.7436682900494,
+      "penalty": 4124.433176078361,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 269.2274857978673,
+      "meanProgress": 19.08579380225109,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 0,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 1,
+        "episodes": 32,
+        "parameters": 202,
+        "meanExploration": 0.1280385749451821,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": -3430.6895077883114,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 631.2436682900498,
+          "checkpoints": 62.5,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 50.68190973637045,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2873.7512663419902,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 2,
+      "best": -3266.5252105197587,
+      "mean": -3935.608839037822,
+      "reward": 631.9237140031452,
+      "penalty": 3898.448924522904,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 269.2274857978673,
+      "meanProgress": 77.64632816996942,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 1,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 2,
+        "episodes": 64,
+        "parameters": 202,
+        "meanExploration": 0.1280723431298827,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": -3266.5252105197587,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 585.0487140031447,
+          "checkpoints": 46.875,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 62.039384327551865,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 1.0575710145731947,
+          "slip": 0,
+          "collision": 952.3617119814076,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2882.990257199371,
+          "regression": 0,
+          "invalid": 0
+        }
+      }
+    },
+    {
+      "generation": 3,
+      "best": -2688.5815678489025,
+      "mean": -3905.8268329973102,
+      "reward": 1346.1548482035398,
+      "penalty": 4034.7364160524426,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 527.4906438575298,
+      "meanProgress": 101.59172908508108,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 0,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 3,
+        "episodes": 96,
+        "parameters": 202,
+        "meanExploration": 0.12739231101464202,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": -2688.5815678489025,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 1236.7798482035398,
+          "checkpoints": 109.375,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 81.60312668692795,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0.4892590062224403,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2752.644030359292,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 4,
+      "best": 16.628345074284425,
+      "mean": -3662.2631622917256,
+      "reward": 3677.934003578604,
+      "penalty": 3661.3056585043196,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1428.7044785408216,
+      "meanProgress": 177.1082810093339,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 0,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 4,
+        "episodes": 128,
+        "parameters": 202,
+        "meanExploration": 0.12550957073416763,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 16.62834507428488,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3349.809003578603,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 131.26745922004207,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2330.038199284277,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 5,
+      "best": 34.61015328579924,
+      "mean": -3493.8043310879443,
+      "reward": 3678.8314174194666,
+      "penalty": 3644.2212641336673,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 245.1797277072869,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 1,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 5,
+        "episodes": 160,
+        "parameters": 202,
+        "meanExploration": 0.12310514868051199,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 34.61015328579924,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3350.7064174194693,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 114.36254761756105,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2329.858716516106,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 6,
+      "best": 34.61015328579924,
+      "mean": -3255.4852521707644,
+      "reward": 3678.8314174194666,
+      "penalty": 3644.2212641336673,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 313.26110555939493,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 2,
+      "mutationAmount": 0.16,
+      "immigrantCount": 2,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 6,
+        "episodes": 192,
+        "parameters": 202,
+        "meanExploration": 0.1207609900530284,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 34.61015328579924,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3350.7064174194693,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 114.36254761756105,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2329.858716516106,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 7,
+      "best": 34.61015328579924,
+      "mean": -3551.426644295659,
+      "reward": 3678.8314174194666,
+      "penalty": 3644.2212641336673,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 229.65501299888427,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 3,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 7,
+        "episodes": 224,
+        "parameters": 202,
+        "meanExploration": 0.1411054172706694,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 34.61015328579924,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3350.7064174194693,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 114.36254761756105,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2329.858716516106,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 8,
+      "best": 41.23566617945244,
+      "mean": -3322.855734191611,
+      "reward": 3677.678247046046,
+      "penalty": 3636.4425808665937,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 313.27864336408066,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 4,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 8,
+        "episodes": 256,
+        "parameters": 202,
+        "meanExploration": 0.16542862202838007,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 41.23566617945244,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3349.5532470460444,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 106.35323027580306,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2330.0893505907907,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 9,
+      "best": 41.23566617945244,
+      "mean": -3514.9817173128054,
+      "reward": 3677.678247046046,
+      "penalty": 3636.4425808665937,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 253.135921019637,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 5,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 9,
+        "episodes": 288,
+        "parameters": 202,
+        "meanExploration": 0.19401437841541166,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 41.23566617945244,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3349.5532470460444,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 106.35323027580306,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2330.0893505907907,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 10,
+      "best": 41.23566617945244,
+      "mean": -3259.986679776913,
+      "reward": 3677.678247046046,
+      "penalty": 3636.4425808665937,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 335.14431029416403,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 6,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 10,
+        "episodes": 320,
+        "parameters": 202,
+        "meanExploration": 0.22361344991905244,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 41.23566617945244,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3349.5532470460444,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 106.35323027580306,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2330.0893505907907,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 11,
+      "best": 41.27285098622633,
+      "mean": -3405.955399709649,
+      "reward": 3678.584569613632,
+      "penalty": 3637.3117186274058,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 284.94249169807455,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 7,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 11,
+        "episodes": 352,
+        "parameters": 202,
+        "meanExploration": 0.25461091701044813,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 41.27285098622633,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3350.459569613632,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 107.40363255013197,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2329.9080860772738,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    },
+    {
+      "generation": 12,
+      "best": 41.27285098622633,
+      "mean": -3689.9277494881735,
+      "reward": 3678.584569613632,
+      "penalty": 3637.3117186274058,
+      "laps": 0,
+      "maxLaps": 0,
+      "bestProgress": 1429.0872284743737,
+      "meanProgress": 204.00603456509376,
+      "bestLapTime": null,
+      "noLapCount": 32,
+      "slowerLapCount": 0,
+      "stagnation": 8,
+      "mutationAmount": 0.24,
+      "immigrantCount": 5,
+      "hallOfFame": 4,
+      "learning": {
+        "algorithm": "diagonal evolution strategy",
+        "version": 3,
+        "updates": 12,
+        "episodes": 384,
+        "parameters": 202,
+        "meanExploration": 0.29562225404768794,
+        "warmStart": false
+      },
+      "rewardRevision": "progress-3",
+      "baseBest": 41.27285098622633,
+      "previousBestLapTime": null,
+      "rewardBreakdown": {
+        "rewards": {
+          "progress": 3350.459569613632,
+          "checkpoints": 328.125,
+          "lap": 0,
+          "pace": 0
+        },
+        "penalties": {
+          "time": 107.40363255013197,
+          "slowLap": 0,
+          "reverse": 0,
+          "risk": 0,
+          "slip": 0,
+          "collision": 0,
+          "offTrack": 0,
+          "stall": 0,
+          "slowProgress": 0,
+          "noLap": 2329.9080860772738,
+          "regression": 0,
+          "invalid": 1200
+        }
+      }
+    }
+  ],
+  "sourceSha256": {
+    "simulation.js": "12c79844358ed170f8d2f151f69ea88d5e94e43955eccf5f13b783722cd080b6",
+    "neural-learning.js": "785ad42a4b532c0d0bbd44e50cfb7e402b3d84d944bef104f0afa0a58941cb1f",
+    "rewards.js": "19b04688fd8cdff0c90e8a36312b5e3196e52686b5b7e2368a326dbffb5b0d2b"
+  },
+  "boundary": "Headless CPU V2, Lab only. Natural cold-start generations with the same seed and settings. Not a GPU throughput measurement."
+}

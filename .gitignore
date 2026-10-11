@@ -1,0 +1,13 @@
+# Dipendenze locali: vengono ricreate con npm install.
+node_modules/
+
+# Build Windows generate: gli eseguibili superano il limite standard per file
+# di GitHub e vengono ricreati con npm run dist.
+dist-*/
+
+# Report e stato interno del workflow di revisione.
+.impeccable/
+
+# File temporanei locali.
+*.log
+*.tmp

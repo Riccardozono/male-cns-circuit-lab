@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "notice": "Scelte del modello autorizzate dall’utente: tutte le larghezze locali e le posizioni dei raccordi sono stime, non misure ricavate dallo spessore delle mappe. La lunghezza del giro è documentata. Gli ancoraggi usano le coordinate delle mappe originali e non deformano la mezzeria.",
+  "circuits": {
+    "monza": {
+      "lengthMeters": 5793,
+      "lengthSource": "https://www.monzanet.it/en/circuit/",
+      "documentedWidthRangeMeters": [10, 12],
+      "widthRangeSource": "https://www.monzanet.it/en/circuit/",
+      "basis": "Intervallo complessivo 10–12 m pubblicato dall’autodromo; distribuzione nei singoli tratti stimata, non rilevata.",
+      "stations": [
+        ["Rettifilo principale", 2597.7, 2289.2, 12],
+        ["Avvicinamento Prima Variante", 1779.7, 2211.5, 12],
+        ["Prima Variante · T1", 1475, 2160, 10],
+        ["Prima Variante · T2", 1420, 2125.6, 10],
+        ["Uscita Prima Variante", 1198, 2163, 11],
+        ["Curva Biassono", 693.5, 1926, 12],
+        ["Ingresso Roggia", 609.7, 1528.6, 12],
+        ["Variante della Roggia", 565.3, 1126.3, 10],
+        ["Uscita Roggia", 482, 954, 10.5],
+        ["Lesmo 1", 417, 760.6, 10.5],
+        ["Tra le due Lesmo", 540, 548, 11],
+        ["Lesmo 2", 647.8, 547.3, 10.5],
+        ["Serraglio", 1163.9, 1063.5, 12],
+        ["Ingresso Ascari", 1703.2, 1680.2, 12],
+        ["Variante Ascari", 1850, 1765, 10],
+        ["Uscita Ascari", 2051.3, 1843.6, 10.5],
+        ["Rettilineo verso Parabolica", 2871.6, 1932.8, 12],
+        ["Curva Alboreto / Parabolica", 3397.5, 2234.7, 12],
+        ["Uscita Parabolica", 3010, 2313.2, 12]
+      ]
+    },
+    "monaco": {
+      "lengthMeters": 3337,
+      "lengthSource": "https://www.fia.com/system/files/decision-document/2025_monaco_event_-_circuit_map_-_monaco_2025_-_revised.pdf",
+      "basis": "Lunghezza FIA; profilo locale 7–11 m interamente stimato per il modello. Le mappe FIA non forniscono un rilievo quotato delle sezioni stradali.",
+      "stations": [
+        ["Boulevard Albert Ier · partenza", 88, 590.8, 11],
+        ["Ingresso Sainte-Dévote", 96.5, 493.4, 10],
+        ["Sainte-Dévote", 112, 461, 9],
+        ["Beau Rivage", 267.8, 433.7, 10],
+        ["Massenet", 399.1, 334, 9],
+        ["Casino", 407.6, 253.4, 9],
+        ["Mirabeau Haute", 470, 214.8, 8],
+        ["Tornante Fairmont", 494, 254, 7],
+        ["Mirabeau Bas", 478.8, 219.3, 8],
+        ["Portier", 527.5, 242.8, 8],
+        ["Ingresso Tunnel", 515, 319, 10],
+        ["Tunnel", 436.7, 404.6, 10],
+        ["Frenata Nouvelle Chicane", 345.5, 441.4, 10],
+        ["Nouvelle Chicane", 287, 466, 9],
+        ["Tabac", 164.9, 472.1, 10],
+        ["Piscine · prima variante", 123, 571, 11],
+        ["Piscine · seconda variante", 134, 657, 10],
+        ["Rascasse", 151.1, 719, 8.5],
+        ["Anthony Noghès", 154.4, 766.7, 8],
+        ["Ritorno al rettifilo", 108.2, 686.8, 11]
+      ]
+    },
+    "le-mans": {
+      "lengthMeters": 13626,
+      "lengthSource": "https://www.24h-lemans.com/en/info/the-race",
+      "basis": "Lunghezza ACO; profilo locale 8–12 m interamente stimato per il modello. La mezzeria è digitalizzata dalla mappa ACO 2025, non da un rilievo geospaziale.",
+      "stations": [
+        ["Rettilineo dei box · partenza", 315, 1440, 12],
+        ["Curva Dunlop", 259, 1426, 11],
+        ["Chicane Dunlop", 233, 1391, 10],
+        ["Esses de la Forêt", 183, 1331, 10],
+        ["Tertre Rouge", 145, 1240, 10],
+        ["Uscita Tertre Rouge", 201, 1194, 9],
+        ["Hunaudières · primo rettilineo", 381, 1131, 9],
+        ["Prima chicane Hunaudières", 458, 1105, 10],
+        ["Hunaudières · secondo rettilineo", 630, 1054, 9],
+        ["Seconda chicane Hunaudières", 790, 1006, 10],
+        ["Hunaudières · terzo rettilineo", 960, 993, 9],
+        ["Curva Mulsanne", 1048, 1005, 10],
+        ["Rettilineo di Mulsanne", 990, 1163, 9],
+        ["Indianapolis · ingresso", 905, 1290, 9],
+        ["Indianapolis · sinistra", 874, 1305, 8.5],
+        ["Arnage", 881, 1357, 8],
+        ["Rettilineo verso Porsche", 799, 1375, 9],
+        ["Curve Porsche", 651, 1415, 12],
+        ["Maison Blanche", 558, 1422, 11],
+        ["Chicane Ford", 403, 1435, 10],
+        ["Chicane del raccordo", 382, 1443, 10],
+        ["Uscita verso i box", 347, 1440, 12]
+      ]
+    }
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "version": "5.0.0",
+  "runtimeVersion": "5.0.0",
+  "generatedAt": "2026-10-09T10:47:42.550Z",
+  "forceCpuFallback": false,
+  "checks": [
+    {
+      "name": "UI and native app report the same exact version",
+      "passed": true
+    },
+    {
+      "name": "v2: UI creates a valid portable file for every worker",
+      "passed": true,
+      "detail": {
+        "bytes": 248971,
+        "workers": 2
+      }
+    },
+    {
+      "name": "v2: learned optimizer and real histories are present",
+      "passed": true,
+      "detail": [
+        {
+          "generation": 3,
+          "updates": 2,
+          "episodes": 8
+        },
+        {
+          "generation": 3,
+          "updates": 2,
+          "episodes": 8
+        }
+      ]
+    },
+    {
+      "name": "v2: saved file name and version are visible",
+      "passed": true,
+      "detail": "Salvato progress-v2.malecns-save · 2 worker · app 5.0.0. Puoi condividere questo file."
+    },
+    {
+      "name": "v2: loading selects saved model/circuit, paused at start",
+      "passed": true,
+      "detail": {
+        "model": "v2",
+        "circuit": "monza",
+        "running": false,
+        "elapsed": 0,
+        "population": 4,
+        "x": 1697.456424,
+        "y": 1380.786835,
+        "startX": 1697.456424,
+        "startY": 1380.786835,
+        "speed": 0,
+        "selector": "v2",
+        "status": "Caricato progress-v2.malecns-save · V2 · Monza · gen. 3 · 2 worker · app 5.0.0. In pausa: premi Riprendi."
+      }
+    },
+    {
+      "name": "v2: imported model updates both comparison highlights",
+      "passed": true
+    },
+    {
+      "name": "v2: all saved training parameters round-trip exactly",
+      "passed": true,
+      "detail": {
+        "before": "7e30a53ef5ad57bfea8be17b30c301016f044ea2f5efe298793a988f849f6de5",
+        "after": "7e30a53ef5ad57bfea8be17b30c301016f044ea2f5efe298793a988f849f6de5"
+      }
+    },
+    {
+      "name": "v2: UI settings match the restored worker settings",
+      "passed": true
+    },
+    {
+      "name": "v2: loaded controller continues with finite real telemetry",
+      "passed": true
+    },
+    {
+      "name": "v3: UI creates a valid portable file for every worker",
+      "passed": true,
+      "detail": {
+        "bytes": 119660,
+        "workers": 1
+      }
+    },
+    {
+      "name": "v3: learned optimizer and real histories are present",
+      "passed": true,
+      "detail": [
+        {
+          "generation": 3,
+          "updates": 2,
+          "episodes": 8
+        }
+      ]
+    },
+    {
+      "name": "v3: saved file name and version are visible",
+      "passed": true,
+      "detail": "Salvato progress-v3.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+    },
+    {
+      "name": "v3: loading selects saved model/circuit, paused at start",
+      "passed": true,
+      "detail": {
+        "model": "v3",
+        "circuit": "monaco",
+        "running": false,
+        "elapsed": 0,
+        "population": 4,
+        "x": 142.983295,
+        "y": 802.394199,
+        "startX": 142.983295,
+        "startY": 802.394199,
+        "speed": 0,
+        "selector": "v3",
+        "status": "Caricato progress-v3.malecns-save · V3 · Monaco · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+      }
+    },
+    {
+      "name": "v3: imported model updates both comparison highlights",
+      "passed": true
+    },
+    {
+      "name": "v3: all saved training parameters round-trip exactly",
+      "passed": true,
+      "detail": {
+        "before": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220",
+        "after": "2d8b2cf29bb71017687cd772b63f2cf213d1080664da377105c0de01b6d73220"
+      }
+    },
+    {
+      "name": "v3: UI settings match the restored worker settings",
+      "passed": true
+    },
+    {
+      "name": "v3: loaded controller continues with finite real telemetry",
+      "passed": true
+    },
+    {
+      "name": "v4: UI creates a valid portable file for every worker",
+      "passed": true,
+      "detail": {
+        "bytes": 119603,
+        "workers": 1
+      }
+    },
+    {
+      "name": "v4: learned optimizer and real histories are present",
+      "passed": true,
+      "detail": [
+        {
+          "generation": 3,
+          "updates": 2,
+          "episodes": 8
+        }
+      ]
+    },
+    {
+      "name": "v4: saved file name and version are visible",
+      "passed": true,
+      "detail": "Salvato progress-v4.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+    },
+    {
+      "name": "v4: loading selects saved model/circuit, paused at start",
+      "passed": true,
+      "detail": {
+        "model": "v4",
+        "circuit": "le-mans",
+        "running": false,
+        "elapsed": 0,
+        "population": 4,
+        "x": 1174.324402,
+        "y": 2797.14342,
+        "startX": 1174.324402,
+        "startY": 2797.14342,
+        "speed": 0,
+        "selector": "v4",
+        "status": "Caricato progress-v4.malecns-save · V4 · Le Mans · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+      }
+    },
+    {
+      "name": "v4: imported model updates both comparison highlights",
+      "passed": true
+    },
+    {
+      "name": "v4: all saved training parameters round-trip exactly",
+      "passed": true,
+      "detail": {
+        "before": "648bafde747976695c96e668e905b095f9a37d70ef732a0578ba247093c5ce4e",
+        "after": "648bafde747976695c96e668e905b095f9a37d70ef732a0578ba247093c5ce4e"
+      }
+    },
+    {
+      "name": "v4: UI settings match the restored worker settings",
+      "passed": true
+    },
+    {
+      "name": "v4: loaded controller continues with finite real telemetry",
+      "passed": true
+    },
+    {
+      "name": "v4 restored GPU/CPU path is active",
+      "passed": true,
+      "detail": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 8192,
+        "maxActivity": 0.5275481343269348
+      }
+    },
+    {
+      "name": "v5: UI creates a valid portable file for every worker",
+      "passed": true,
+      "detail": {
+        "bytes": 200153,
+        "workers": 1
+      }
+    },
+    {
+      "name": "v5: learned optimizer and real histories are present",
+      "passed": true,
+      "detail": [
+        {
+          "generation": 3,
+          "updates": 2,
+          "episodes": 8
+        }
+      ]
+    },
+    {
+      "name": "v5: saved file name and version are visible",
+      "passed": true,
+      "detail": "Salvato progress-v5.malecns-save · 1 worker · app 5.0.0. Puoi condividere questo file."
+    },
+    {
+      "name": "v5: loading selects saved model/circuit, paused at start",
+      "passed": true,
+      "detail": {
+        "model": "v5",
+        "circuit": "monza",
+        "running": false,
+        "elapsed": 0,
+        "population": 4,
+        "x": 1697.456424,
+        "y": 1380.786835,
+        "startX": 1697.456424,
+        "startY": 1380.786835,
+        "speed": 0,
+        "selector": "v5",
+        "status": "Caricato progress-v5.malecns-save · V5 · Monza · gen. 3 · 1 worker · app 5.0.0. In pausa: premi Riprendi."
+      }
+    },
+    {
+      "name": "v5: imported model updates both comparison highlights",
+      "passed": true
+    },
+    {
+      "name": "v5: all saved training parameters round-trip exactly",
+      "passed": true,
+      "detail": {
+        "before": "c370307fc8ddc5d4263923ff327c9191a53c05ae489eac2326959a82d36eabff",
+        "after": "c370307fc8ddc5d4263923ff327c9191a53c05ae489eac2326959a82d36eabff"
+      }
+    },
+    {
+      "name": "v5: UI settings match the restored worker settings",
+      "passed": true
+    },
+    {
+      "name": "v5: loaded controller continues with finite real telemetry",
+      "passed": true
+    },
+    {
+      "name": "v5 restored GPU/CPU path is active",
+      "passed": true,
+      "detail": {
+        "state": "active",
+        "backend": "WebGPU",
+        "workerCount": 1,
+        "error": null,
+        "adapter": {
+          "label": "nvidia lovelace",
+          "vendor": "nvidia",
+          "architecture": "lovelace",
+          "device": null,
+          "description": null
+        },
+        "activeCount": 32768,
+        "maxActivity": 0.7179058790206909
+      }
+    },
+    {
+      "name": "Cancel Save preserves current trial",
+      "passed": true
+    },
+    {
+      "name": "Cancel Open preserves current trial",
+      "passed": true
+    },
+    {
+      "name": "Cancel replacement preserves current trial",
+      "passed": true
+    },
+    {
+      "name": "Different patch version is rejected without changing the trial",
+      "passed": true,
+      "detail": "Salvataggio della versione 4.6.1: richiede esattamente quella versione. Questa app è 5.0.0."
+    },
+    {
+      "name": "Checksum mismatch is rejected without changing the trial",
+      "passed": true,
+      "detail": "File danneggiato o modificato: checksum SHA-256 non corrispondente."
+    },
+    {
+      "name": "Malformed policy is rejected without changing the trial",
+      "passed": true,
+      "detail": "Policy neurale incompatibile."
+    },
+    {
+      "name": "100 agents and full v4 graph are portable",
+      "passed": true
+    },
+    {
+      "name": "v4: 100-agent file restores all cars without trimming",
+      "passed": true
+    },
+    {
+      "name": "v4: 100-agent imported trial runs with exclusive pedals and finite physics",
+      "passed": true
+    },
+    {
+      "name": "100 agents and full v5 graph are portable",
+      "passed": true
+    },
+    {
+      "name": "v5: 100-agent file restores all cars without trimming",
+      "passed": true
+    },
+    {
+      "name": "v5: 100-agent imported trial runs with exclusive pedals and finite physics",
+      "passed": true
+    },
+    {
+      "name": "v2: previous delivered 5.0.0 file loads paused through the real UI",
+      "passed": true
+    },
+    {
+      "name": "v2: previous file preserves all worker training state exactly",
+      "passed": true
+    },
+    {
+      "name": "v3: previous delivered 5.0.0 file loads paused through the real UI",
+      "passed": true
+    },
+    {
+      "name": "v3: previous file preserves all worker training state exactly",
+      "passed": true
+    },
+    {
+      "name": "v4: previous delivered 5.0.0 file loads paused through the real UI",
+      "passed": true
+    },
+    {
+      "name": "v4: previous file preserves all worker training state exactly",
+      "passed": true
+    },
+    {
+      "name": "v5: previous delivered 5.0.0 file loads paused through the real UI",
+      "passed": true
+    },
+    {
+      "name": "v5: previous file preserves all worker training state exactly",
+      "passed": true
+    },
+    {
+      "name": "No duplicate DOM IDs",
+      "passed": true
+    },
+    {
+      "name": "All expected native picker/confirmation calls completed",
+      "passed": true
+    }
+  ],
+  "cases": [
+    {
+      "modelId": "v2",
+      "circuitId": "monza",
+      "file": "progress-v2.malecns-save",
+      "bytes": 248971,
+      "workers": 2,
+      "savedGeneration": 3,
+      "optimizerUpdates": 2,
+      "sha256": "c65324939732159475772f001c85fad29e60a7b86592ba4a4e233d2d8d2024b7"
+    },
+    {
+      "modelId": "v3",
+      "circuitId": "monaco",
+      "file": "progress-v3.malecns-save",
+      "bytes": 119660,
+      "workers": 1,
+      "savedGeneration": 3,
+      "optimizerUpdates": 2,
+      "sha256": "00faffa79bed59ce943475eb2e9a4649bd632305c6fb2c7049c28b175987ef89"
+    },
+    {
+      "modelId": "v4",
+      "circuitId": "le-mans",
+      "file": "progress-v4.malecns-save",
+      "bytes": 119603,
+      "workers": 1,
+      "savedGeneration": 3,
+      "optimizerUpdates": 2,
+      "sha256": "e5d041c97731baef07a0396a78c6d1a28778141ba1cd2eb5c4c5e75f3ab50f93"
+    },
+    {
+      "modelId": "v5",
+      "circuitId": "monza",
+      "file": "progress-v5.malecns-save",
+      "bytes": 200153,
+      "workers": 1,
+      "savedGeneration": 3,
+      "optimizerUpdates": 2,
+      "sha256": "a2312bfefeefc4be1f78a0fede9188787eb0e546c854418fded54654017d966a"
+    }
+  ],
+  "priorImports": [
+    {
+      "modelId": "v2",
+      "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\model-ui-progress-v500\\progress-v2.malecns-save",
+      "workers": 2,
+      "population": 4,
+      "sha256": "028b469b48522594fbfdd50b96be061a508ef13fe2044393ab3c58086b117e34"
+    },
+    {
+      "modelId": "v3",
+      "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\model-ui-progress-v500\\progress-v3.malecns-save",
+      "workers": 1,
+      "population": 4,
+      "sha256": "f01127b41ba55ee055186c1b64abbb80cda03ecaf283a67a24d8fab1238671e2"
+    },
+    {
+      "modelId": "v4",
+      "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\model-ui-progress-v500\\progress-v4-100.malecns-save",
+      "workers": 1,
+      "population": 100,
+      "sha256": "41cffb1d526fdeca5e1912c39913a9f6187a1a5aab760947943d31fd37c1398f"
+    },
+    {
+      "modelId": "v5",
+      "file": "C:\\Users\\utente\\Documents\\Codex\\2026-09-16\\craimi-un-app-locale-tipo-questo\\outputs\\model-ui-progress-v500\\progress-v5-100.malecns-save",
+      "workers": 1,
+      "population": 100,
+      "sha256": "a81549ae230fa1cadd2442d93516787113897d7522a27725ce64a003497a10b0"
+    }
+  ],
+  "views": {},
+  "consoleErrors": [],
+  "boundary": "Training-state round trips, forced early generations and short native runtime checks. Not exact mid-lap/GPU continuation, cryptographic authentication or learning-convergence evidence.",
+  "passed": true
+}

@@ -1,0 +1,5 @@
+{
+  "error": "Error: Script failed to execute, this normally means an error was thrown. Check the renderer console for the error.\n    at node:electron/js2c/renderer_init:2:19937\n    at IpcRendererInternal.<anonymous> (node:electron/js2c/renderer_init:2:14272)\n    at IpcRendererInternal.emit (node:events:519:28)\n    at Object.onMessage (node:electron/js2c/renderer_init:2:13350)",
+  "version": "38.8.6",
+  "generatedAt": "2026-10-09T13:22:14.494Z"
+}

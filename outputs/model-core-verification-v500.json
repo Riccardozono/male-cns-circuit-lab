@@ -1,0 +1,107 @@
+{
+  "generatedAt": "2026-10-01T11:24:37.519Z",
+  "version": "5.0.0",
+  "baselineVersion": "4.8.0",
+  "passed": true,
+  "files": [
+    {
+      "file": "outputs/rewards.js",
+      "identical": true,
+      "sha256": "16c7b25a7d7be3c5192e7ae4de20d8d9bc6d049e772ca1912edfd3b99135939a"
+    },
+    {
+      "file": "outputs/vehicle-992.js",
+      "identical": true,
+      "sha256": "007e6e40b7f3721cec95b2ed8532a5a4b6c23b85ce78c42a935d346d1a0acf52"
+    },
+    {
+      "file": "outputs/data/connectome-full.json",
+      "identical": true,
+      "sha256": "08b765561c40887ef37e27bb0080d1036cf16200f6b7afcf8138ed090179cf87"
+    },
+    {
+      "file": "outputs/data/connectome-full.bin",
+      "identical": true,
+      "sha256": "eec3fe23c3395caeba64e08751fd587a546be6edd86d3662e1676e3a4a0b14d9"
+    },
+    {
+      "file": "outputs/data/connectome.json",
+      "identical": true,
+      "sha256": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698"
+    },
+    {
+      "file": "outputs/legacy-models.js",
+      "identical": true,
+      "sha256": "7b6624457194dde703c898d6923136d8838b7e577e3826dda9166903c48a978f"
+    },
+    {
+      "file": "outputs/data/circuits.json",
+      "identical": true,
+      "sha256": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4"
+    },
+    {
+      "file": "outputs/data/circuits.js",
+      "identical": true,
+      "sha256": "f81c609b94b3d17464939182989f65c7c3e59122d5e560ea915dc95f795d4287"
+    },
+    {
+      "file": "outputs/data/curbs.js",
+      "identical": true,
+      "sha256": "ec23b0211f652ac9520b004a4da0dab8a2a7717079d885efddea11798376cb85"
+    },
+    {
+      "file": "outputs/track-renderer.js",
+      "identical": true,
+      "sha256": "d5b6d860d309bfbddfcbbdfdd49c05126d912e2b03ccf65d9391e106869c05bd"
+    },
+    {
+      "file": "outputs/car-renderer.js",
+      "identical": true,
+      "sha256": "30b71636c8ca1524cf019da4a94bfb815554d24b303955666c8939ddbdd403ef"
+    },
+    {
+      "file": "outputs/agent-selection.js",
+      "identical": true,
+      "sha256": "48dd11510cba5e3cfd5e4311c5da1e0275466c96825143a367934a4170129822"
+    },
+    {
+      "file": "outputs/brain-atlas.js",
+      "identical": true,
+      "sha256": "37114bbf28ea544c1895ecef1154241acf8ed3859b2b9ecf8d578145493a7c9a"
+    },
+    {
+      "file": "outputs/desktop-state.js",
+      "identical": true,
+      "sha256": "6174d9ad647cbfca0b32de5a33b71fd81c3bbb2114af28b58a88b0119d4ff0bc"
+    },
+    {
+      "file": "outputs/assets/porsche-992-gt3r-top-v1.png",
+      "identical": true,
+      "sha256": "7fe5619dcf9c3c24dba9a76af8dca18799efb905f28be4b43a5fa6c75cf1311b"
+    }
+  ],
+  "parity": [
+    {
+      "modelId": "v2",
+      "physicsTicks": 36,
+      "neuralTicks": 6,
+      "population": 4,
+      "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+    },
+    {
+      "modelId": "v3",
+      "physicsTicks": 36,
+      "neuralTicks": 6,
+      "population": 4,
+      "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+    },
+    {
+      "modelId": "v4",
+      "physicsTicks": 36,
+      "neuralTicks": 6,
+      "population": 4,
+      "identicalActivityPhysicsScoreGenomesOptimizerHistory": true
+    }
+  ],
+  "boundary": "Exact seeded CPU equality of V2/V3/V4 rollout and evolution, not proof of every seed or GPU atomic ordering. Anatomy, rewards, physics, geometry, renderer and atlas retained byte-for-byte."
+}

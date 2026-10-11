@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "appVersion": "5.0.0",
+  "startedAt": "2026-10-09T10:49:13.669Z",
+  "finishedAt": "2026-10-09T10:49:23.302Z",
+  "settings": {
+    "circuitId": "lab",
+    "population": 4,
+    "mutation": 0.16,
+    "speedMultiplier": 30,
+    "limitSeconds": 2,
+    "seed": 7717,
+    "workerCount": 1
+  },
+  "execution": "sequential-cold-start",
+  "goal": "One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.",
+  "timing": "Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.",
+  "boundary": "One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.",
+  "cases": [
+    {
+      "modelId": "v2",
+      "status": "limit",
+      "wallSeconds": 2.0005980000000005,
+      "simSeconds": 59.63333333333123,
+      "generations": 2,
+      "currentGeneration": 3,
+      "maxLaps": 0,
+      "bestProgressMeters": 103.20514449834569,
+      "hit": null,
+      "generationSimSeconds": null,
+      "backend": "CPU",
+      "error": null
+    },
+    {
+      "modelId": "v3",
+      "status": "limit",
+      "wallSeconds": 2.002540499999999,
+      "simSeconds": 10.116666666666749,
+      "generations": 0,
+      "currentGeneration": 1,
+      "maxLaps": 0,
+      "bestProgressMeters": 5.350612620127597,
+      "hit": null,
+      "generationSimSeconds": null,
+      "backend": "CPU",
+      "error": null
+    },
+    {
+      "modelId": "v4",
+      "status": "limit",
+      "wallSeconds": 2.0006382999999985,
+      "simSeconds": 27.349999999999728,
+      "generations": 2,
+      "currentGeneration": 3,
+      "maxLaps": 0,
+      "bestProgressMeters": 5.46485503672443,
+      "hit": null,
+      "generationSimSeconds": null,
+      "backend": "WebGPU + CPU",
+      "error": null
+    },
+    {
+      "modelId": "v5",
+      "status": "limit",
+      "wallSeconds": 2.006363800000001,
+      "simSeconds": 14.416666666666963,
+      "generations": 0,
+      "currentGeneration": 1,
+      "maxLaps": 0,
+      "bestProgressMeters": 70.58250130203888,
+      "hit": null,
+      "generationSimSeconds": null,
+      "backend": "WebGPU + CPU",
+      "error": null
+    }
+  ]
+}

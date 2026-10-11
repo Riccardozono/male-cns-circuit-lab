@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),crypto=require('node:crypto'),{spawn}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),exe=process.argv[2]&&!process.argv[2].startsWith('--')?process.argv[2]:path.join(root,'node_modules','electron','dist','electron.exe');
+const cpu=process.argv.includes('--cpu'),out=path.resolve(process.argv.find(a=>a.startsWith('--output='))?.slice(9)||path.join(root,'outputs','model-test-verification-v500',cpu?'source-cpu':'source-gpu'));
+fs.mkdirSync(out,{recursive:true});const profile=path.join(os.tmpdir(),'male-cns-test-mode-'+crypto.randomUUID());
+const progress=process.argv.includes('--progress');
+const flags=progress?['--progress-smoke','--progress-output-dir='+out,'--model-ui-prior-saves='+path.join(root,'outputs','model-ui-progress-v500')]:['--model-test-smoke','--model-test-output-dir='+out,...(process.argv.includes('--capture')?['--model-test-capture']:[])];
+const args=[...(exe===path.join(root,'node_modules','electron','dist','electron.exe')?[root]:[]),...flags,'--user-data-dir='+profile];
+const env={...process.env,MALE_CNS_FORCE_CPU_FALLBACK:cpu?'1':'0'};delete env.ELECTRON_RUN_AS_NODE;
+const child=spawn(exe,args,{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+const stdout=fs.createWriteStream(path.join(out,'stdout.log')),stderr=fs.createWriteStream(path.join(out,'stderr.log'));child.stdout.pipe(stdout);child.stderr.pipe(stderr);
+const timer=setTimeout(()=>{console.error('Own disposable smoke process exceeded 180s');child.kill();},180000);
+child.on('error',error=>{clearTimeout(timer);console.error(error.message);process.exitCode=1;});
+child.on('exit',code=>{clearTimeout(timer);const file=path.join(out,progress?'progress-smoke.json':'model-test-smoke.json');console.log(JSON.stringify({exitCode:code,output:out,...(fs.existsSync(file)?{passed:JSON.parse(fs.readFileSync(file,'utf8')).passed}:{}),errorFile:fs.existsSync(path.join(out,progress?'progress-error.json':'model-test-error.json'))?JSON.parse(fs.readFileSync(path.join(out,progress?'progress-error.json':'model-test-error.json'),'utf8')):null}));process.exitCode=code===0?0:1;});
