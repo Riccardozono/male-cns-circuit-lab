@@ -31,20 +31,27 @@ Il progetto non usa una traiettoria memorizzata, un pilota guida o una regola na
 sensori fisici → policy ricorrente MaleCNS → neuroni discendenti → sterzo e pedali
 ```
 
-## Modelli usati nel progetto
+## Modelli OpenAI usati nello sviluppo
+
+Questo progetto è stato realizzato in modalità **vibe coding** con assistenza di OpenAI Codex.
+
+| Modello OpenAI | Ambiente | Utilizzo |
+| --- | --- | --- |
+| **GPT-5** | **OpenAI Codex** | Progettazione iterativa, implementazione, diagnosi dei problemi, aggiornamento della documentazione e verifica con test locali. |
+
+`GPT-5` è il modello verificabile nell'ambiente Codex della sessione che ha prodotto questa versione del README. Il repository non conserva lo storico completo delle sessioni precedenti né il modello selezionato in ciascuna di esse; quindi non posso confermare altri modelli OpenAI usati in passato senza una registrazione verificabile. Non vengono attribuiti a questo progetto modelli come GPT-4, GPT-4o, GPT-4.1, o-series o altri modelli se non risultano documentati.
+
+## Modelli usati dall'app
 
 | Categoria | Modello o componente | Funzione |
 | --- | --- | --- |
-| Sviluppo | **OpenAI Codex** | Assistenza al vibe coding, modifica del repository, diagnosi e verifica con test locali. |
 | Rete neurale | **MaleCNS V2** | Profilo compatto ricostruito per prove rapide e confronto di base. |
 | Rete neurale | **MaleCNS V3** | Profilo intermedio ricostruito con capacità superiore a V2. |
 | Rete neurale | **MaleCNS V4** | Profilo completo usato come riferimento principale del connectome. |
 | Rete neurale | **MaleCNS V5** | Profilo esteso con maggiore capacità elaborata, più passaggi ricorrenti e decoder più ampio. |
 | Veicolo 3D/fisico | **Porsche 992 GT3 R** | Vettura simulata, con modello 3D, texture locali, fisica, cambio, pneumatici e telemetria. |
 
-La tabella distingue i modelli usati **durante l'esecuzione dell'app** dal modello/strumento usato **durante lo sviluppo**. Il runtime della simulazione usa i profili MaleCNS locali e gli asset inclusi nel progetto; non invia le decisioni di guida a un servizio AI cloud.
-
-Il repository non conserva un registro completo delle versioni dei modelli generativi utilizzati in ogni sessione di sviluppo. Per questo viene indicato verificabilmente **OpenAI Codex** come ambiente di vibe coding, senza attribuire a questo progetto modelli specifici GPT, Claude o Gemini che non risultano documentati nel codice o nella cronologia disponibile.
+Il runtime della simulazione usa i profili MaleCNS locali e gli asset inclusi nel progetto; non invia le decisioni di guida a un servizio AI cloud. I modelli OpenAI assistono lo sviluppo, mentre V2, V3, V4 e V5 sono i modelli neurali eseguiti dall'app.
 
 ## Funzionalità principali
 
