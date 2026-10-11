@@ -144,7 +144,9 @@ I modelli OpenAI utilizzati dall'autore sono:
 | **GPT-6.1 Sol** | OpenAI Codex |
 | **GPT-5.6 Luna** | OpenAI Codex |
 
-L'elenco è quello indicato dall'autore. Non esiste un registro per attribuire ogni commit a uno specifico modello. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
+L'elenco è quello indicato dall'autore. Per la cronologia precedente non esiste un registro completo che attribuisca ogni commit a uno specifico modello. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
+
+Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
 
 ## FAQ
 
@@ -206,6 +208,7 @@ Non sono presenti collisioni tra auto, danni deformabili, meteo, scia aerodinami
 - [Texture Porsche](outputs/TEXTURE-v510.md) — livrea locale e coordinate UV.
 - [Modalità test](outputs/TEST-MODELLI-v500.md) — protocollo del confronto dei due giri.
 - [Salvataggi](outputs/SALVATAGGI-v462.md) — file condivisibili e vincolo di versione.
+- [Pubblicazione delle versioni](docs/RELEASING.md) — attribuzione dei modelli IA nei commit e nelle release.
 
 ## Sviluppo e verifiche
 
