@@ -4,6 +4,7 @@
  * No controller, physics tick, random generator or training command lives here. */
 import * as T from './vendor/three.module.js';
 import {CarFleet,CAR_VISUAL_REVISION} from './car-3d.mjs';
+import {createTrackScenery} from './track-scenery.mjs';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function overviewFit(bounds,aspect,yaw=2.3,pitch=.90,fov=48,points=null,target={x:0,z:0}){
   const tangent=Math.tan(fov*Math.PI/360),halfX=bounds.width/2,halfZ=bounds.height/2;
@@ -27,6 +28,13 @@ export function roadGeometry(track,origin={x:0,y:0},height=.035){
   const geometry=new T.ShapeGeometry(shape),position=geometry.getAttribute('position');
   for(let i=0;i<position.count;i++)position.setXYZ(i,position.getX(i),height,-position.getY(i));
   geometry.computeVertexNormals();return geometry;
+}
+export function groundMesh(bounds,material,ppm=1){
+  const size=Math.max(bounds.width,bounds.height)*20,geometry=new T.PlaneGeometry(size,size);geometry.rotateX(-Math.PI/2);
+  // Large ground triangles must not win depth interpolation against centimetre
+  // high road/apron meshes on kilometre-wide maps. Draw terrain as a backdrop,
+  // below the road and without writing depth; all actual scene objects follow.
+  material.depthWrite=false;const mesh=new T.Mesh(geometry,material);mesh.position.y=-.15*ppm;mesh.renderOrder=-10;return mesh;
 }
 function triangles(points){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(points,3));g.computeVertexNormals();return g;}
 function quad(out,a,b,c,d){out.push(...a,...b,...c,...a,...c,...d);}
@@ -85,7 +93,9 @@ export class Circuit3D{
     this.clearStatic();this.track=track;this.model=model;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
     this.scene.background.set(model.theme.ground);
     const add=(geometry,material)=>{const mesh=new T.Mesh(geometry,material);this.staticGroup.add(mesh);return mesh;};
-    const ground=new T.PlaneGeometry(Math.max(b.width,b.height)*1.8,Math.max(b.width,b.height)*1.8);ground.rotateX(-Math.PI/2);add(ground,new T.MeshLambertMaterial({color:model.theme.ground}));
+    this.scenery=createTrackScenery(track,model,this.origin);this.staticGroup.add(this.scenery.group);
+    this.overviewPoints=[...track.outer,...this.scenery.plan.footprint];
+    this.staticGroup.add(groundMesh(b,this.scenery.groundMaterial(),track.pixelsPerMeter||1));
     this.road=add(roadGeometry(track,this.origin),new T.MeshLambertMaterial({color:model.theme.road,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
     const outline=[];for(const wall of track.walls)outline.push(wall.a.x-this.origin.x,.06,wall.a.y-this.origin.y,wall.b.x-this.origin.x,.06,wall.b.y-this.origin.y);
     const outlineGeometry=new T.BufferGeometry();outlineGeometry.setAttribute('position',new T.Float32BufferAttribute(outline,3));
@@ -99,9 +109,10 @@ export class Circuit3D{
     checker.forEach((p,i)=>add(triangles(p),new T.MeshBasicMaterial({color:i?0xf4efdf:0x13191d,side:T.DoubleSide})));
     this.overviewDistance=this.fitDistance();this.reset();
   }
-  clearStatic(){for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
-  fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.track.outer,overviewTarget(this.track,this.yaw)):1200;}
-  centreOverview(){const target=this.track?overviewTarget(this.track,this.yaw):{x:0,z:0};this.focus.set(target.x,0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
+  clearStatic(){this.scenery?.dispose();this.scenery=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
+  overviewTarget(){return overviewTarget({...this.track,outer:this.overviewPoints||this.track.outer},this.yaw);}
+  fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.overviewPoints||this.track.outer,this.overviewTarget()):1200;}
+  centreOverview(){const target=this.track?this.overviewTarget():{x:0,z:0};this.focus.set(target.x,0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
   resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=Math.min(1.5,globalThis.devicePixelRatio||1);if(this.width!==r.width||this.height!==r.height||this.dpr!==dpr){
     const ratio=this.distance/(this.overviewDistance||this.distance);
     this.width=r.width;this.height=r.height;this.dpr=dpr;this.renderer.setPixelRatio(dpr);this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;
@@ -125,6 +136,7 @@ export class Circuit3D{
     this.camera.position.set(this.focus.x+Math.sin(yaw)*Math.cos(this.pitch)*distance,this.focus.y+Math.sin(this.pitch)*distance,this.focus.z+Math.cos(yaw)*Math.cos(this.pitch)*distance);this.camera.lookAt(this.focus);this.camera.updateMatrixWorld();
     this.fleet.update(sim.cars,this.origin,palette,{selected,camera:this.camera,height:this.height,mode:this.mode});
     this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
+    this.scenery?.setVisible(details,this.mode);
     this.road.material.color.set(this.mode==='overview'?0x62757b:this.model.theme.road);this.outline.material.color.set(this.mode==='overview'?0xb1c0c1:0x82999d);
     this.selection.position.set(selected.x-this.origin.x,.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
     this.rays.visible=sensors;
@@ -133,6 +145,6 @@ export class Circuit3D{
     for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,1.4*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
-  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),lost:this.lost};}
+  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),lost:this.lost};}
   dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }

@@ -1,6 +1,6 @@
 {
   "name": "male-cns-circuit-lab",
-  "version": "5.1.0",
+  "version": "5.2.0",
   "description": "MAL-E CNS Circuit Lab: desktop evolutionary driving simulator powered by the annotated MaleCNS connectome.",
   "private": true,
   "main": "desktop/main.cjs",
@@ -14,6 +14,7 @@
   "devDependencies": {
     "electron": "^38.0.0",
     "electron-builder": "^26.0.12",
+    "polygon-clipping": "0.15.7",
     "three": "0.186.1"
   },
   "build": {
@@ -43,6 +44,8 @@
       "outputs/car-renderer.js",
       "outputs/car-3d.mjs",
       "outputs/circuit-3d.mjs",
+      "outputs/track-scenery.mjs",
+      "outputs/data/scenery.mjs",
       "outputs/supplied-car-3d.mjs",
       "outputs/learning-metrics.js",
       "outputs/vendor/three.module.js",
@@ -52,6 +55,8 @@
       "outputs/vendor/GLTFLoader.js",
       "outputs/vendor/BufferGeometryUtils.js",
       "outputs/vendor/SkeletonUtils.js",
+      "outputs/vendor/polygon-clipping.umd.js",
+      "outputs/vendor/POLYGON-CLIPPING-LICENSE.txt",
       "outputs/assets/porsche-992-gt3-r-lod.glb",
       "outputs/assets/porsche-992-gt3-r-provenance.json",
       "outputs/assets/PORSCHE-3D-CREDITS.md",
@@ -71,6 +76,8 @@
       "outputs/vehicle-992-provenance.json",
       "outputs/README.md",
       "outputs/VISTA-3D-v510.md",
+      "outputs/AMBIENTE-3D-v520.md",
+      "outputs/VERIFICA-v520.md",
       "outputs/TEXTURE-v510.md",
       "outputs/VERIFICA-v510.md",
       "outputs/CIRCUITI.md",
@@ -83,7 +90,7 @@
       "package.json"
     ],
     "directories": {
-      "output": "dist-textures-v510"
+      "output": "dist-scenery-v520"
     },
     "win": {
       "target": [

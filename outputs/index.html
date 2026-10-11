@@ -15,7 +15,7 @@
           <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
           <div>
             <p class="brand-name">MAL-E CNS</p>
-            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.1.0</span></p>
+            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.2.0</span></p>
           </div>
         </div>
         <div class="topbar-meta">
@@ -84,7 +84,7 @@
           </div>
           <div class="canvas-wrap">
             <canvas id="simulation-canvas" tabindex="0" role="img" aria-describedby="track-navigation-note track-model-note" aria-label="Mappa interattiva del circuito"></canvas>
-            <canvas id="track-3d-canvas" hidden tabindex="0" role="img" aria-describedby="track-navigation-note track-3d-status" aria-label="Circuito 3D interattivo, auto in scala e sensori sui bordi fisici"></canvas>
+            <canvas id="track-3d-canvas" hidden tabindex="0" role="img" aria-describedby="track-navigation-note track-3d-status" aria-label="Circuito 3D interattivo con barriere e vie di fuga schematiche, auto in scala e sensori sui bordi fisici"></canvas>
             <div id="track-3d-hud" class="track-3d-hud" hidden></div>
             <div class="canvas-legend" id="track-2d-legend" aria-label="Legenda del circuito">
               <span><i class="legend-line legend-line--coral"></i> sensori dell’auto selezionata</span>
@@ -250,7 +250,7 @@
                 <button class="button button--secondary" id="save-progress" type="button" aria-describedby="progress-file-note">Salva file…</button>
                 <button class="button button--secondary" id="load-progress" type="button" aria-describedby="progress-file-note">Carica file…</button>
               </div>
-              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.1.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file 5.0.0 restano utilizzabili con l’app 5.0.0.</p>
+              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.2.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file precedenti richiedono la loro versione dell’app: i progressi 5.1.0 restano utilizzabili con l’app 5.1.0.</p>
               <p class="progress-status hint" id="progress-status" role="status" aria-live="polite" aria-atomic="true">Nessun file salvato in questa sessione.</p>
               <input id="progress-file-input" type="file" accept=".malecns-save" hidden>
             </section>

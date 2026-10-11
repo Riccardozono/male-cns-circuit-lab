@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.1.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)
+[![Versione 5.2.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0)**
+**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-portable-5.2.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-setup-5.2.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,14 +34,16 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
+**Novità 5.2.0:** nella vista 3D ci sono barriere, recinzioni e vie di fuga in asfalto o ghiaia: sei zone a Monza, tre a Monaco e nove a Le Mans. Il comando **Dettagli: sì/no** le mostra o nasconde. Sono elementi scenografici stimati, non un rilievo delle protezioni reali: **non cambiano carreggiata, collisioni, sensori o apprendimento**. Nessuna strada di servizio aggiunta. [Copertura, fonti e limiti](outputs/AMBIENTE-3D-v520.md).
+
 ## Avvio rapido
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-portable-5.1.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.1.0/MAL-E-CNS-Circuit-Lab-setup-5.1.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-portable-5.2.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.2.0/MAL-E-CNS-Circuit-Lab-setup-5.2.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
-La [release 5.1.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
+La [release 5.2.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.2.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
 
 ### Esplora una prova
 
@@ -185,7 +187,7 @@ No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabor
 <details>
 <summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-No. Un file `.malecns-save` creato con **5.1.0** richiede **5.1.0**. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
+No. Un file `.malecns-save` creato con **5.2.0** richiede **5.2.0**; quelli della 5.1.0 continuano a richiedere la [release 5.1.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.1.0), che resta disponibile. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
 </details>
 
@@ -201,10 +203,11 @@ Non sono presenti collisioni tra auto, danni deformabili, meteo, scia aerodinami
 ## Documentazione
 
 - [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
-- [Verifica 5.1.0](outputs/VERIFICA-v510.md) — controlli della versione.
+- [Verifica 5.2.0](outputs/VERIFICA-v520.md) — controlli dell'ambiente 3D; [rapporto precedente 5.1.0](outputs/VERIFICA-v510.md).
 - [Profilo V5](outputs/MODELLO-V5.md) — anatomia, capacità elaborata e costo computazionale.
 - [Circuiti](outputs/CIRCUITI.md) — geometrie, larghezze e provenienza.
 - [Vista 3D](outputs/VISTA-3D-v510.md) — telecamere, risorse e limiti del rendering.
+- [Barriere e vie di fuga 5.2.0](outputs/AMBIENTE-3D-v520.md) — scenografia locale, copertura e stime.
 - [Texture Porsche](outputs/TEXTURE-v510.md) — livrea locale e coordinate UV.
 - [Modalità test](outputs/TEST-MODELLI-v500.md) — protocollo del confronto dei due giri.
 - [Salvataggi](outputs/SALVATAGGI-v462.md) — file condivisibili e vincolo di versione.
@@ -240,7 +243,7 @@ npm run dist
 
 Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-La build produce i pacchetti in `dist-textures-v510/`. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
+La build produce i pacchetti in `dist-scenery-v520/`, separati dalle distribuzioni precedenti. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
 
 <details>
 <summary><strong>Struttura del repository</strong></summary>

@@ -14,7 +14,7 @@ const carRenderer=new MaleCNSCars.Renderer();
 const agentSelection=new MaleCNSAgents.Selection();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.1.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.2.0',number=n=>n.toLocaleString('it-IT');
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
@@ -131,13 +131,13 @@ async function setCircuitView(mode){
       if(!circuit3D){
         circuit3DLoading??=import('./circuit-3d.mjs');const {Circuit3D}=await circuit3DLoading;
         if(request!==circuitViewRequest)return;
-        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · terreno piano';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
+        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · barriere e vie di fuga schematiche, solo visive';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
         circuit3D.setTrack(sim.track,trackRenderer.model,FlySim.onRoad);
         cameraSelect.value='follow';circuit3D.setMode('follow');
       }
       if(circuit3D.lost)throw Error('Contesto grafico non disponibile: riapri l’app per riprovare.');
       circuit3D.setMode(cameraSelect.value);
-      $('track-3d-status').textContent=circuit3D.carRevision?'Porsche 992 dello ZIP · dettaglio adattivo su GPU · terreno piano':'3D su GPU · caricamento Porsche 992 locale…';
+      $('track-3d-status').textContent=circuit3D.carRevision?'Porsche 992 dello ZIP · barriere e vie di fuga schematiche, solo visive':'3D su GPU · caricamento Porsche 992 locale…';
     }catch(error){mode='2d';$('track-3d-status').textContent='3D non disponibile. La mappa 2D e l’IA restano attive. '+error.message;}
     finally{$('track-mode-3d').disabled=false;}
   }

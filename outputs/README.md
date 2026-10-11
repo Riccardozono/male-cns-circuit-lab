@@ -1,4 +1,18 @@
-# MAL-E CNS / Circuit Lab — Windows 5.1.0
+# MAL-E CNS / Circuit Lab — Windows 5.2.0
+
+Distribuzione corrente in `dist-scenery-v520/`: guardrail, muri, recinzioni,
+banchine e vie di fuga visuali nella vista 3D. Sei zone a Monza, tre a Monaco,
+nove a Le Mans; il Laboratorio usa protezioni sintetiche. **Dettagli: sì/no**
+nasconde o mostra tutta la nuova scenografia, anche in pausa. Non sono presenti
+strade o accessi di servizio. Posizioni, superfici, estensioni e altezze sono
+stime dichiarate, non una ricostruzione certificata delle protezioni reali.
+
+Fisica, dati dei circuiti, sensori, reti, ricompense e apprendimento restano
+invariati. I nuovi salvataggi richiedono **5.2.0**; quelli 5.1.0 richiedono la
+vecchia app, conservata insieme alle precedenti distribuzioni.
+[Guida e fonti](AMBIENTE-3D-v520.md) · [Verifiche 5.2.0](VERIFICA-v520.md).
+
+## Distribuzione precedente 5.1.0
 
 Distribuzione 5.1.0 con livrea ripristinata: portable e installer in
 `dist-textures-v510/`. La precedente `dist-learning-3d-v510/` resta intatta.

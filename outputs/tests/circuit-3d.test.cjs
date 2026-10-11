@@ -2,6 +2,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const F=require('../simulation.js'),catalog=require('../data/circuits.json'),data=require('../data/connectome.json'),Legacy=require('../legacy-models.js');
 const area=ring=>Math.abs(ring.reduce((s,a,i)=>{const b=ring[(i+1)%ring.length];return s+a.x*b.y-b.x*a.y;},0)/2);
+test('Kilometre-wide terrain is a backdrop and cannot occlude the physical road or aprons',async()=>{
+  const T=await import('../vendor/three.module.js'),{groundMesh}=await import('../circuit-3d.mjs');
+  for(const circuit of catalog.circuits){const track=new F.Simulation(Legacy.buildV2(data),{population:1,circuits:catalog,circuitId:circuit.id}).track,mesh=groundMesh(track.bounds,new T.MeshLambertMaterial(),track.pixelsPerMeter||1);
+    assert.equal(mesh.material.depthWrite,false);assert.ok(mesh.renderOrder<0);assert.ok(mesh.position.y<0);assert.equal(mesh.geometry.index.count,6);mesh.geometry.dispose();mesh.material.dispose();}
+});
 for(const circuit of [{id:'lab'},...catalog.circuits])test(circuit.id+': triangulated 3D road is the actual physical corridor',async()=>{
   const {roadGeometry}=await import('../circuit-3d.mjs'),sim=new F.Simulation(Legacy.buildV2(data),{population:4,circuits:catalog,circuitId:circuit.id}),track=sim.track,before=JSON.stringify([track,sim.cars[0].genome]),origin={x:track.bounds.x+track.bounds.width/2,y:track.bounds.y+track.bounds.height/2};
   const geometry=roadGeometry(track,origin),p=geometry.attributes.position,index=geometry.index.array;let trianglesArea=0;

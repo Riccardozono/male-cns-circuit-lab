@@ -1,5 +1,30 @@
 # Product
 
+## Estensione corrente: ambiente 3D, Windows 5.2.0 — 11 ottobre 2026
+
+La richiesta riguarda barriere e vie di fuga della vista 3D, non strade o
+varchi di servizio. L'estensione visuale aggiunge guardrail, muri di protezione,
+recinzioni e banchine, con sei zone a Monza, tre a Monaco e nove a Le Mans.
+Il Laboratorio usa protezioni sintetiche. Il comando esistente “Dettagli:
+sì/no” controlla l'intero ambiente anche in pausa; Segui auto, Panoramica,
+2D e atlante restano disponibili. Fonti: [guida](outputs/AMBIENTE-3D-v520.md),
+[catalogo](outputs/data/scenery.mjs) e [renderer](outputs/track-scenery.mjs).
+
+Gli ancoraggi riprendono le sezioni del circuito già registrate. Materiali,
+estensioni, altezze e distanze sono stime autoriali esplicite. Le mappe FIA/ACO
+consultate sono edizioni 2025: non si dichiarano rilievi reali o configurazioni
+2026 verificate. Le geometrie statiche sono unite e raggruppate per materiale;
+non vengono rigenerate nei tick neurali. Il perimetro scenografico viene
+raccordato senza incroci nelle chicane e senza aggiungere ostacoli alla fisica.
+
+Nessuna variazione a carreggiata, dati anatomici, sensori, fisica, ricompense,
+policy o motore dell'apprendimento. Nessuna prova di convergenza rivendicata
+da questa modifica visuale. App e salvataggi passano a 5.2.0, con il vincolo
+richiesto di versione esatta; file e distribuzioni 5.1.0 sono preservati.
+La verifica funzionale e di conservazione è registrata in
+[VERIFICA-v520.md](outputs/VERIFICA-v520.md); controlli dei binari e commit
+distribuito sono riportati nelle note della release 5.2.0.
+
 ## Estensione corrente: circuito 3D e apprendimento, Windows 5.1.0 — 11 ottobre 2026
 
 La 5.1.0 estende il laboratorio locale esistente con “Vista 3D”, accanto a
