@@ -35,12 +35,12 @@ sensori fisici → policy ricorrente MaleCNS → neuroni discendenti → sterzo 
 
 Questo progetto è stato realizzato in modalità **vibe coding** con assistenza di OpenAI Codex.
 
-| Modello OpenAI | Ambiente | Utilizzo |
-| --- | --- | --- |
-| **GPT-6 Astra** | **OpenAI Codex** | Progettazione iterativa, implementazione, diagnosi dei problemi, aggiornamento della documentazione e verifica con test locali. |
-| **GPT-6 Luna** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo e alla rifinitura del progetto. |
-| **GPT-6.1 Sol** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo, analisi tecnica e revisione delle modifiche. |
-| **GPT-5.6 Luna** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo e alla documentazione. |
+| Modello OpenAI | Ambiente |
+| --- | --- |
+| **GPT-6 Astra** | **OpenAI Codex** |
+| **GPT-6 Luna** | **OpenAI Codex** |
+| **GPT-6.1 Sol** | **OpenAI Codex** |
+| **GPT-5.6 Luna** | **OpenAI Codex** |
 
 Questi sono i modelli OpenAI utilizzati dall'autore durante lo sviluppo in vibe coding. Il repository non conserva un registro per commit che permetta di attribuire ogni singola modifica a un modello specifico; la tabella documenta quindi l'insieme dei modelli usati nel progetto, non una suddivisione artificiale del lavoro tra loro.
 
