@@ -18,6 +18,19 @@ npm install
 npm start
 ```
 
+Per ottenere anche il checkout del repository MaleCNS collegato:
+
+```powershell
+git clone --recurse-submodules https://github.com/Riccardozono/male-cns-circuit-lab.git
+cd male-cns-circuit-lab
+```
+
+Se il progetto è già stato clonato senza submodule:
+
+```powershell
+git submodule update --init --recursive
+```
+
 Test automatici:
 
 ```powershell
