@@ -37,9 +37,12 @@ Questo progetto è stato realizzato in modalità **vibe coding** con assistenza 
 
 | Modello OpenAI | Ambiente | Utilizzo |
 | --- | --- | --- |
-| **GPT-5** | **OpenAI Codex** | Progettazione iterativa, implementazione, diagnosi dei problemi, aggiornamento della documentazione e verifica con test locali. |
+| **GPT-6 Astra** | **OpenAI Codex** | Progettazione iterativa, implementazione, diagnosi dei problemi, aggiornamento della documentazione e verifica con test locali. |
+| **GPT-6 Luna** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo e alla rifinitura del progetto. |
+| **GPT-6.1 Sol** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo, analisi tecnica e revisione delle modifiche. |
+| **GPT-5.6 Luna** | **OpenAI Codex** | Assistenza alle iterazioni di sviluppo e alla documentazione. |
 
-`GPT-5` è il modello verificabile nell'ambiente Codex della sessione che ha prodotto questa versione del README. Il repository non conserva lo storico completo delle sessioni precedenti né il modello selezionato in ciascuna di esse; quindi non posso confermare altri modelli OpenAI usati in passato senza una registrazione verificabile. Non vengono attribuiti a questo progetto modelli come GPT-4, GPT-4o, GPT-4.1, o-series o altri modelli se non risultano documentati.
+Questi sono i modelli OpenAI utilizzati dall'autore durante lo sviluppo in vibe coding. Il repository non conserva un registro per commit che permetta di attribuire ogni singola modifica a un modello specifico; la tabella documenta quindi l'insieme dei modelli usati nel progetto, non una suddivisione artificiale del lavoro tra loro.
 
 ## Modelli usati dall'app
 
