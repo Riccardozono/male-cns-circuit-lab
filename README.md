@@ -6,6 +6,8 @@ L'app unisce simulazione fisica, apprendimento evolutivo, circuiti in scala metr
 
 > **Stato:** versione `5.1.0` · Windows x64 · Electron · simulazione CPU/WebGPU ibrida
 
+> **Metodo di sviluppo:** progetto realizzato in modalità **vibe coding**, con iterazioni guidate in linguaggio naturale, assistenza di OpenAI Codex e verifiche automatiche sul repository.
+
 ## Scarica l'app per Windows
 
 La release contiene due pacchetti già compilati:
@@ -28,6 +30,21 @@ Il progetto non usa una traiettoria memorizzata, un pilota guida o una regola na
 ```text
 sensori fisici → policy ricorrente MaleCNS → neuroni discendenti → sterzo e pedali
 ```
+
+## Modelli usati nel progetto
+
+| Categoria | Modello o componente | Funzione |
+| --- | --- | --- |
+| Sviluppo | **OpenAI Codex** | Assistenza al vibe coding, modifica del repository, diagnosi e verifica con test locali. |
+| Rete neurale | **MaleCNS V2** | Profilo compatto ricostruito per prove rapide e confronto di base. |
+| Rete neurale | **MaleCNS V3** | Profilo intermedio ricostruito con capacità superiore a V2. |
+| Rete neurale | **MaleCNS V4** | Profilo completo usato come riferimento principale del connectome. |
+| Rete neurale | **MaleCNS V5** | Profilo esteso con maggiore capacità elaborata, più passaggi ricorrenti e decoder più ampio. |
+| Veicolo 3D/fisico | **Porsche 992 GT3 R** | Vettura simulata, con modello 3D, texture locali, fisica, cambio, pneumatici e telemetria. |
+
+La tabella distingue i modelli usati **durante l'esecuzione dell'app** dal modello/strumento usato **durante lo sviluppo**. Il runtime della simulazione usa i profili MaleCNS locali e gli asset inclusi nel progetto; non invia le decisioni di guida a un servizio AI cloud.
+
+Il repository non conserva un registro completo delle versioni dei modelli generativi utilizzati in ogni sessione di sviluppo. Per questo viene indicato verificabilmente **OpenAI Codex** come ambiente di vibe coding, senza attribuire a questo progetto modelli specifici GPT, Claude o Gemini che non risultano documentati nel codice o nella cronologia disponibile.
 
 ## Funzionalità principali
 
@@ -58,7 +75,7 @@ Il connectome caricato e le annotazioni anatomiche sono una base scientifica di 
 
 Per fonti, licenze, checksum e limiti, consulta la [documentazione tecnica della distribuzione](outputs/README.md) e la [provenienza dei dati](outputs/data/provenance.json).
 
-## Modelli MaleCNS
+## Dettaglio dei modelli neurali MaleCNS
 
 | Modello | Profilo | Dimensione indicativa |
 | --- | --- | ---: |
