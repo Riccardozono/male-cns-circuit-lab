@@ -165,15 +165,15 @@ La struttura anatomica è distinta dalla dinamica artificiale a tassi normalizza
 
 Questo è un progetto realizzato in modalità **vibe coding**: richieste in linguaggio naturale, iterazioni assistite da OpenAI Codex e verifiche sul codice e sull'app.
 
-I modelli OpenAI utilizzati dall'autore sono:
+I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit attribuiti su GitHub:
 
-| Modello OpenAI | Ambiente | Commit attribuiti verificabili |
+| Modello OpenAI | Ambiente | Commit attribuiti su GitHub |
 | --- | --- | ---: |
-| **GPT-6 Astra** | OpenAI Codex | 0* |
-| **GPT-6 Luna** | OpenAI Codex | 0* |
-| **GPT-6.1 Sol** | OpenAI Codex | **9** |
-| **GPT-5.6 Luna** | OpenAI Codex | 0* |
-L'elenco dei modelli è quello indicato dall'autore. Il conteggio riguarda soltanto i commit GitHub che riportano esplicitamente `[AI: ...]` nel titolo oppure `AI-Models:` nel corpo e include questo aggiornamento del README. `0*` significa che non risultano commit attribuiti a quel modello: non dimostra che il modello non sia stato usato nei commit storici privi di attribuzione. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
+| **GPT-6 Astra** | OpenAI Codex | 0 |
+| **GPT-6 Luna** | OpenAI Codex | 0 |
+| **GPT-6.1 Sol** | OpenAI Codex | **10** |
+| **GPT-5.6 Luna** | OpenAI Codex | 0 |
+
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
 
