@@ -5,6 +5,22 @@ pubblicata su GitHub con il modello IA usato nello sviluppo indicato sia nei
 commit sia nelle note della release. È una regola di lavoro del progetto, non
 un processo di pubblicazione automatica già eseguito da GitHub Actions.
 
+## Quando creare una nuova versione
+
+Dal 12 ottobre 2026 è l'autore a decidere quando fare una nuova versione:
+**solo una sua richiesta esplicita avvia incremento della versione, nuovi tag
+e pubblicazione di una release**. Una richiesta di miglioramento, correzione
+o continuazione del lavoro non autorizza automaticamente questi passaggi.
+
+Nel frattempo le modifiche restano in sviluppo, con verifiche e commit
+attribuiti. Si possono eseguire test e compilazioni locali isolate, senza
+sostituire gli eseguibili distribuiti o pubblicare nuovi pacchetti. Non
+aggirare i controlli di compatibilità dei salvataggi: eventuali incompatibilità
+devono essere segnalate all'autore prima della distribuzione.
+
+La checklist qui sotto si applica quando l'autore richiede la nuova versione.
+L'attribuzione IA dei commit rimane valida anche senza una nuova release.
+
 ## Attribuzione del modello
 
 Usare il nome esatto verificato nei metadati della sessione di sviluppo oppure

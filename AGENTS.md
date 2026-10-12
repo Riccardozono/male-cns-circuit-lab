@@ -11,6 +11,26 @@
 - Non pubblicare credenziali, dati personali, salvataggi o log delle sessioni
   Codex. Per l'attribuzione basta il nome del modello e il tipo di evidenza.
 
+## Nuove versioni soltanto su richiesta dell'autore
+
+Regola richiesta dall'autore il 12 ottobre 2026.
+
+- È l'autore a decidere quando fare una nuova versione. Non incrementare
+  automaticamente la versione dell'app, creare tag o pubblicare release GitHub
+  dopo una modifica: serve una richiesta esplicita di nuova versione.
+- Richieste come «migliora», «correggi» o «continua» autorizzano il lavoro e le
+  verifiche pertinenti, ma non una nuova versione o distribuzione.
+- Finché la nuova versione non è richiesta, mantenere il numero corrente e
+  lasciare invariati tag, release, portable e installer già distribuiti.
+  Test e compilazioni locali di prova sono consentiti, separati dalle
+  distribuzioni esistenti e senza pubblicazione automatica.
+- Non aggirare i controlli dei salvataggi per far passare modifiche incompatibili
+  come compatibili con la versione corrente. Segnalare il problema all'autore
+  prima di distribuire una versione o proporre una migrazione.
+- Quando l'autore richiede una nuova versione, seguire le regole di attribuzione,
+  verifica, pacchetti, tag e release indicate sotto. L'attribuzione IA nei commit
+  rimane obbligatoria anche durante lo sviluppo e per la sola documentazione.
+
 ## Commit e release con attribuzione IA
 
 Regola richiesta dall'autore l'11 ottobre 2026, valida da questo momento in poi.
