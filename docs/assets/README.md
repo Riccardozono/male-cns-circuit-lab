@@ -1,7 +1,26 @@
 # Immagini e diagramma del README
 
-Le anteprime sono acquisizioni reali dell'app sorgente **5.1.0**, già presenti
-nel repository. Non sono mockup generati e non sono state ritoccate per il README.
+Le anteprime correnti sono acquisizioni native dell'app sorgente **5.5.0**,
+copiate per byte dai controlli della vista 3D in un profilo di prova separato.
+Non sono mockup generati e non sono state ritoccate per il README.
+Origine, stato della simulazione, limiti e checksum sono nella
+[scheda delle immagini 5.5.0](screenshots/v550/README.md).
+
+## Anteprime correnti 5.5.0
+
+| Anteprima | File |
+| --- | --- |
+| Circuito e atlante affiancati | [desktop-split.png](screenshots/v550/desktop-split.png) |
+| Tribuna di Monza | [monza-grandstand.png](screenshots/v550/monza-grandstand.png) |
+| Box di Monza | [monza-pits.png](screenshots/v550/monza-pits.png) |
+| Tribuna di Monaco | [monaco-grandstand.png](screenshots/v550/monaco-grandstand.png) |
+| Tribuna di Le Mans | [le-mans-grandstand.png](screenshots/v550/le-mans-grandstand.png) |
+| Panoramica di Monza | [monza-overview.png](screenshots/v550/monza-overview.png) |
+
+## Immagini storiche 5.1.0, preservate
+
+Le precedenti acquisizioni rimangono nel repository e nella cronologia delle
+release. Non sono più le anteprime della versione corrente.
 
 | Anteprima | Acquisizione originale |
 | --- | --- |

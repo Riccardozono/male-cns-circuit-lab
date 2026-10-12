@@ -18,11 +18,11 @@
 
 <br />
 
-<img src="outputs/texture-verification-v510/source-3d/desktop-split.png" alt="MAL-E CNS Circuit Lab 5.1.0: circuito Monza, atlante 3D MaleCNS e controlli della simulazione affiancati" width="1200" />
+<img src="docs/assets/screenshots/v550/desktop-split.png" alt="MAL-E CNS Circuit Lab 5.5.0 in pausa: Monza in 3D, atlante MaleCNS e controlli della simulazione affiancati" width="1200" />
 
 <br />
 
-*L'app 5.1.0 in vista affiancata: circuito, atlante del cervello e telemetria. Anteprima in pausa, non un risultato di apprendimento.*
+*L'app 5.5.0 in vista affiancata: circuito, atlante del cervello e telemetria. Schermata nativa in pausa, non un risultato di apprendimento.*
 
 </div>
 
@@ -95,17 +95,37 @@ Le auto **non collidono tra loro**. La carreggiata usata da disegno, sensori e c
 
 ## Anteprime
 
-### Porsche 992 GT3 R in 3D
+Schermate native della **5.5.0**, con simulazione in pausa e profilo di prova separato dai progressi dell'utente. Non sono mockup o immagini ritoccate. Le nuove strutture si trovano in **Vista 3D → Inquadra → Tribune e box**.
 
-<img src="outputs/texture-verification-v510/source-3d/monza-car-left.png" alt="Porsche 992 GT3 R con livrea gialla e nera nell'app 5.1.0, osservata lateralmente a Monza" width="1200" />
+### Monza · tribune e box
 
-Il modello fornito nello ZIP dall'utente usa texture locali e livelli di dettaglio per contenere il costo del rendering. La telecamera cambia l'osservazione, non le decisioni dell'IA. [Crediti del modello](outputs/assets/PORSCHE-3D-CREDITS.md) · [Verifica delle texture](outputs/TEXTURE-v510.md).
+<img src="docs/assets/screenshots/v550/monza-grandstand.png" alt="App 5.5.0 in pausa: tribuna schematica nella zona Centrale di Monza, con sedute blu, scale e copertura" width="1200" />
+
+La tribuna nella zona Centrale: gradoni, sedute, scale e copertura sono geometrie 3D native. Architettura e dimensioni sono stimate, non un modello CAD della tribuna reale.
+
+<img src="docs/assets/screenshots/v550/monza-pits.png" alt="App 5.5.0 in pausa: edificio schematico dei box a Monza, con garage e vetrate superiori" width="1200" />
+
+Box illustrativi con garage e vetrate, separati dalla carreggiata e dalla distribuzione degli alberi. Non aggiungono una pit lane percorribile o collisioni.
+
+### Monaco · tribune ed edifici
+
+<img src="docs/assets/screenshots/v550/monaco-grandstand.png" alt="App 5.5.0 in pausa: tribuna schematica nella zona Sainte-Dévote di Monaco e edificio decorativo sullo sfondo" width="1200" />
+
+La zona Sainte-Dévote nella scena di Monaco. Tribune e collocazioni sono stimate; gli edifici Sketchfab sono decorativi, non un rilievo del quartiere.
+
+### Le Mans · rettilineo dei box
+
+<img src="docs/assets/screenshots/v550/le-mans-grandstand.png" alt="App 5.5.0 in pausa: tribuna coperta schematica, box e portale lungo il rettilineo di Le Mans" width="1200" />
+
+Tribune coperte, box e portale di partenza nella scena di Le Mans. Inquadrare una struttura sposta soltanto la camera, senza modificare la guida o l'apprendimento.
 
 ### Circuiti in scala metrica
 
-<img src="outputs/texture-verification-v510/source-3d/monza-overview.png" alt="Vista panoramica 3D del circuito di Monza nella versione 5.1.0, con il tracciato completo e i controlli della prova" width="1200" />
+<img src="docs/assets/screenshots/v550/monza-overview.png" alt="Panoramica 3D di Monza nell'app 5.5.0 in pausa: tracciato completo, vegetazione, vie di fuga e strutture schematiche" width="1200" />
 
-Queste anteprime sono della **5.1.0** e non mostrano il verde e il terreno introdotti nella 5.3.0. Le viste mostrano la geometria del simulatore, con larghezze locali stimate e cordoli documentati. Sono approssimazioni delle mappe, **non rilievi laser o CAD ufficiali**.
+La panoramica include vegetazione, terreno e scenografia della versione corrente. Le viste mostrano la geometria del simulatore, con larghezze locali stimate e cordoli documentati: **non rilievi laser o CAD ufficiali**. Nessuna schermata dimostra giri appresi o convergenza. [Fonti e limiti delle strutture](outputs/TRIBUNE-v550.md) · [Origine e checksum delle immagini](docs/assets/screenshots/v550/README.md).
+
+La Porsche fornita nello ZIP mantiene texture locali e livelli di dettaglio. [Crediti del modello](outputs/assets/PORSCHE-3D-CREDITS.md) · [Verifica delle texture](outputs/TEXTURE-v510.md).
 
 | Circuito | Lunghezza planimetrica nel simulatore |
 | --- | ---: |
