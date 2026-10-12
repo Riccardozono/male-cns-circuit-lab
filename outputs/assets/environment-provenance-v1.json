@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "appVersion": "5.4.0",
+  "revision": "environment-assets-1",
+  "licenseVerification": {
+    "date": "2026-10-12",
+    "method": "Official public Sketchfab model API (license, author and downloadable flag) plus supported signed-in browser download dialogs for both buildings.",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/"
+  },
+  "assets": [
+    {
+      "id": "tree",
+      "kind": "tree",
+      "title": "Tree low poly lowpoly",
+      "author": "00amza",
+      "uid": "73201f05280d48dcb10ed4ca362d69f8",
+      "source": "https://sketchfab.com/3d-models/tree-low-poly-lowpoly-73201f05280d48dcb10ed4ca362d69f8",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "8649ef6f01fa785300cdad598abd352594b4fbbcd48ffc2f1e0d48afd2fea206",
+      "derivedSha256": "a2aceb76249da496104289ada7c01792c657c74635841d9526743538cc671172",
+      "bytes": 210596,
+      "lods": [
+        {
+          "lod": 0,
+          "parts": 2,
+          "triangles": 1629
+        },
+        {
+          "lod": 1,
+          "parts": 2,
+          "triangles": 421
+        }
+      ],
+      "variants": [
+        "Tree 1",
+        "Tree 2"
+      ],
+      "textures": [
+        {
+          "name": "Tree",
+          "sha256": "94a5c999fdf57f24f3841cf45197a71ec1367ae15f36fb73e4a5f7354a24c838",
+          "bytes": 93733
+        }
+      ],
+      "changes": "World transforms baked; upright unit-height meshes rooted at ground; merged by variant/material; original triangle LOD0 topology/UVs and embedded texture bytes retained; distant geometry simplified with UV/normal constraints. Original supplied tree texture connected to base colour/alpha and alpha-tested.",
+      "legacyShaderConverted": false,
+      "lineSegmentsConverted": 0,
+      "placement": "Illustrative circuit dressing, not actual building locations or a tree survey.",
+      "file": "trees-supplied-v1.glb",
+      "generated": false,
+      "input": "tree-low-poly-lowpoly.zip / source/Tree 1 and 2.fbx + textures/Tree.png",
+      "zipSha256": "5185a5194a65de1ce0bd2a30d8ec0be5e495eaffb0d38660a684a7f88c3449ab",
+      "fbxSha256": "fc6850ebab3ff27b0991aeb5093fb7b8fe0c7e1b2e62ed2f693dcd3f735bf5d7",
+      "image": "textures/Tree.png",
+      "imageWidth": 256,
+      "imageHeight": 256
+    },
+    {
+      "id": "monaco",
+      "kind": "building",
+      "title": "Modular modernist eclectic building",
+      "author": "ChristosRami.studio",
+      "uid": "7003371cd8ba430c819ebd78eb0594cf",
+      "source": "https://sketchfab.com/3d-models/modular-modernist-eclectic-building-7003371cd8ba430c819ebd78eb0594cf",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "9735d6d40cd45daf2135edfc85859ee2d25b55208e8ce82848a26f6fd45e1b26",
+      "derivedSha256": "762ee005b938a651457686de4784097d40e885ac719f2014665273b96844e121",
+      "bytes": 867928,
+      "lods": [
+        {
+          "lod": 0,
+          "parts": 17,
+          "triangles": 3570
+        },
+        {
+          "lod": 1,
+          "parts": 17,
+          "triangles": 1536
+        }
+      ],
+      "variants": [
+        "Modular modernist eclectic building"
+      ],
+      "textures": [
+        {
+          "name": "embedded texture",
+          "sha256": "9d2453f0165c0f6332eaaabdc364aa82b2c9ad9e360244383126908c4af92aee",
+          "bytes": 25491
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "a86ccf75e3a030fd6350f069177b880f904de81526fc3068e36ec871b5cc6ea2",
+          "bytes": 30093
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "5330a0cd8944e3a9a6cc656d2115c9cc4803a3f7499fbb66ca8f10198f3947d4",
+          "bytes": 35881
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "a0d7765739b8d01d960bf96440916d8925b00a9b52488bff7c172c015fb29e8e",
+          "bytes": 28645
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "9ede871e3652e7bc43c17c2e0c66a62fa59249f0c27a171ef2aea6a2deea3307",
+          "bytes": 51711
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "535369fc41d72027c37cae43a84ccfd2dd02e63a6f18da5b3c3ea23eaa3ae9d2",
+          "bytes": 3974
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "b9a40880736a5ea1ca743b546ee0c13e3c50c4241956d06e6f916b3b4e0f93bf",
+          "bytes": 20923
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "fb5f608a8d904cfb26c59ee38d78d7abb27a484d4c37b4c78c84e9b79ff92ca7",
+          "bytes": 51043
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "ea3fa6cbf164706c269b8cfa61efd950d0c9776a1af3b53b377911147732de45",
+          "bytes": 41438
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "4f9e4cb1c357589424064b4688f7d2ce759f4459da3a54f7b3ff6ed1aa8ae322",
+          "bytes": 29047
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "2c314f05dc77459e4793625adfd54d9f7b0f66f8642ee6a49e4a44b7b7772dae",
+          "bytes": 22071
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "5b191104058fab23be5a38f77efb9883ca3d74c9641af811a3624206af75ce03",
+          "bytes": 37703
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "bdbc4d8fb11c5c09455f15b7b7c9a9165e48730d009e74451a57f439a3b0a1e5",
+          "bytes": 23671
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "920f9b9507a3b0c83346c86f1b4d5761b0a13803b2a25b631b50fe3a83f420cf",
+          "bytes": 118932
+        }
+      ],
+      "changes": "World transforms baked; upright unit-height meshes rooted at ground; merged by variant/material; original triangle LOD0 topology/UVs and embedded texture bytes retained; distant geometry simplified with UV/normal constraints. Original material and texture bindings retained. 12 source line segments converted to four-sided open display tubes at the same endpoints, diameter 0.002 of source building height before final normalization; thickness is an authored display approximation.",
+      "legacyShaderConverted": false,
+      "lineSegmentsConverted": 12,
+      "placement": "Illustrative circuit dressing, not actual building locations or a tree survey.",
+      "file": "monaco-building-v1.glb",
+      "generated": false,
+      "input": "Sketchfab downloadable GLB, original texture size 1k"
+    },
+    {
+      "id": "le-mans",
+      "kind": "building",
+      "title": "European House #3",
+      "author": "Satik64",
+      "uid": "ebdc29841f4d4b1fbc3d63c841a0a48a",
+      "source": "https://sketchfab.com/3d-models/european-house-3-ebdc29841f4d4b1fbc3d63c841a0a48a",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "45fe555e4f9c0cfa2abfade21a9d6e2f42bcb812631b558ab220f01706105189",
+      "derivedSha256": "bcb26f615f33f27147e5095a65792479c04023de95a5fb149d6c93cbe68de8f9",
+      "bytes": 4322440,
+      "lods": [
+        {
+          "lod": 0,
+          "parts": 2,
+          "triangles": 1706
+        },
+        {
+          "lod": 1,
+          "parts": 2,
+          "triangles": 671
+        }
+      ],
+      "variants": [
+        "European House #3"
+      ],
+      "textures": [
+        {
+          "name": "embedded texture",
+          "sha256": "72711f7bfb189a2d8500c6854761cf43d44881eb818bb595e43af0190bcf5afc",
+          "bytes": 1601168
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "70fdb73d14faad1cdb1616259c19135facc5437d8c52493dc356513b4db4b647",
+          "bytes": 335390
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "27bf488656ae883fb0ea39c6cc8a91666d20e8ec505d03a8904bc92a8afd90a8",
+          "bytes": 1610170
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "3083a2e3483ec284d69ff950df996f2ec840067b9a915b4d2c0b8b6f8941747f",
+          "bytes": 116522
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "b8b9839fb7e1a7a4eba796f02a36f3bf46bd7b6224feb651bd3209feb86a9eff",
+          "bytes": 369005
+        },
+        {
+          "name": "embedded texture",
+          "sha256": "f3e67caf93aa24d7f7869b4f5347eb0786946f224fbb68d64023ce7cc3a2ffde",
+          "bytes": 3930
+        }
+      ],
+      "changes": "World transforms baked; upright unit-height meshes rooted at ground; merged by variant/material; original triangle LOD0 topology/UVs and embedded texture bytes retained; distant geometry simplified with UV/normal constraints. Original material and texture bindings retained. Legacy specular/glossiness converted to supported dielectric metallic/roughness; diffuse, normals, AO and vertex colour preserved. Gloss response is approximate, not a pixel-identical legacy shader.",
+      "legacyShaderConverted": true,
+      "lineSegmentsConverted": 0,
+      "placement": "Illustrative circuit dressing, not actual building locations or a tree survey.",
+      "file": "le-mans-house-v1.glb",
+      "generated": false,
+      "input": "Sketchfab downloadable GLB, original texture size 1k"
+    }
+  ],
+  "boundary": "Display-only environment assets. No additional collision, neural/physics changes or surveyed real-world positions. The Porsche asset has a separate CC BY-NC-SA 4.0 license."
+}

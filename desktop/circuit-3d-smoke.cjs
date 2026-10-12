@@ -20,6 +20,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
     await engine.command({type:'setPopulation',value:100});await until('circuitLab.sim.cars.length===100');
     for(const circuitId of ['lab','monza','monaco','le-mans']){
       await change('circuit-select',circuitId);await until(`circuitLab.sim.circuitId===${JSON.stringify(circuitId)}&&circuitLab.sim.cars.length===100`);await engine.command({type:'pause',value:false});
+      check(circuitId+': all required local environment assets finish loading',await js('circuitLab.circuit3D.environmentReady'));
       const original=await engine.exportProgress(),hash=p=>crypto.createHash('sha256').update(JSON.stringify(p)).digest('hex');
       const beforeMotion=await js('JSON.stringify(circuitLab.sim.cars.map(c=>[c.x,c.y,c.heading,c.outputs,c.fitness]))');
       await change('camera-select','overview');await js('render()');
@@ -27,11 +28,14 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       const transform=metrics.carLods?.livery?.transform;
       check(circuitId+': 100 real agents and bounded instanced LOD draw calls',metrics.carCount===100&&metrics.drawCalls<150&&metrics.carRevision==='992-user-glb-lod-3'&&metrics.carLods?.livery?.loaded&&JSON.stringify(transform)===JSON.stringify({offset:[0,2],scale:[1,-1]})&&metrics.roadVertices>20&&!metrics.lost,metrics);
       check(circuitId+': static estimated barriers/runoffs load locally',metrics.scenery?.geometryRevision==='circuit-scenery-1'&&metrics.scenery.estimated&&metrics.scenery.barrierSegments>50&&metrics.scenery.meshes<=9&&metrics.scenery.zones.every(z=>z.renderedTiles>0),metrics.scenery);
-      check(circuitId+': physical estimated elevation and static vegetation are present',metrics.terrain?.revision==='terrain-profile-1'&&metrics.terrain.estimated&&metrics.vegetation?.instances>20&&metrics.vegetation.drawCalls<=3, {terrain:metrics.terrain,vegetation:metrics.vegetation});
+      check(circuitId+': supplied textured tree variants and physical terrain are present',metrics.terrain?.revision==='terrain-profile-1'&&metrics.terrain.estimated&&metrics.vegetation?.instances>20&&metrics.vegetation.supplied&&metrics.vegetation.variants===2&&metrics.vegetation.textures>0&&metrics.vegetation.drawCalls<=5, {terrain:metrics.terrain,vegetation:metrics.vegetation});
+      const buildingsExpected=['monaco','le-mans'].includes(circuitId);
+      check(circuitId+': licensed textured buildings appear only on Monaco and Le Mans',buildingsExpected?metrics.buildings?.buildings>20&&metrics.buildings.asset===circuitId&&metrics.buildings.textures>0&&metrics.buildings.drawCalls<=35:!metrics.buildings,metrics.buildings);
+      check(circuitId+': environment loading/status has no missing asset error',!metrics.environmentError&&await js('document.getElementById("track-3d-status").textContent.includes("Alberi ZIP")'),metrics.environmentError);
       const detailsInitiallyOn=await js('document.getElementById("track-details").getAttribute("aria-pressed")==="true"');
       if(!detailsInitiallyOn)await js('document.getElementById("track-details").click();render()');
       await js('document.getElementById("track-details").click();render()');
-      check(circuitId+': Details hides scenery while paused',await js('!circuitLab.circuit3D.info().scenery.visible&&!circuitLab.circuit3D.vegetation.group.visible'));
+      check(circuitId+': Details hides trees and buildings while paused',await js('!circuitLab.circuit3D.info().scenery.visible&&!circuitLab.circuit3D.vegetation.group.visible&&(!circuitLab.circuit3D.buildings||!circuitLab.circuit3D.buildings.group.visible)'));
       await js('document.getElementById("track-details").click();render()');
       check(circuitId+': Details restores scenery without new physics',await js('circuitLab.circuit3D.info().scenery.visible')&&hash(await engine.exportProgress())===hash(original));
       await js('document.getElementById("track-zoom-in").click();document.getElementById("track-3d-canvas").dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowLeft",bubbles:true}));render()');
@@ -39,6 +43,11 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       check(circuitId+': orbit/zoom/follow never alter physics or training',hash(await engine.exportProgress())===hash(original)&&await js('JSON.stringify(circuitLab.sim.cars.map(c=>[c.x,c.y,c.heading,c.outputs,c.fitness]))')===beforeMotion);
       if(capture&&circuitId!=='lab'){
         await change('camera-select','overview');await snap(circuitId+'-overview',1540,980);
+        // Camera-only diagnostic close-up of an actual deterministically placed
+        // asset. No cars, physics, trees or houses are staged for the picture.
+        await js(`(()=>{const v=circuitLab.circuit3D,p=${buildingsExpected?'v.buildings.plan.placements[0]':'v.vegetation.plan.plants.find(p=>!p.bush)'};v.focusPoint(p);v.focus.y=p.groundY+p.height*.4;v.distance=${buildingsExpected?'Math.max(35,p.height*2.8)':'30'};v.pitch=.38;v.yaw=2.3;render();})()`);
+        check(circuitId+': asset camera close-up preserves paused progress',hash(await engine.exportProgress())===hash(original));
+        await snap(circuitId+(buildingsExpected?'-buildings':'-trees'),1540,980,{scope:'Camera-only observation of actual native placements; not real-world architectural registration or learned driving.'});
         const focusLabels={monza:'Prima Variante · T1',monaco:'Sainte-Dévote','le-mans':'Chicane Dunlop'};
         await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('width:')&&o.textContent.startsWith(${JSON.stringify(focusLabels[circuitId]+' · ')}));if(!option)throw Error('Named runoff UI focus unavailable');select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));circuitLab.circuit3D.distance=145;circuitLab.circuit3D.pitch=1.05;render();})()`);
         const focusBefore=hash(original),focusAfter=hash(await engine.exportProgress());
@@ -69,6 +78,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
     await js('document.getElementById("track-mode-3d").click()');await until('circuitLab.circuitView==="3d"');
   }
   await js('document.getElementById("open-model-test").click()');check('Test entry remains visible and focuses Start',await js('document.getElementById("model-test-panel").open&&document.activeElement.id==="model-test-start"'));
+  check('In-app environment author/license links remain findable',await js('document.querySelector(".track-asset-credit summary").textContent==="Modelli 3D e crediti"&&document.querySelector(".track-asset-credit").textContent.includes("00amza")&&document.querySelector(".track-asset-credit").textContent.includes("Satik64")&&document.querySelector(".track-asset-credit").textContent.includes("ChristosRami.studio")'));
   await js('document.getElementById("model-test-panel").open=false;document.getElementById("view-split").click()');check('Brain atlas and circuit can be displayed together',await js('!document.getElementById("brain-view").hidden&&!document.getElementById("circuit-view").hidden'));
   if(capture){await snap('desktop-split',1540,980);await js('document.getElementById("view-circuit").click()');await snap('desktop',1540,980);await snap('user-1280',1280,900);await snap('mobile',390,1100);await snap('mobile-opening',390,1100);}
   const unexpected=errors.filter(e=>!(forceCpuFallback&&/WebGL|context|GL context/i.test(e)));check('No unexpected renderer errors',unexpected.length===0,errors);

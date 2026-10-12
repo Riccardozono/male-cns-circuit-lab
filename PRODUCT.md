@@ -1,6 +1,28 @@
 # Product
 
-## Estensione corrente: vegetazione e dislivello fisico, Windows 5.3.0
+## Estensione corrente: alberi forniti e case Sketchfab, Windows 5.4.0
+
+L'utente fornisce il modello degli alberi e il suo link Sketchfab; chiede case
+scaricate dal medesimo sito per Monaco e Le Mans. Due mesh reali dello ZIP e
+texture originale; edificio di ChristosRami.studio a Monaco, European House #3
+di Satik64 a Le Mans. Licenze CC BY 4.0 verificate e adattamenti dichiarati nei
+[crediti](outputs/assets/ENVIRONMENT-CREDITS.md). Posizioni e dimensioni sono
+scenografiche, non le architetture reali rilevate lungo i circuiti.
+
+Istanziazione GPU, texture condivise, due LOD e cache locale per circuito.
+Le impronte evitano strada, vie di fuga e sovrapposizioni; fondazioni solamente
+visive raccordano le case al terreno disegnato. Comandi e layout conservati:
+Dettagli include anche case/alberi; stato di caricamento e crediti usano lo spazio
+esistente. 2D, Segui auto, Panoramica e cervello restano. Nessuna nuova collisione,
+né modifica a fisica, sensori, reward o apprendimento della 5.3.0.
+
+Estensione Operate nell'identità esistente, non un redesign: DESIGN.md e sidecar
+intatti. Gli asset non sono raster generati. [Guida](outputs/ASSET-AMBIENTE-v540.md),
+[provenienza](outputs/assets/environment-provenance-v1.json) e
+[verifiche](outputs/VERIFICA-v540.md). App/progressi richiedono 5.4.0 esatta;
+build, release e salvataggi precedenti preservati.
+
+## Estensione precedente: vegetazione e dislivello fisico, Windows 5.3.0
 
 L'utente chiede vegetazione e dislivello del circuito e conferma esplicitamente
 che il rilievo deve influenzare la fisica. Un campo di quota condiviso rialza

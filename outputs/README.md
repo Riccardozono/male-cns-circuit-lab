@@ -1,6 +1,18 @@
-# MAL-E CNS / Circuit Lab — Windows 5.3.0
+# MAL-E CNS / Circuit Lab — Windows 5.4.0
 
-Distribuzione corrente in `dist-terrain-v530/`: vegetazione procedurale 3D e
+Distribuzione corrente in `dist-assets-v540/`: entrambi gli alberi forniti nello
+ZIP con texture originale; edifici Sketchfab a Monaco e case a Le Mans, con
+texture incorporate, instancing e due LOD. Posizioni e scale illustrative,
+licenze CC BY 4.0 e attribuzioni nei [crediti](assets/ENVIRONMENT-CREDITS.md).
+**Dettagli: sì/no** controlla anche case e verde. La 2D e l'atlante restano.
+Fisica, sensori, ricompense, apprendimento e carreggiata sono identici alla 5.3.0;
+nessuna collisione con questi asset. I salvataggi nuovi richiedono **5.4.0**;
+quelli 5.3.0 richiedono la vecchia app, preservata. Nessuna migrazione automatica.
+[Guida e limiti](ASSET-AMBIENTE-v540.md) · [Verifiche](VERIFICA-v540.md).
+
+## Distribuzione precedente 5.3.0
+
+Distribuzione 5.3.0 in `dist-terrain-v530/`: vegetazione procedurale 3D e
 profili altimetrici stimati, con **pendenza e curvatura attive nella fisica**.
 Salite/discese modificano accelerazione, frenata e carico normale delle gomme.
 Strada, auto, bordi, cordoli e camera campionano la stessa superficie. Il

@@ -7,6 +7,8 @@ import {CarFleet,CAR_VISUAL_REVISION} from './car-3d.mjs';
 import {createTrackScenery} from './track-scenery.mjs';
 import {Terrain,drape,refineRoad,terrainMesh} from './terrain-3d.mjs';
 import {createVegetation} from './vegetation.mjs';
+import {EnvironmentAssets} from './environment-assets.mjs';
+import {createBuildings} from './buildings.mjs';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function overviewFit(bounds,aspect,yaw=2.3,pitch=.90,fov=48,points=null,target={x:0,z:0}){
   const tangent=Math.tan(fov*Math.PI/360),halfX=bounds.width/2,halfZ=bounds.height/2;
@@ -67,14 +69,20 @@ export class Circuit3D{
     const markerGeometry=new T.BufferGeometry();markerGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(300),3));markerGeometry.setAttribute('color',new T.BufferAttribute(new Float32Array(300),3));
     this.markers=new T.Points(markerGeometry,new T.PointsMaterial({size:5,sizeAttenuation:false,vertexColors:true,depthTest:false}));this.markers.frustumCulled=false;this.markers.renderOrder=6;this.scene.add(this.markers);
     this.selection=new T.Mesh(new T.RingGeometry(2.6,2.7,40),new T.MeshBasicMaterial({color:0xf0bd69,side:T.DoubleSide,depthTest:false}));this.selection.rotation.x=-Math.PI/2;this.selection.renderOrder=7;this.scene.add(this.selection);
-    this.listeners=[];this.bindControls();
+    this.listeners=[];this.bindControls();this.environmentAssets=new EnvironmentAssets();this.onModelStatus=onModelStatus;
+    this.treeReady=this.environmentAssets.load('tree').then(()=>{if(!this.disposed&&this.track)this.refreshDressing();this.notifyModelStatus();return true;}).catch(error=>{if(!this.disposed){this.treeError='Alberi ZIP non disponibili: vegetazione semplificata. '+error.message;this.notifyModelStatus();}return false;});
     this.modelReady=import('./supplied-car-3d.mjs').then(({SuppliedCarFleet})=>SuppliedCarFleet.load(this.carGroup)).then(fleet=>{
       if(this.disposed){fleet.dispose();return false;}
-      this.fleet.dispose();this.fleet=fleet;this.carRevision=fleet.info().revision;this.dirty=true;onModelStatus('Porsche 992 dello ZIP · livrea originale · dettaglio adattivo su GPU');this.onChange();return true;
-    }).catch(error=>{onModelStatus('Modello Porsche non disponibile: auto semplificata temporanea. '+error.message);return false;});
+      this.fleet.dispose();this.fleet=fleet;this.carRevision=fleet.info().revision;this.dirty=true;this.notifyModelStatus();this.onChange();return true;
+    }).catch(error=>{if(!this.disposed){this.carError='Porsche non disponibile: auto semplificata temporanea. '+error.message;this.notifyModelStatus();}return false;});
     this.listen('webglcontextlost',e=>{e.preventDefault();this.lost=true;this.onFallback('Contesto 3D perso. La simulazione continua in 2D.');});
   }
   listen(name,handler,options){this.canvas.addEventListener(name,handler,options);this.listeners.push([name,handler,options]);}
+  modelStatus(){
+    const tree=this.environmentAssets.assets.has('tree'),houses=['monaco','le-mans'].includes(this.model?.id),house=this.environmentAssets.assets.has(this.model?.id);
+    return [this.carError||(this.carRevision?'Porsche 992 · livrea originale':'Caricamento Porsche 992…'),this.treeError||(tree?'Alberi ZIP · texture originali':'Caricamento alberi ZIP…'),...(houses?[this.houseError||(house?'Edifici Sketchfab · posizioni illustrative':'Caricamento edifici locali…')]:[])].join(' · ');
+  }
+  notifyModelStatus(){if(!this.disposed)this.onModelStatus(this.modelStatus());}
   bindControls(){
     const pointers=new Map();let gesture=null,pinch=0;
     this.listen('pointerdown',e=>{if(e.button!==0&&e.button!==2)return;this.canvas.focus({preventScroll:true});this.canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});gesture={x:e.clientX,y:e.clientY,moved:false,pan:e.shiftKey||e.button===2};if(pointers.size===2){const p=[...pointers.values()];pinch=Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y);}});
@@ -92,17 +100,19 @@ export class Circuit3D{
   }
   setTrack(track,model,onRoad){
     if(this.track===track&&this.model===model)return;
-    this.clearStatic();this.track=track;this.model=model;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
+    this.clearStatic();this.track=track;this.model=model;this.houseError=null;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
     this.scene.background.set(model.theme.ground);
     const add=(geometry,material)=>{const mesh=new T.Mesh(geometry,material);this.staticGroup.add(mesh);return mesh;};
     this.scenery=createTrackScenery(track,model,this.origin);this.staticGroup.add(this.scenery.group);
     this.ground=Terrain.forTrack(track);this.terrainInfo=this.ground.info();
     for(const object of this.scenery.group.children)drape(object.geometry,this.origin,this.ground);
     this.terrainObject=terrainMesh(track,this.scenery.groundMaterial(),this.ground);this.staticGroup.add(this.terrainObject);
-    const vegetationGround={...this.ground,visualHeight:(x,y)=>this.terrainObject.userData.heightAt(x,y)/this.ground.ppm};
-    this.vegetation=createVegetation(track,model,this.scenery.plan,vegetationGround,this.origin);this.staticGroup.add(this.vegetation.group);
-    this.overviewPoints=[...track.outer,...this.scenery.plan.footprint].map(p=>({...p,height:this.ground.sample(p.x,p.y).height*this.ground.ppm}));
-    for(const p of this.vegetation.plan.plants)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});
+    this.dressingGround={...this.ground,visualHeight:(x,y)=>this.terrainObject.userData.heightAt(x,y)/this.ground.ppm};
+    this.baseOverviewPoints=[...track.outer,...this.scenery.plan.footprint].map(p=>({...p,height:this.ground.sample(p.x,p.y).height*this.ground.ppm}));
+    this.refreshDressing();
+    const house=['monaco','le-mans'].includes(model.id)?this.environmentAssets.load(model.id):Promise.resolve();
+    this.notifyModelStatus();
+    this.environmentReady=Promise.all([this.treeReady,house]).then(([tree])=>{if(!this.disposed&&this.track===track){this.refreshDressing();this.notifyModelStatus();return tree;}return false;}).catch(error=>{if(!this.disposed&&this.track===track){this.houseError='Edifici non disponibili: riprova cambiando circuito. '+error.message;this.notifyModelStatus();}return false;});
     this.staticGroup.add(groundMesh(b,this.scenery.groundMaterial(),track.pixelsPerMeter||1));
     this.road=add(roadGeometry(track,this.origin),new T.MeshLambertMaterial({color:model.theme.road,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
     const outline=[];for(const wall of track.walls)outline.push(wall.a.x-this.origin.x,.06,wall.a.y-this.origin.y,wall.b.x-this.origin.x,.06,wall.b.y-this.origin.y);
@@ -117,7 +127,14 @@ export class Circuit3D{
     checker.forEach((p,i)=>add(drape(triangles(p),this.origin,this.ground),new T.MeshBasicMaterial({color:i?0xf4efdf:0x13191d,side:T.DoubleSide})));
     this.overviewDistance=this.fitDistance();this.reset();
   }
-  clearStatic(){this.scenery?.dispose();this.vegetation?.dispose();this.scenery=null;this.vegetation=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
+  refreshDressing(){
+    this.vegetation?.dispose();this.buildings?.dispose();this.buildings=null;
+    const house=this.environmentAssets.assets.get(this.model.id);if(house){this.buildings=createBuildings(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,house);this.staticGroup.add(this.buildings.group);}
+    this.vegetation=createVegetation(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,this.environmentAssets.assets.get('tree'),this.buildings?.plan.placements||[]);this.staticGroup.add(this.vegetation.group);
+    this.overviewPoints=[...this.baseOverviewPoints];for(const p of this.vegetation.plan.plants)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});if(this.buildings)this.overviewPoints.push(...this.buildings.plan.footprints);
+    this.dirty=true;this.onChange();
+  }
+  clearStatic(){this.scenery?.dispose();this.vegetation?.dispose();this.buildings?.dispose();this.scenery=null;this.vegetation=null;this.buildings=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
   overviewTarget(){return overviewTarget({...this.track,outer:this.overviewPoints||this.track.outer},this.yaw);}
   fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.overviewPoints||this.track.outer,this.overviewTarget()):1200;}
   centreOverview(){const target=this.track?this.overviewTarget():{x:0,z:0};this.focus.set(target.x,target.y||0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
@@ -147,6 +164,7 @@ export class Circuit3D{
     this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
     this.scenery?.setVisible(details,this.mode);
     this.vegetation?.setVisible(details);
+    this.buildings?.setVisible(details);this.vegetation?.update(this.camera,this.mode);this.buildings?.update(this.camera,this.mode);
     this.road.material.color.set(this.mode==='overview'?0x62757b:this.model.theme.road);this.outline.material.color.set(this.mode==='overview'?0xb1c0c1:0x82999d);
     this.selection.position.set(selected.x-this.origin.x,elevation+.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
     this.rays.visible=sensors;
@@ -155,6 +173,6 @@ export class Circuit3D{
     for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+1.4)*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
-  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,vegetation:this.vegetation?.info(),lost:this.lost};}
-  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
+  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,vegetation:this.vegetation?.info(),buildings:this.buildings?.info(),environmentError:this.treeError||this.houseError||null,lost:this.lost};}
+  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();this.environmentAssets.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }

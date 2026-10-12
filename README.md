@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.3.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0)
+[![Versione 5.4.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.4.0)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-portable-5.3.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-setup-5.3.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0)**
+**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.4.0/MAL-E-CNS-Circuit-Lab-portable-5.4.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.4.0/MAL-E-CNS-Circuit-Lab-setup-5.4.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.4.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,7 +34,9 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
-**Novità 5.3.0:** alberi e cespugli 3D fuori dalla carreggiata e dalle vie di fuga, più salite e discese che **influenzano davvero gravità, accelerazione, frenata e carico degli pneumatici**. Strada, auto, cordoli, protezioni e camera seguono la stessa superficie. Quote locali e raccordi sono **stime esplicite**, non un rilievo altimetrico completo; la vegetazione è procedurale e solo visiva. **Dettagli: sì/no** nasconde verde e protezioni, ma non disattiva la fisica del terreno. [Guida, fonti e limiti](outputs/TERRENO-v530.md).
+**Novità 5.4.0:** i due alberi dello ZIP dell'utente, con la loro texture originale, sostituiscono le chiome procedurali. Monaco aggiunge edifici e Le Mans case scaricate da Sketchfab con licenza **CC BY 4.0**, mantenendo immagini locali e dettaglio adattivo. Case, alberi e cespugli restano fuori dalla carreggiata e dalle vie di fuga; **Dettagli: sì/no** li nasconde insieme alle protezioni. Posizioni e scale sono illustrative, non un rilievo delle case reali. Questa versione conserva fisica e apprendimento della 5.3.0. [Guida](outputs/ASSET-AMBIENTE-v540.md) · [Crediti e adattamenti](outputs/assets/ENVIRONMENT-CREDITS.md).
+
+Restano attivi i dislivelli della 5.3.0: gravità, accelerazione, frenata e carico degli pneumatici dipendono dalla superficie condivisa. Quote locali e raccordi sono **stime esplicite**, non un rilievo altimetrico completo. Nascondere la scenografia non disattiva la fisica del terreno. [Fonti e limiti del terreno](outputs/TERRENO-v530.md).
 
 La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Monaco e nove a Le Mans, senza accessi di servizio. Barriere e verde non aggiungono collisioni; geometria XY, policy neurale, algoritmi di apprendimento e ricompense sono conservati. Il nuovo ambiente fisico può invece cambiare il comportamento delle auto. [Scenografia 5.2.0](outputs/AMBIENTE-3D-v520.md).
 
@@ -42,10 +44,10 @@ La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Mon
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-portable-5.3.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.3.0/MAL-E-CNS-Circuit-Lab-setup-5.3.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.4.0/MAL-E-CNS-Circuit-Lab-portable-5.4.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.4.0/MAL-E-CNS-Circuit-Lab-setup-5.4.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
-La [release 5.3.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.3.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
+La [release 5.4.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.4.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
 
 ### Esplora una prova
 
@@ -191,7 +193,7 @@ No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabor
 <details>
 <summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-No. Un file `.malecns-save` creato con **5.3.0** richiede **5.3.0**; i file 5.2.0 e 5.1.0 continuano a richiedere le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
+No. Un file `.malecns-save` creato con **5.4.0** richiede **5.4.0**; i file 5.3.0, 5.2.0 e 5.1.0 continuano a richiedere le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
 </details>
 
@@ -207,11 +209,12 @@ Salite, discese e curvatura verticale modificano gravità e carichi, ma la vettu
 ## Documentazione
 
 - [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
-- [Verifica 5.3.0](outputs/VERIFICA-v530.md) — gravità, carichi, regressione piana e vegetazione; [rapporto precedente 5.2.0](outputs/VERIFICA-v520.md).
+- [Verifica 5.4.0](outputs/VERIFICA-v540.md) — asset, impronte, LOD e regressioni; [verifica 5.3.0](outputs/VERIFICA-v530.md) — gravità e carichi.
 - [Profilo V5](outputs/MODELLO-V5.md) — anatomia, capacità elaborata e costo computazionale.
 - [Circuiti](outputs/CIRCUITI.md) — geometrie, larghezze e provenienza.
 - [Vista 3D](outputs/VISTA-3D-v510.md) — telecamere, risorse e limiti del rendering.
 - [Barriere e vie di fuga 5.2.0](outputs/AMBIENTE-3D-v520.md) — scenografia locale, copertura e stime.
+- [Alberi ed edifici 5.4.0](outputs/ASSET-AMBIENTE-v540.md) — modelli Sketchfab, texture locali e limiti di posizionamento.
 - [Vegetazione e dislivello fisico 5.3.0](outputs/TERRENO-v530.md) — profili stimati, superficie condivisa e limiti.
 - [Texture Porsche](outputs/TEXTURE-v510.md) — livrea locale e coordinate UV.
 - [Modalità test](outputs/TEST-MODELLI-v500.md) — protocollo del confronto dei due giri.
@@ -271,6 +274,7 @@ La build produce i pacchetti in `dist-terrain-v530/`, separati dalle distribuzio
 
 - **Cervello e strumenti anatomici:** [natverse/malecns](https://github.com/natverse/malecns), [dati ufficiali MaleCNS](https://male-cns.janelia.org/download/) e relativo [manifest di provenienza](outputs/data/provenance.json).
 - **Modello Porsche:** [MattDoesBlender](https://sketchfab.com/MattDoesBlender), asset fornito dall'utente; attribuzione, licenza e modifiche nei [crediti 3D](outputs/assets/PORSCHE-3D-CREDITS.md).
+- **Alberi e case:** 00amza, ChristosRami.studio e Satik64, asset Sketchfab CC BY 4.0; [fonti, licenze e adattamenti](outputs/assets/ENVIRONMENT-CREDITS.md).
 - **Presentazione del repository:** struttura ispirata al [README di REA](https://github.com/morluto/rea), adattata ai contenuti e alle immagini reali di questo progetto.
 
 Il riferimento al gioco Steam indica l'idea funzionale di partenza; il progetto non riusa codice o asset del gioco. Le condizioni dei dati e degli asset sono documentate separatamente: la modalità vibe coding non ne modifica le licenze.
