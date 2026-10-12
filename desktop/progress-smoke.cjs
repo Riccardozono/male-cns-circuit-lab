@@ -69,10 +69,10 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
     ['Cancel replacement',[['open',{canceled:false,filePaths:[path.join(output,'progress-v2.malecns-save')]}],['confirm',{response:1}]],'annullato']
   ]){for(const [type,result]of actions)queue(type,result);await click(name==='Cancel Save'?'save-progress':'load-progress');check(name+' preserves current trial',hash(await stable())===hash(before)&&engine.sessionId===session&&await js(`document.getElementById('progress-status').textContent.includes('${expected}')`));}
   const wrongPath=path.join(output,'wrong-version.malecns-save'),brokenPath=path.join(output,'broken-checksum.malecns-save'),shapePath=path.join(output,'wrong-policy.malecns-save');
-  await fs.writeFile(wrongPath,await Progress.encode(before,'4.6.1'));
+  await fs.writeFile(wrongPath,await Progress.encode(before,'5.5.0'));
   const broken=JSON.parse(await Progress.encode(before,version));broken.payload.workers[0].state.optimizer.mean[0]+=1;await fs.writeFile(brokenPath,JSON.stringify(broken));
   const wrongShape=JSON.parse(JSON.stringify(before));wrongShape.workers[0].state.genomes[0].policyWeights=[0];await fs.writeFile(shapePath,await Progress.encode(wrongShape,version));
-  for(const [name,target,fragment]of [['Different patch version',wrongPath,'richiede esattamente'],['Checksum mismatch',brokenPath,'checksum'],['Malformed policy',shapePath,'incompatibile']]){
+  for(const [name,target,fragment]of [['Previous 5.5.0 release',wrongPath,'richiede esattamente'],['Checksum mismatch',brokenPath,'checksum'],['Malformed policy',shapePath,'incompatibile']]){
     queue('open',{canceled:false,filePaths:[target]});await click('load-progress');
     const status=await js("document.getElementById('progress-status').textContent");check(name+' is rejected without changing the trial',status.includes(fragment)&&engine.sessionId===session&&hash(await stable())===hash(before),status);
   }

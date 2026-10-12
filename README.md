@@ -6,23 +6,23 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.5.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.5.0)
+[![Versione 5.6.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.5.0/MAL-E-CNS-Circuit-Lab-portable-5.5.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.5.0/MAL-E-CNS-Circuit-Lab-setup-5.5.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.5.0)**
+**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
 <br />
 
-<img src="docs/assets/screenshots/v550/desktop-split.png" alt="MAL-E CNS Circuit Lab 5.5.0 in pausa: Monza in 3D, atlante MaleCNS e controlli della simulazione affiancati" width="1200" />
+<img src="docs/assets/screenshots/v560/desktop-split.png" alt="MAL-E CNS Circuit Lab 5.6.0 in pausa: Monza in 3D, atlante MaleCNS e controlli della simulazione affiancati" width="1200" />
 
 <br />
 
-*L'app 5.5.0 in vista affiancata: circuito, atlante del cervello e telemetria. Schermata nativa in pausa, non un risultato di apprendimento.*
+*L'app 5.6.0 in vista affiancata: circuito, atlante del cervello e telemetria. Schermata nativa in pausa, non un risultato di apprendimento.*
 
 </div>
 
@@ -36,7 +36,7 @@ La simulazione usa risorse locali, senza inviare le decisioni di guida a un serv
 
 **Novità 5.5.0:** tribune 3D con sedute, gradoni, scale, parapetti e coperture, più box, cabine di pista, portale di partenza e cartelli di frenata illustrativi. Trovale in **Vista 3D → Inquadra → Tribune e box**. Le zone delle tribune fanno riferimento alle mappe ufficiali 2026; architettura, misure e raccordo con il tracciato sono stime dichiarate. Le sedute vicine usano dettaglio adattivo; tutta la nuova geometria richiede al massimo tre batch di disegno. Fisica e apprendimento della 5.4.0 restano invariati. [Guida e fonti](outputs/TRIBUNE-v550.md) · [Verifiche](outputs/VERIFICA-v550.md).
 
-**Sviluppo corrente, versione invariata:** il sorgente aggiunge il paesaggio NASA SRTM, aree del terreno ed edifici OSM, dintorni di Le Mans fino a **2 km** e nuovi boschi Sketchfab, soprattutto a Monza. La scena verificata contiene 10.626 alberi a Monza e 25.075 a Le Mans; sono istanze decorative, non un censimento delle piante reali. In **Vista 3D → Inquadra** scegli **Bosco** o **Paesaggio**. IA, fisica e formato dei progressi restano invariati. Queste modifiche sono nel sorgente: **i download della release 5.5.0 qui sopra non sono stati sostituiti**. [Guida e limiti](outputs/BOSCHI-PAESAGGIO.md) · [Verifica](outputs/VERIFICA-BOSCHI.md).
+**Novità 5.6.0:** paesaggio NASA SRTM, aree del terreno ed edifici OSM, dintorni di Le Mans fino a **2 km** e nuovi boschi Sketchfab, soprattutto a Monza. La scena verificata contiene 10.626 alberi a Monza e 25.075 a Le Mans; sono istanze decorative, non un censimento delle piante reali. In **Vista 3D → Inquadra** scegli **Bosco** o **Paesaggio**. IA e fisica restano invariate; i nuovi progressi richiedono la 5.6.0 e quelli 5.5.0 restano utilizzabili nella vecchia release, conservata. [Guida e limiti](outputs/PAESAGGIO-v560.md) · [Verifica](outputs/VERIFICA-v560.md).
 
 Restano gli asset della 5.4.0: i due alberi dello ZIP dell'utente, con la loro texture originale, gli edifici di Monaco e le case di Le Mans scaricate da Sketchfab con licenza **CC BY 4.0**. Case, alberi e cespugli rimangono fuori dalla carreggiata e dalle vie di fuga e lasciano spazio alle nuove strutture; **Dettagli: sì/no** nasconde tutta la scenografia. Posizioni e scale sono illustrative, non un rilievo delle case reali. [Guida agli asset](outputs/ASSET-AMBIENTE-v540.md) · [Crediti e adattamenti](outputs/assets/ENVIRONMENT-CREDITS.md).
 
@@ -48,10 +48,10 @@ La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Mon
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.5.0/MAL-E-CNS-Circuit-Lab-portable-5.5.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.5.0/MAL-E-CNS-Circuit-Lab-setup-5.5.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
-La [release 5.5.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.5.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode: Windows SmartScreen potrebbe mostrare un avviso al primo avvio.
+La [release 5.6.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode.
 
 ### Esplora una prova
 
@@ -97,7 +97,21 @@ Le auto **non collidono tra loro**. La carreggiata usata da disegno, sensori e c
 
 ## Anteprime
 
-Schermate native della **5.5.0**, con simulazione in pausa e profilo di prova separato dai progressi dell'utente. Non sono mockup o immagini ritoccate. Le nuove strutture si trovano in **Vista 3D → Inquadra → Tribune e box**.
+Schermate native della **5.6.0**, con simulazione in pausa e profilo di prova separato dai progressi dell'utente. Non sono mockup o immagini ritoccate. [Origine e checksum](docs/assets/screenshots/v560/README.md).
+
+### Monza · nuovi boschi Sketchfab
+
+<img src="docs/assets/screenshots/v560/monza-woodland.png" alt="App 5.6.0 in pausa: nuovo bosco di Monza con le sagome Sketchfab e la quercia volumetrica" width="1200" />
+
+Boschi collocati nelle aree verdi OSM disponibili, con esclusione di carreggiata, vie di fuga ed edifici. Le singole posizioni sono illustrative.
+
+### Le Mans · dintorni a 2 km
+
+<img src="docs/assets/screenshots/v560/le-mans-landscape.png" alt="App 5.6.0 in pausa: paesaggio NASA SRTM di Le Mans nella fascia estesa a 2 km" width="1200" />
+
+Quote NASA del 2000, registrazione e raccordo al tracciato stimati. Non è una ricostruzione laser degli autodromi.
+
+Le anteprime delle strutture qui sotto sono le acquisizioni storiche **5.5.0**, conservate senza modifiche; quelle strutture rimangono nell'app 5.6.0.
 
 ### Monza · tribune e box
 
@@ -173,8 +187,8 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | --- | --- | ---: |
 | **GPT-6 Astra** | OpenAI Codex | 0 |
 | **GPT-6 Luna** | OpenAI Codex | 0 |
-| **GPT-6.1 Sol** | OpenAI Codex | **14** |
-| **GPT-5.6 Luna** | OpenAI Codex | 0 |
+| **GPT-6.1 Sol** | OpenAI Codex | **15** |
+| **GPT-5.6 Luna** | OpenAI Codex | **1** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
@@ -216,7 +230,7 @@ No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabor
 <details>
 <summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-No. Un file `.malecns-save` creato con **5.5.0** richiede **5.5.0**; i file 5.4.0, 5.3.0, 5.2.0 e 5.1.0 continuano a richiedere le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
+No. Un file `.malecns-save` creato con **5.6.0** richiede **5.6.0**; i file 5.5.0, 5.4.0, 5.3.0, 5.2.0 e 5.1.0 continuano a richiedere le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
 </details>
 
@@ -232,7 +246,8 @@ Salite, discese e curvatura verticale modificano gravità e carichi, ma la vettu
 ## Documentazione
 
 - [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
-- [Boschi e Le Mans a 2 km](outputs/BOSCHI-PAESAGGIO.md) — sviluppo corrente a versione invariata; [verifica](outputs/VERIFICA-BOSCHI.md).
+- [Paesaggio e boschi 5.6.0](outputs/PAESAGGIO-v560.md) — Le Mans a 2 km, alberi Sketchfab e compatibilità; [verifica](outputs/VERIFICA-v560.md).
+- [Metodo dei boschi](outputs/BOSCHI-PAESAGGIO.md) — sviluppo precedente, poi integrato nella 5.6.0; [prove iniziali](outputs/VERIFICA-BOSCHI.md).
 - [Paesaggio NASA SRTM](outputs/PAESAGGIO-SRTM.md) — quote originali, registrazione stimata e provenienza.
 - [Pulizia del repository](docs/REPOSITORY.md) — file conservati, diagnostici esclusi e progressi locali protetti.
 - [Tribune e dettagli 5.5.0](outputs/TRIBUNE-v550.md) — zone di riferimento, modelli schematici e controllo Inquadra; [verifica 5.5.0](outputs/VERIFICA-v550.md).
@@ -278,7 +293,7 @@ npm run dist
 
 Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-La configurazione genera i pacchetti in `dist-facilities-v550/`. Se nella cartella esistono già pacchetti da conservare, usa una destinazione di prova separata, per esempio `npx electron-builder --win portable nsis --publish never --config.directories.output=dist-local-preview-5.5.0`. Gli eseguibili pubblicati sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente; gli aggiornamenti di sviluppo non creano automaticamente nuove release.
+La configurazione genera i pacchetti in `dist-landscape-v560/`. Se nella cartella esistono già pacchetti da conservare, usa una destinazione di prova separata, per esempio `npx electron-builder --win portable nsis --publish never --config.directories.output=dist-local-preview-5.6.0`. Gli eseguibili pubblicati sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente; gli aggiornamenti di sviluppo non creano automaticamente nuove release.
 
 <details>
 <summary><strong>Struttura del repository</strong></summary>

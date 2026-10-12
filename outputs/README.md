@@ -1,6 +1,20 @@
-# MAL-E CNS / Circuit Lab — Windows 5.5.0
+# MAL-E CNS / Circuit Lab — Windows 5.6.0
 
-Distribuzione corrente in `dist-facilities-v550/`: tribune 3D con sedute,
+Distribuzione corrente in `dist-landscape-v560/`: paesaggio NASA SRTM,
+aree ed edifici OSM, boschi Sketchfab più densi a Monza e fascia Le Mans
+estesa a 2 km. In **Vista 3D → Inquadra** usa **Bosco** o **Paesaggio**;
+rimangono la mappa 2D, l'inseguimento, la panoramica e l'atlante del cervello.
+Posizioni, architettura e registrazione geografica sono dichiarate stimate.
+[Guida 5.6.0](PAESAGGIO-v560.md) · [Verifica](VERIFICA-v560.md).
+
+Fisica, sensori, reti, ricompense e apprendimento della 5.5.0 sono conservati.
+I nuovi salvataggi richiedono esattamente **5.6.0**; i progressi 5.5.0 si
+usano con la vecchia app. Nessuna migrazione automatica, cancellazione o
+riscrittura dei progressi. Le vecchie distribuzioni rimangono disponibili.
+
+## Distribuzione precedente 5.5.0
+
+Distribuzione 5.5.0 in `dist-facilities-v550/`: tribune 3D con sedute,
 gradoni, scale, parapetti e coperture; box, cabine, portale di partenza e
 cartelli di frenata illustrativi. In **Vista 3D → Inquadra → Tribune e box**
 puoi ispezionare le strutture. **Dettagli: sì/no** controlla tutta la scenografia.

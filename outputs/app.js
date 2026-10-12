@@ -14,7 +14,7 @@ const carRenderer=new MaleCNSCars.Renderer();
 const agentSelection=new MaleCNSAgents.Selection();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.5.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.6.0',number=n=>n.toLocaleString('it-IT');
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
