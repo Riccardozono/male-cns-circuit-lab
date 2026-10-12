@@ -1,6 +1,19 @@
 /* NASA SRTM scenery only. Does not import the solver, policy or save engine. */
 import * as T from './vendor/three.module.js';
 export const WORLD_RADIUS_M=1000;
+export const landscapeRadius=data=>data?.entry?.coverageM===2000?2000:WORLD_RADIUS_M;
+const contains=(ring,x,y)=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;};
+// Static geographic lookup shared by terrain colours and decorative plants.
+// Smaller mapped areas take precedence; water is never filled with trees.
+export function createLandCoverIndex(data){
+  const cell=160,buckets=new Map(),areas=(data.places.landCover||data.places.greenAreas||[]).map(a=>{
+    const bounds=a.polygon.reduce((b,p)=>[Math.min(b[0],p[0]),Math.min(b[1],p[1]),Math.max(b[2],p[0]),Math.max(b[3],p[1])],[Infinity,Infinity,-Infinity,-Infinity]);
+    return {...a,bounds,size:(bounds[2]-bounds[0])*(bounds[3]-bounds[1])};
+  });
+  for(const a of areas)for(let x=Math.floor(a.bounds[0]/cell);x<=Math.floor(a.bounds[2]/cell);x++)for(let y=Math.floor(a.bounds[1]/cell);y<=Math.floor(a.bounds[3]/cell);y++){const key=x+','+y;if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(a);}
+  for(const list of buckets.values())list.sort((a,b)=>(['water','basin','reservoir'].includes(a.kind)?-1:0)-(['water','basin','reservoir'].includes(b.kind)?-1:0)||a.size-b.size||a.osmWay-b.osmWay);
+  return {areas,at(x,y){return (buckets.get(Math.floor(x/cell)+','+Math.floor(y/cell))||[]).find(a=>contains(a.polygon,x,y)&&!(a.holes||[]).some(r=>contains(r,x,y)))||null;}};
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),smooth=t=>t*t*(3-2*t);
 const pending=new Map();
 let manifestPromise;
@@ -50,18 +63,20 @@ export function gridHeight(data,x,y){
   return h[a]*(1-fx)*(1-fy)+h[a+1]*fx*(1-fy)+h[a+g.columns]*(1-fx)*fy+h[a+g.columns+1]*fx*fy;
 }
 export function createWorldTerrain(track,ground,data,material){
-  const ppm=track.pixelsPerMeter||1,b=track.bounds,padding=1100*ppm,origin={x:b.x+b.width/2,y:b.y+b.height/2},width=b.width+2*padding,height=b.height+2*padding;
-  const nx=Math.ceil(width/(24*ppm)),nz=Math.ceil(height/(24*ppm)),base=new T.PlaneGeometry(width,height,nx,nz);base.rotateX(-Math.PI/2);
+  const ppm=track.pixelsPerMeter||1,b=track.bounds,radius=landscapeRadius(data),padding=(radius+100)*ppm,origin={x:b.x+b.width/2,y:b.y+b.height/2},width=b.width+2*padding,height=b.height+2*padding,spacing=radius>1000?32:24;
+  const nx=Math.ceil(width/(spacing*ppm)),nz=Math.ceil(height/(spacing*ppm)),base=new T.PlaneGeometry(width,height,nx,nz);base.rotateX(-Math.PI/2);
   const p=base.attributes.position,distances=new Float32Array(p.count),color=new Float32Array(p.count*3),distanceAt=roadDistance(track),anchor=track.center[0];
   const datumM=gridHeight(data,anchor.x,anchor.y)-ground.sample(anchor.x,anchor.y).height,background=new T.Color(material.color),earth=new T.Color(),low=new T.Color('#52774a'),high=new T.Color('#8b9573'),water=new T.Color('#335e69');
+  const cover=createLandCoverIndex(data),palette={forest:new T.Color('#456847'),wood:new T.Color('#486c48'),park:new T.Color('#72915b'),grass:new T.Color('#91a66c'),meadow:new T.Color('#9aac6f'),farmland:new T.Color('#b2ad78'),orchard:new T.Color('#728854'),scrub:new T.Color('#7b8860'),water,basin:water,reservoir:water,residential:new T.Color('#a29d8e'),industrial:new T.Color('#a3a18e'),commercial:new T.Color('#aaa595')};
   let min=Infinity,max=-Infinity;
   for(let i=0;i<p.count;i++){
-    const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y,d=distanceAt(x,y),absolute=gridHeight(data,x,y),raw=absolute-datumM,w=smooth(clamp((d-120)/180,0,1)),edge=smooth(clamp((d-WORLD_RADIUS_M)/90,0,1));
+    const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y,d=distanceAt(x,y),absolute=gridHeight(data,x/ppm,y/ppm),raw=absolute-datumM,w=smooth(clamp((d-120)/180,0,1)),edge=smooth(clamp((d-radius)/90,0,1));
     const near= w<1 ? ground.visualHeight(x,y) : 0;
     const h=((near*(1-w)+raw*w)*(1-edge)-.12)*ppm;p.setY(i,h);distances[i]=d;min=Math.min(min,h/ppm);max=Math.max(max,h/ppm);
     earth.copy(low).lerp(high,clamp((absolute-data.entry.grid.absoluteRangeM[0])/Math.max(1,data.entry.grid.absoluteRangeM[1]-data.entry.grid.absoluteRangeM[0]),0,1)*.65);
     // Coastal tint is an inference from zero-elevation samples, not a water map.
     if(data.entry.srtm.producerGranuleId.startsWith('N43')&&absolute<=.15&&d>160)earth.copy(water);
+    const area=cover.at(x/ppm,y/ppm);if(area&&palette[area.kind]){earth.lerp(palette[area.kind],smooth(clamp((d-18)/70,0,1)));earth.multiplyScalar(.94+((area.osmWay%17)/17)*.12);}
     earth.lerp(background,edge);color.set([earth.r,earth.g,earth.b],i*3);
   }
   base.setAttribute('color',new T.BufferAttribute(color,3));base.computeVertexNormals();
@@ -77,7 +92,7 @@ export function createWorldTerrain(track,ground,data,material){
   };
   const footprint=[];
   // Fit what the requested 1 km band actually draws, not the blank fade margin.
-  for(let i=0;i<p.count;i+=7)if(distances[i]<=WORLD_RADIUS_M)footprint.push({x:p.getX(i)+origin.x,y:p.getZ(i)+origin.y,height:p.getY(i)});
-  group.userData={heightAt,distanceAt,data,footprint,info:{revision:data.manifest.revision,source:'NASA SRTMGL1 v003',coverageM:WORLD_RADIUS_M,estimatedRegistration:true,rmseM:data.entry.registration.rmseM,blendM:[120,300],verticalScale:1,sourceAbsoluteRangeM:data.entry.grid.absoluteRangeM,renderedRangeM:[min,max],vertices:p.count,triangles:base.index.count/3,drawCalls:2,physicalSurfaceUnchanged:true},dispose(){for(const g of geometries)g.dispose();base.dispose();for(const m of materials)m.dispose();group.removeFromParent();}};
+  for(let i=0;i<p.count;i+=7)if(distances[i]<=radius)footprint.push({x:p.getX(i)+origin.x,y:p.getZ(i)+origin.y,height:p.getY(i)});
+  group.userData={heightAt,distanceAt,data,footprint,landCover:cover,info:{revision:data.manifest.revision,source:'NASA SRTMGL1 v003',coverageM:radius,sampleSpacingM:spacing,landCoverAreas:cover.areas.length,estimatedRegistration:true,rmseM:data.entry.registration.rmseM,blendM:[120,300],verticalScale:1,sourceAbsoluteRangeM:data.entry.grid.absoluteRangeM,renderedRangeM:[min,max],vertices:p.count,triangles:base.index.count/3,drawCalls:2,physicalSurfaceUnchanged:true},dispose(){for(const g of geometries)g.dispose();base.dispose();for(const m of materials)m.dispose();group.removeFromParent();}};
   return group;
 }

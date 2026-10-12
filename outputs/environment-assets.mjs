@@ -2,7 +2,7 @@
 import * as T from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 export const ENVIRONMENT_ASSET_REVISION='environment-assets-1';
-const files={tree:'trees-supplied-v1.glb',monaco:'monaco-building-v1.glb','le-mans':'le-mans-house-v1.glb'};
+const files={tree:'trees-supplied-v1.glb','european-tree':'trees-european-v1.glb','oak-tree':'tree-oak-v1.glb',monaco:'monaco-building-v1.glb','le-mans':'le-mans-house-v1.glb'};
 export class EnvironmentAssets{
   constructor(){this.assets=new Map();this.pending=new Map();this.disposed=false;}
   async load(id){
@@ -40,8 +40,9 @@ function disposeAsset(asset){
   for(const t of textures){t.source?.data?.close?.();t.dispose();}
 }
 export class EnvironmentInstances{
-  constructor(asset,placements,{origin,ppm=1,height=180,onDirty=()=>{}}={}){
+  constructor(asset,placements,{origin,ppm=1,height=180,onDirty=()=>{},maxDistance=Infinity}={}){
     this.group=new T.Group();this.group.name=asset.id+'-instances';this.asset=asset;this.placements=placements;this.origin=origin;this.ppm=ppm;this.threshold=height*ppm;this.onDirty=onDirty;this.parts=[];this.lastCamera=new T.Vector3(Infinity,Infinity,Infinity);this.lastMode='';this.disposed=false;
+    this.maxDistance=maxDistance*ppm;
     const names=[...asset.variants.keys()];this.prepared=placements.map((p,i)=>{
       const variant=p.variant||names[i%names.length],size=asset.variants.get(variant),radius=Math.hypot(size[0],size[2])*.5;
       const scale=p.radius?Math.min(p.height,p.radius/Math.max(.001,radius)):p.height;
@@ -58,7 +59,7 @@ export class EnvironmentInstances{
     if(!force&&mode===this.lastMode&&camera.position.distanceToSquared(this.lastCamera)<(8*this.ppm)**2)return;
     this.lastCamera.copy(camera.position);this.lastMode=mode;
     const threshold=mode==='overview'?this.threshold*.65:this.threshold;
-    for(const p of this.prepared)p.lod=p.position.distanceTo(camera.position)<threshold?0:1;
+    for(const p of this.prepared){const d=p.position.distanceTo(camera.position);p.lod=mode==='overview'||d<this.maxDistance?(d<threshold?0:1):-1;}
     this.lodCounts=[this.prepared.filter(p=>p.lod===0).length,this.prepared.filter(p=>p.lod===1).length];
     for(const {mesh,part}of this.parts){let count=0;for(const p of this.prepared)if(p.variant===part.variant&&p.lod===part.lod)mesh.setMatrixAt(count++,p.matrix);mesh.count=count;mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}
     this.onDirty();

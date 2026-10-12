@@ -9,6 +9,8 @@ import {MeshoptSimplifier} from '../node_modules/three/examples/jsm/libs/meshopt
 const argv=process.argv.slice(2),option=k=>{const i=argv.indexOf(k);if(i<0||!argv[i+1])throw Error('Required argument: '+k);return argv[i+1];};
 const input=path.resolve(option('--source')),output=path.resolve(option('--output')),id=option('--id');
 const origins={tree:{uid:'73201f05280d48dcb10ed4ca362d69f8',name:'Tree low poly lowpoly',author:'00amza',slug:'tree-low-poly-lowpoly',kind:'tree'},monaco:{uid:'7003371cd8ba430c819ebd78eb0594cf',name:'Modular modernist eclectic building',author:'ChristosRami.studio',slug:'modular-modernist-eclectic-building',kind:'building'},'le-mans':{uid:'ebdc29841f4d4b1fbc3d63c841a0a48a',name:'European House #3',author:'Satik64',slug:'european-house-3',kind:'building'}};
+origins['european-tree']={uid:'ea51b3ac209e4f70ab9c618e34000b84',name:'Tree Pack',author:'Fabio Rinaldo Roloff',slug:'tree-pack',kind:'tree',cards:true};
+origins['oak-tree']={uid:'6ccd872db7f0429b8dad40c6f00ec75c',name:'Oak Tree (LowPoly)',author:'riskris Design',slug:'oak-tree-lowpoly',kind:'tree',singleVariant:true};
 const origin=origins[id];if(!origin)throw Error('Only selected asset ids are permitted');
 const license='CC BY 4.0',licenseUrl='https://creativecommons.org/licenses/by/4.0/',source='https://sketchfab.com/3d-models/'+origin.slug+'-'+origin.uid;
 const bytes=fs.readFileSync(input);if(bytes.readUInt32LE(0)!==0x46546c67||bytes.readUInt32LE(4)!==2)throw Error('Expected glTF binary v2');
@@ -32,7 +34,7 @@ function lineTubes(part){
 function visit(index,parent=new T.Matrix4()){
   const node=src.nodes[index],local=node.matrix?new T.Matrix4().fromArray(node.matrix):new T.Matrix4().compose(new T.Vector3(...(node.translation||[0,0,0])),new T.Quaternion(...(node.rotation||[0,0,0,1])),new T.Vector3(...(node.scale||[1,1,1]))),world=parent.clone().multiply(local);
   if(node.mesh!==undefined){
-    const key=origin.kind==='tree'?(node.extras?.assetVariant||node.name):origin.name;if(!variants.has(key))variants.set(key,[]);
+    const key=origin.kind==='tree'&&!origin.singleVariant?(node.extras?.assetVariant||node.name):origin.name;if(!variants.has(key))variants.set(key,[]);
     for(const primitive of src.meshes[node.mesh].primitives){
       const mode=primitive.mode??4;if(mode!==4&&mode!==1)throw Error('Only triangles and line segments supported');
       const positions=accessor(primitive.attributes.POSITION),normals=primitive.attributes.NORMAL!==undefined?accessor(primitive.attributes.NORMAL):null,uv=primitive.attributes.TEXCOORD_0!==undefined?accessor(primitive.attributes.TEXCOORD_0):new Float64Array(positions.length/3*2),indices=primitive.indices!==undefined?accessor(primitive.indices):Float64Array.from({length:positions.length/3},(_,i)=>i),nm=new T.Matrix3().getNormalMatrix(world);
@@ -80,17 +82,19 @@ for(const material of dst.materials){const legacy=material.extensions?.KHR_mater
   delete material.extensions.KHR_materials_pbrSpecularGlossiness;if(!Object.keys(material.extensions).length)delete material.extensions;
 }
 if(legacyShaderConverted){for(const key of ['extensionsUsed','extensionsRequired'])if(dst[key]){dst[key]=dst[key].filter(e=>e!=='KHR_materials_pbrSpecularGlossiness');if(!dst[key].length)delete dst[key];}dst.asset.extras.changes+=' Legacy specular/glossiness converted to supported dielectric metallic/roughness; diffuse, normals, AO and vertex colour preserved. Gloss response is approximate, not a pixel-identical legacy shader.';}
-if(origin.kind==='tree')for(const material of dst.materials){material.alphaMode='MASK';material.alphaCutoff=.4;material.doubleSided=true;}
+if(origin.kind==='tree')for(const material of dst.materials){material.alphaMode='MASK';material.alphaCutoff=.4;material.doubleSided=true;material.pbrMetallicRoughness??={};material.pbrMetallicRoughness.metallicFactor=0;material.pbrMetallicRoughness.roughnessFactor=1;}
 const chunks=[];let offset=0;
 function view(a){const b=Buffer.isBuffer(a)?a:Buffer.from(a.buffer,a.byteOffset,a.byteLength),pad=Buffer.alloc(Math.ceil(b.length/4)*4);b.copy(pad);const i=dst.bufferViews.length;dst.bufferViews.push({buffer:0,byteOffset:offset,byteLength:b.length});chunks.push(pad);offset+=pad.length;return i;}
 function attribute(a,type,componentType,range=false){const i=dst.accessors.length,n=components[type],entry={bufferView:view(a),componentType,count:a.length/n,type};if(range){entry.min=Array(n).fill(Infinity);entry.max=Array(n).fill(-Infinity);for(let j=0;j<a.length;j++){entry.min[j%n]=Math.min(entry.min[j%n],a[j]);entry.max[j%n]=Math.max(entry.max[j%n],a[j]);}}dst.accessors.push(entry);return i;}
 const textureHashes=[];for(const image of dst.images){if(image.bufferView===undefined)throw Error('Expected embedded texture');const v=src.bufferViews[image.bufferView],b=bin.subarray(v.byteOffset||0,(v.byteOffset||0)+v.byteLength);textureHashes.push({name:image.name||'embedded texture',sha256:crypto.createHash('sha256').update(b).digest('hex'),bytes:b.length});image.bufferView=view(b);delete image.uri;}
+if(origin.cards)dst.asset.extras.changes='Original crossed alpha cards (8 triangles per tree), UVs, vertex colours and all seven embedded PNG byte streams retained. World transforms baked, trees grounded and unit-height normalized. Alpha masking replaces transparent blending for stable instancing. The two LOD slots intentionally share the original cards; no geometry simplification.';
+if(id==='oak-tree')dst.asset.extras.changes='Original volumetric crown and trunk assembled as one tree variant and two material parts. World transforms baked, grounded and unit-height normalized. Original geometry/vertex colours retained in LOD0; distant topology simplified. No source texture exists; materials are preserved with a non-metallic display response.';
 const counts=[];
 for(let lod=0;lod<2;lod++){
   const rootNode=dst.nodes.length,children=[];dst.nodes.push({name:'LOD'+lod,children,extras:{lod}});dst.scenes[0].nodes.push(rootNode);let triangles=0;
   for(const part of groups){
     let indices=part.indices.slice(),error=0;
-    if(lod){const attrs=new Float32Array(part.positions.length/3*5);for(let i=0;i<part.positions.length/3;i++){attrs.set(part.normals.subarray(i*3,i*3+3),i*5);attrs.set(part.uv.subarray(i*2,i*2+2),i*5+3);}const target=Math.min(indices.length,Math.max(18,Math.floor(indices.length*(origin.kind==='tree'?.26:.40)/3)*3));if(target<indices.length)[indices,error]=MeshoptSimplifier.simplifyWithAttributes(indices,part.positions,3,attrs,5,[.3,.3,.3,.1,.1],null,target,.08,['Permissive']);}
+    if(lod&&!origin.cards){const attrs=new Float32Array(part.positions.length/3*5);for(let i=0;i<part.positions.length/3;i++){attrs.set(part.normals.subarray(i*3,i*3+3),i*5);attrs.set(part.uv.subarray(i*2,i*2+2),i*5+3);}const target=Math.min(indices.length,Math.max(18,Math.floor(indices.length*(origin.kind==='tree'?.26:.40)/3)*3));if(target<indices.length)[indices,error]=MeshoptSimplifier.simplifyWithAttributes(indices,part.positions,3,attrs,5,[.3,.3,.3,.1,.1],null,target,.08,['Permissive']);}
     const [remap,count]=MeshoptSimplifier.compactMesh(indices),positions=new Float32Array(count*3),normals=new Float32Array(count*3),uv=new Float32Array(count*2),colors=part.colors?new Float32Array(count*part.colorComponents):null,tangents=part.tangents?new Float32Array(count*4):null;
     for(let i=0;i<remap.length;i++){const r=remap[i];if(r===0xffffffff)continue;positions.set(part.positions.subarray(i*3,i*3+3),r*3);normals.set(part.normals.subarray(i*3,i*3+3),r*3);uv.set(part.uv.subarray(i*2,i*2+2),r*2);}
     for(let i=0;i<remap.length;i++){const r=remap[i];if(r===0xffffffff)continue;if(colors)colors.set(part.colors.subarray(i*part.colorComponents,(i+1)*part.colorComponents),r*part.colorComponents);if(tangents)tangents.set(part.tangents.subarray(i*4,(i+1)*4),r*4);}

@@ -1,4 +1,4 @@
-# Paesaggio entro 1 km — sorgente di sviluppo
+# Paesaggio dei circuiti — sorgente di sviluppo
 
 Questa modifica resta sulla sorgente **5.5.0**. Non è una nuova release e non
 sostituisce il portable o l'installer distribuiti. Il formato dei progressi,
@@ -6,8 +6,9 @@ la fisica, i sensori, le ricompense e l'apprendimento non cambiano.
 
 ## Come esplorarlo
 
-In **Vista 3D**, su Monza, Monaco o Le Mans, scegliere **Paesaggio · fascia 1 km
-(NASA SRTM)** dal menu **Inquadra**; **Edifici OSM · dettagli schematici** apre
+In **Vista 3D**, scegliere **Paesaggio** dal menu **Inquadra**: fascia **1 km**
+su Monza e Monaco, **2 km** su Le Mans. **Bosco · alberi Sketchfab** apre una
+zona densa di vegetazione; **Edifici OSM · dettagli schematici** apre
 un dettaglio vicino alla pista. La normale **Panoramica** continua a
 inquadrare il circuito. **Centra** o **Home** ritorna all'intero circuito;
 **Segui auto**, la mappa 2D e il cervello restano disponibili. **Dettagli**
@@ -40,7 +41,7 @@ con il suolo attuale. Non si presenta SRTM come un laser scan dei circuiti.
 Lo script [import-world.py](../work/landscape/import-world.py) decodifica gli
 originali, verifica la dimensione e il CRC dello ZIP, rifiuta i campioni void,
 applica la georegistrazione stimata e ricampiona bilinearmente a passo 32 m.
-La mesh di visualizzazione usa celle di circa 24 m: l'interpolazione non aumenta
+La mesh usa celle di circa 24 m a Monza/Monaco e 32 m a Le Mans: l'interpolazione non aumenta
 la risoluzione o l'accuratezza del dato NASA. I ritagli Float32 sono locali;
 durante l'uso dell'app non occorrono rete, token o login Earthdata.
 
@@ -71,7 +72,7 @@ stimati fra estremi non connessi; distanze e ID sono registrati nel manifest.
 La quota di riferimento è traslata per raccordarsi alla partenza già modellata.
 Entro 120 m dai bordi stradali resta il terreno illustrativo preesistente;
 fra 120 e 300 m una transizione continua unisce i due profili. Oltre 300 m e
-fino a 1000 m si usa SRTM, con scala verticale **1:1**. Fuori dalla fascia
+fino a 1000 m a Monza/Monaco o 2000 m a Le Mans si usa SRTM, con scala verticale **1:1**. Fuori dalla fascia
 richiesta il margine viene raccordato allo sfondo. La tintura delle aree costiere
 quasi a quota zero a Monaco è un'inferenza visiva, non una carta nautica.
 
@@ -110,6 +111,14 @@ degli asset esistenti; generazione solo al cambio pista/caricamento, non nei
 tick dell'IA. La distanza ai bordi del circuito usa un BVH esatto per non
 confondere la query del paesaggio con il sampler fisico locale. Questo non
 dimostra da solo un FPS minimo o un'accelerazione dell'addestramento.
+
+Il bosco aggiuntivo usa i modelli Sketchfab di Fabio Rinaldo Roloff e riskris
+Design, con texture locali, istanze e dettaglio distante. Colori delle aree
+di bosco, prati, campi e acqua derivano dai poligoni disponibili OSM; palette,
+singole piante e architettura rimangono rappresentazioni illustrative.
+Sono usati i poligoni chiusi disponibili, non si rivendica una copertura
+completa di tutte le relazioni OSM. [Guida al bosco](BOSCHI-PAESAGGIO.md) ·
+[Crediti Sketchfab](assets/WOODLAND-CREDITS.md).
 
 Verifiche riproducibili: `npm test`, `node work/landscape/verify-preservation.cjs`
 e `python work/landscape/verify-srtm.py --srtm-dir <directory degli ZIP>`.

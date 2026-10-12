@@ -1,13 +1,13 @@
 /* OSM footprints, estimated registration and schematic architecture. Visual only. */
 import * as T from './vendor/three.module.js';
 import {facilityExclusionMask} from './track-facilities.mjs';
-import {gridHeight,WORLD_RADIUS_M} from './world-terrain.mjs';
+import {gridHeight,landscapeRadius} from './world-terrain.mjs';
 const inside=(x,y,ring)=>{let yes=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)yes=!yes;}return yes;};
 export function districtPlan(track,scenery,ground,data,exclusions=[]){
   const ppm=track.pixelsPerMeter||1,blocked=facilityExclusionMask(track,scenery),placements=[],footprints=[],skipped=[];
   for(const source of data.places.buildings){
     const corners=source.polygon.map(([x,y])=>({x:x*ppm,y:y*ppm})),x=corners.reduce((s,p)=>s+p.x,0)/corners.length,y=corners.reduce((s,p)=>s+p.y,0)/corners.length,radius=Math.max(...corners.map(p=>Math.hypot(p.x-x,p.y-y)));
-    if(ground.distanceAt(x,y)>WORLD_RADIUS_M||exclusions.some(p=>Math.hypot(p.x-x,p.y-y)<p.radius+radius+3*ppm))continue;
+    if(ground.distanceAt(x,y)>landscapeRadius(data)||exclusions.some(p=>Math.hypot(p.x-x,p.y-y)<p.radius+radius+3*ppm))continue;
     if(data.entry.srtm.producerGranuleId.startsWith('N43')&&gridHeight(data,x/ppm,y/ppm)<=.15)continue;
     const samples=[];let clear=true;
     // Interior plus edge checks, not just a centroid: no wall over a parallel

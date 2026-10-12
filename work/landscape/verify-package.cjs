@@ -1,0 +1,13 @@
+'use strict';
+// Compare an isolated Windows build with this checkout. No app/profile writes.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const source=path.resolve(__dirname,'../..'),arg=process.argv[2];
+if(!arg)throw Error('Usage: node work/landscape/verify-package.cjs <win-unpacked/resources/app>');
+const packed=path.resolve(arg),pkg=JSON.parse(fs.readFileSync(path.join(packed,'package.json'),'utf8')),expected=require(path.join(source,'package.json'));
+assert.equal(pkg.version,expected.version);let checks=1;
+const equal=file=>{const hash=base=>crypto.createHash('sha256').update(fs.readFileSync(path.join(base,file))).digest('hex');assert.equal(hash(packed),hash(source),file);checks++;};
+for(const file of ['outputs/world-terrain.mjs','outputs/vegetation.mjs','outputs/environment-assets.mjs','outputs/district-buildings.mjs','outputs/circuit-3d.mjs','outputs/app.js','outputs/index.html','outputs/vehicle-992.js','outputs/simulation.js','outputs/terrain.js','outputs/neural-learning.js','outputs/rewards.js','outputs/progress-save.js','desktop/engine.cjs','desktop/worker.cjs','outputs/assets/trees-supplied-v1.glb','outputs/assets/porsche-992-gt3-r-lod.glb','outputs/assets/trees-european-v1.glb','outputs/assets/tree-oak-v1.glb','outputs/assets/woodland-provenance-v1.json','outputs/assets/WOODLAND-CREDITS.md','outputs/BOSCHI-PAESAGGIO.md','outputs/VERIFICA-BOSCHI.md','outputs/PAESAGGIO-SRTM.md'])equal(file);
+const manifest=JSON.parse(fs.readFileSync(path.join(packed,'outputs/data/landscape/manifest.json'),'utf8'));
+equal('outputs/data/landscape/manifest.json');for(const [id,e]of Object.entries(manifest.circuits)){assert.equal(e.coverageM,id==='le-mans'?2000:1000);equal('outputs/data/landscape/'+e.grid.file);equal('outputs/data/landscape/'+e.placesFile);const bytes=fs.readFileSync(path.join(packed,'outputs/data/landscape/'+e.grid.file));assert.equal(bytes.length,e.grid.rows*e.grid.columns*4);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),e.grid.sha256);checks+=3;}
+for(const forbidden of ['.impeccable','.codex','AGENTS.md','.env','node_modules/.cache']){assert.equal(fs.existsSync(path.join(packed,forbidden)),false,'private path packaged: '+forbidden);checks++;}
+console.log(JSON.stringify({passed:true,checks,version:pkg.version,coverageM:{monza:1000,monaco:1000,'le-mans':2000},scope:'Exact packaged source/data/assets versus current checkout; no installer execution or performance claim.'}));

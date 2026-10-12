@@ -1,10 +1,11 @@
 {
-  "revision": "nasa-srtm-landscape-1",
+  "revision": "nasa-srtm-landscape-2",
   "source": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
   "attribution": "NASA JPL SRTMGL1 v003 / LP DAAC; \u00a9 OpenStreetMap contributors",
   "notice": "SRTM acquisition February 2000, not a 2026 survey. Estimated similarity registration and near-track blend; decorative buildings.",
   "circuits": {
     "monza": {
+      "coverageM": 1000,
       "registration": {
         "estimated": true,
         "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
@@ -96,6 +97,7 @@
       ]
     },
     "monaco": {
+      "coverageM": 1000,
       "registration": {
         "estimated": true,
         "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
@@ -198,6 +200,7 @@
       ]
     },
     "le-mans": {
+      "coverageM": 2000,
       "registration": {
         "estimated": true,
         "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
@@ -254,24 +257,24 @@
       },
       "grid": {
         "origin": [
-          -1120.0,
-          -1120.0
+          -2144.0,
+          -2144.0
         ],
         "stepM": 32,
-        "columns": 249,
-        "rows": 164,
+        "columns": 312,
+        "rows": 227,
         "absoluteRangeM": [
           33.36701460338125,
-          91.36492144153466
+          99.13142123413877
         ],
         "geoBounds": [
-          0.1892019438636741,
-          47.90129370730751,
-          0.2611249753556309,
-          47.97324082156789
+          0.17566657795459062,
+          47.892233090692336,
+          0.2750777702309927,
+          47.98259371613839
         ],
         "file": "le-mans.f32",
-        "sha256": "75afd3f1c5d2ecc96a500ba108ffa73cda979921584f24bdaeca728f3636ad0c"
+        "sha256": "ad7108f90197333f3bc17bb40739b84fa54da170722d28ab32e944bb3863e411"
       },
       "placesFile": "le-mans-places.json",
       "osmRoute": {
@@ -279,17 +282,82 @@
         "url": "https://api.openstreetmap.org/api/0.6/relation/2126739/full.json",
         "sha256": "e575f796a7deac34a6f5a7ae2d5ffefc700bb1e2a6371b0c15b2f5d5180027a5"
       },
-      "buildings": 1000,
+      "buildings": 2000,
       "sourceMapFiles": [
         {
-          "file": "le-mans-osm-north",
-          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.192,47.929,0.249,47.958",
-          "sha256": "1c05897444725ca011ed7c614910a1556e6824507339788aac0b74e0664cdf4e"
+          "file": "le-mans-2km-b5ff69a3f2e4",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.177000,47.893000,0.201250,47.922667",
+          "sha256": "c95e6df306a11d0a32e593368e27404de30c67f465caeec6d44d52e5b4984a1e"
         },
         {
-          "file": "le-mans-osm-south",
-          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.192,47.898,0.249,47.929",
-          "sha256": "4c9bc1c36366bf78f9392d57873c0169bd94ddfdebcf8ec0e75a5107a649e6f0"
+          "file": "le-mans-2km-6309596d636d",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.201250,47.893000,0.225500,47.922667",
+          "sha256": "67462a037597627c1f9614bb5b728fd64e20daf87c8f6eb626ae32f360c34726"
+        },
+        {
+          "file": "le-mans-2km-0e9c2869b14c",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.225500,47.893000,0.249750,47.922667",
+          "sha256": "d4c9faca0173d104e3cbe90f3e0f267e67b9ade860d3bde2bb4f45270e08b5c4"
+        },
+        {
+          "file": "le-mans-2km-3a86a7661519",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.249750,47.893000,0.274000,47.922667",
+          "sha256": "3e1fd2f12dd5b205c0fd595e17dc36e11b95661ae6fb3a6d966f1a8bd39e33e3"
+        },
+        {
+          "file": "le-mans-2km-20d4b95c9f01",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.177000,47.922667,0.201250,47.952333",
+          "sha256": "3ae318ebc9a932efad33b2370e5a3193d103225a0772fce7128e90839145141b"
+        },
+        {
+          "file": "le-mans-2km-4339c3176497",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.201250,47.922667,0.225500,47.952333",
+          "sha256": "99f4b061c872124165d90ade4b04b283502913d81678415d2993185c1365596a"
+        },
+        {
+          "file": "le-mans-2km-aadbd213e105",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.225500,47.922667,0.249750,47.952333",
+          "sha256": "837094f29d763e359c861e49397d07dbcd9a7bbde52849123c1e9e4a82b14388"
+        },
+        {
+          "file": "le-mans-2km-bf1b3cb6503b",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.249750,47.922667,0.274000,47.952333",
+          "sha256": "eeeeaefc7f4d6762192ba4777f8fecd1e3e18a41f87fe123fe07c99744f5655d"
+        },
+        {
+          "file": "le-mans-2km-783dab090eb7",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.177000,47.952333,0.201250,47.982000",
+          "sha256": "bdb13eee363a81e9b92ea38dcde7a95a0872daad92198b7ede79d9c1a41a6fd2"
+        },
+        {
+          "file": "le-mans-2km-62a124246a62",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.2012500,47.9523330,0.2133750,47.9671665",
+          "sha256": "e531e56a0adc560270f567625fd6526a071dcc667ca71ba9368d6c02d6e83015"
+        },
+        {
+          "file": "le-mans-2km-dfe58322e4aa",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.2133750,47.9523330,0.2255000,47.9671665",
+          "sha256": "73a1b8085affc42160c3b2d4cb2416c6e07e4624b70759b52b89e6f9eb139c4c"
+        },
+        {
+          "file": "le-mans-2km-66545d4221cc",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.2012500,47.9671665,0.2133750,47.9820000",
+          "sha256": "244114f47965f32cf302c0e0ee845836bfd1db85bed06e57dc476fcef0a6a2be"
+        },
+        {
+          "file": "le-mans-2km-9165325069dc",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.2133750,47.9671665,0.2255000,47.9820000",
+          "sha256": "0fba6ff8f9790b4d0112dfdb2abf37ecc8ed73fb4c2620231d996af226abf1b8"
+        },
+        {
+          "file": "le-mans-2km-d0bf4b850bac",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.225500,47.952333,0.249750,47.982000",
+          "sha256": "527347ac5e250da8a934625d542ecf925334612d523d8bdd6734440c621cb12f"
+        },
+        {
+          "file": "le-mans-2km-73dc83d6f18e",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.249750,47.952333,0.274000,47.982000",
+          "sha256": "273b50e933aeee68b5ec89ffe4c123d3e632f0cff09a5f94abac5d3ce33496e4"
         }
       ]
     }

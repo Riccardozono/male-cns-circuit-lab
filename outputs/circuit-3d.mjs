@@ -73,7 +73,7 @@ export class Circuit3D{
     this.markers=new T.Points(markerGeometry,new T.PointsMaterial({size:5,sizeAttenuation:false,vertexColors:true,depthTest:false}));this.markers.frustumCulled=false;this.markers.renderOrder=6;this.scene.add(this.markers);
     this.selection=new T.Mesh(new T.RingGeometry(2.6,2.7,40),new T.MeshBasicMaterial({color:0xf0bd69,side:T.DoubleSide,depthTest:false}));this.selection.rotation.x=-Math.PI/2;this.selection.renderOrder=7;this.scene.add(this.selection);
     this.listeners=[];this.bindControls();this.environmentAssets=new EnvironmentAssets();this.onModelStatus=onModelStatus;
-    this.treeReady=this.environmentAssets.load('tree').then(()=>{if(!this.disposed&&this.track)this.refreshDressing();this.notifyModelStatus();return true;}).catch(error=>{if(!this.disposed){this.treeError='Alberi ZIP non disponibili: vegetazione semplificata. '+error.message;this.notifyModelStatus();}return false;});
+    this.treeReady=Promise.all(['tree','european-tree','oak-tree'].map(id=>this.environmentAssets.load(id))).then(()=>{if(!this.disposed&&this.track)this.refreshDressing();this.notifyModelStatus();return true;}).catch(error=>{if(!this.disposed){this.treeError='Alberi Sketchfab non disponibili: vegetazione di riserva. '+error.message;this.notifyModelStatus();}return false;});
     this.modelReady=import('./supplied-car-3d.mjs').then(({SuppliedCarFleet})=>SuppliedCarFleet.load(this.carGroup)).then(fleet=>{
       if(this.disposed){fleet.dispose();return false;}
       this.fleet.dispose();this.fleet=fleet;this.carRevision=fleet.info().revision;this.dirty=true;this.notifyModelStatus();this.onChange();return true;
@@ -83,7 +83,8 @@ export class Circuit3D{
   listen(name,handler,options){this.canvas.addEventListener(name,handler,options);this.listeners.push([name,handler,options]);}
   modelStatus(){
     const tree=this.environmentAssets.assets.has('tree'),houses=['monaco','le-mans'].includes(this.model?.id),house=this.environmentAssets.assets.has(this.model?.id);
-    return [this.carError||(this.carRevision?'Porsche 992 · livrea originale':'Caricamento Porsche 992…'),this.treeError||(tree?'Alberi ZIP · texture originali':'Caricamento alberi ZIP…'),...(houses?[this.houseError||(house?'Edifici Sketchfab · posizioni illustrative':'Caricamento edifici locali…')]:[]),...(this.facilities?[`${this.facilities.info().grandstands} tribune · box e dettagli stimati`]:[]),...(this.model?.id!=='lab'?[this.worldError||(this.worldData?`NASA SRTM · fascia 1 km · raccordo stimato · ${this.districts?.info().buildings||0} edifici OSM`:'Caricamento paesaggio NASA locale…')]:[])].join(' · ');
+    const radius=(this.worldData?.entry.coverageM||1000)/1000,variants=this.vegetation?.info().variants;
+    return [this.carError||(this.carRevision?'Porsche 992 · livrea originale':'Caricamento Porsche 992…'),this.treeError||(tree?`Alberi Sketchfab · ${variants||2} sagome · texture locali`:'Caricamento alberi Sketchfab…'),...(houses?[this.houseError||(house?'Edifici Sketchfab · posizioni illustrative':'Caricamento edifici locali…')]:[]),...(this.facilities?[`${this.facilities.info().grandstands} tribune · box e dettagli stimati`]:[]),...(this.model?.id!=='lab'?[this.worldError||(this.worldData?`NASA SRTM · fascia ${radius} km · raccordo stimato · ${this.districts?.info().buildings||0} edifici OSM`:'Caricamento paesaggio NASA locale…')]:[])].join(' · ');
   }
   notifyModelStatus(){if(!this.disposed)this.onModelStatus(this.modelStatus());}
   bindControls(){
@@ -143,7 +144,7 @@ export class Circuit3D{
     const exclusions=this.facilities?.plan.placements||[],house=this.environmentAssets.assets.get(this.model.id);if(house){this.buildings=createBuildings(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,house,exclusions);this.staticGroup.add(this.buildings.group);}
     const reserved=[...exclusions,...this.buildings?.plan.placements||[]];
     if(this.worldData){this.districts=createDistrictBuildings(this.track,this.scenery.plan,this.dressingGround,this.origin,this.worldData,reserved);this.staticGroup.add(this.districts.group);reserved.push(...this.districts.plan.placements);}
-    this.vegetation=createVegetation(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,this.environmentAssets.assets.get('tree'),reserved,this.worldData);this.staticGroup.add(this.vegetation.group);
+    this.vegetation=createVegetation(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,this.environmentAssets.assets.get('tree'),reserved,this.worldData,{european:this.environmentAssets.assets.get('european-tree'),oak:this.environmentAssets.assets.get('oak-tree')});this.staticGroup.add(this.vegetation.group);
     this.overviewPoints=[...this.baseOverviewPoints,...this.facilities?.plan.footprints||[]];for(const p of this.vegetation.plan.plants)if(!p.far)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});if(this.buildings)this.overviewPoints.push(...this.buildings.plan.footprints);
     this.dirty=true;this.onChange();
   }
@@ -165,9 +166,20 @@ export class Circuit3D{
   focusFacility(point){this.focusPoint(point);const ppm=this.track.pixelsPerMeter||1;this.focus.y=point.groundY+point.height*.35;this.distance=Math.max(65,point.width*1.45,point.depth*3)*ppm;this.yaw=point.yaw+Math.PI;this.pitch=.42;this.dirty=true;}
   focusLandscape(){
     if(!this.worldData)return;
-    this.overviewScope='landscape';this.mode='overview';this.yaw=2.3;this.pitch=.90;this.centreOverview();this.dirty=true;this.onChange();
+    this.overviewScope='landscape';this.mode='overview';const points=this.terrainObject.userData.footprint;
+    const cx=points.reduce((n,p)=>n+p.x,0)/points.length,cy=points.reduce((n,p)=>n+p.y,0)/points.length;let xx=0,yy=0,xy=0;
+    for(const p of points){xx+=(p.x-cx)**2;yy+=(p.y-cy)**2;xy+=(p.x-cx)*(p.y-cy);}
+    this.yaw=-.5*Math.atan2(2*xy,xx-yy)+(this.camera.aspect<1?Math.PI/2:0);this.pitch=.90;this.centreOverview();this.dirty=true;this.onChange();
   }
   focusDistrict(){const point=this.districts?.plan.placements[0];if(!point)return;this.focusPoint(point);this.focus.y=point.groundY+point.height*.35;this.distance=Math.max(85,point.radius*3);this.pitch=.5;this.yaw=1.8;this.dirty=true;this.onChange();}
+  focusWoodland(){
+    const start=this.track.center[0],plants=this.vegetation?.plan.plants.filter(p=>p.woodland&&['forest','wood'].includes(p.landKind))||[],cell=35*(this.track.pixelsPerMeter||1),cells=new Map();
+    for(const p of plants){const key=Math.floor(p.x/cell)+','+Math.floor(p.y/cell);if(!cells.has(key))cells.set(key,[]);cells.get(key).push(p);}
+    const dense=plants.filter(p=>{const x=Math.floor(p.x/cell),y=Math.floor(p.y/cell);let n=0;for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(const q of cells.get((x+dx)+','+(y+dy))||[])if(Math.hypot(p.x-q.x,p.y-q.y)<cell)n++;return n>=18;});
+    const candidates=dense.length?dense:plants.length?plants:this.vegetation?.plan.plants.filter(p=>p.woodland)||[];
+    const point=candidates.reduce((a,p)=>!a||Math.hypot(p.x-start.x,p.y-start.y)<Math.hypot(a.x-start.x,a.y-start.y)?p:a,null);if(!point)return;
+    this.focusPoint(point);this.focus.y=point.groundY+point.height*.4;this.distance=75*(this.track.pixelsPerMeter||1);this.pitch=.46;this.yaw=2.3;this.dirty=true;this.onChange();
+  }
   pan(dx,dy){if(this.mode==='follow'){this.mode='overview';this.distance=this.followDistance;}const unit=this.distance/Math.max(200,this.height);this.focus.x-=Math.cos(this.yaw)*dx*unit+Math.sin(this.yaw)*dy*unit;this.focus.z+=Math.sin(this.yaw)*dx*unit-Math.cos(this.yaw)*dy*unit;this.dirty=true;this.onChange();}
   project(car){const v=new T.Vector3(car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+.8)*(car.pixelsPerMeter||1),car.y-this.origin.y).project(this.camera);return {x:(v.x+1)*this.width/2,y:(1-v.y)*this.height/2,visible:v.z>-1&&v.z<1};}
   pick(clientX,clientY){if(!this.cars)return;const r=this.canvas.getBoundingClientRect(),x=clientX-r.left,y=clientY-r.top;let min=22,id=null;for(const car of this.cars){const p=this.project(car),d=Math.hypot(p.x-x,p.y-y);if(p.visible&&d<min){min=d;id=car.id;}}if(id!==null)this.onSelect(id);}

@@ -1,0 +1,120 @@
+{
+  "revision": "woodland-assets-1",
+  "assets": [
+    {
+      "id": "european-tree",
+      "kind": "tree",
+      "title": "Tree Pack",
+      "author": "Fabio Rinaldo Roloff",
+      "uid": "ea51b3ac209e4f70ab9c618e34000b84",
+      "source": "https://sketchfab.com/3d-models/tree-pack-ea51b3ac209e4f70ab9c618e34000b84",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "1e49576f56958ec42dede55ca7926b4daab0113435b1aefb166c30ccf382b0ad",
+      "derivedSha256": "07c210cd7e9dade6e122dc71d1ea7b83a1c13d1ac50a9266622c54941c665483",
+      "bytes": 5315028,
+      "lods": [
+        {
+          "lod": 0,
+          "parts": 7,
+          "triangles": 56
+        },
+        {
+          "lod": 1,
+          "parts": 7,
+          "triangles": 56
+        }
+      ],
+      "variants": [
+        "Tree 7 Spitzahorn",
+        "Tree 6 Fichte",
+        "Tree 5",
+        "Tree 2 Birke",
+        "Tree 1 Ahorn",
+        "Tree 4 Eiche",
+        "Tree 3 Fichte"
+      ],
+      "textures": [
+        {
+          "name": "Image_0",
+          "sha256": "a445fa2c93d40ce1cfcf786e14517b10cfd340eddfe8b7bcfb4394ee929522ab",
+          "bytes": 347585
+        },
+        {
+          "name": "Image_1",
+          "sha256": "8df287109de81cda9c0a4d4de9eb58f1ab616ca8eaf3bbcb8ecf66902c5f36d4",
+          "bytes": 195325
+        },
+        {
+          "name": "Image_2",
+          "sha256": "83e517bf62c5be8a28c68d5f0968d4a2e8cb10dde4044c60ab0a944e1e38d6f6",
+          "bytes": 330722
+        },
+        {
+          "name": "Image_3",
+          "sha256": "a27dee2fec79ea48102b805b8bfaeff08b5a8237df4670fd4ec82597dc3e84fe",
+          "bytes": 1308587
+        },
+        {
+          "name": "Image_4",
+          "sha256": "e6521b911a06b47f50c6bf9485562a9ec205bc27ebc51195483531a8121526b3",
+          "bytes": 1383012
+        },
+        {
+          "name": "Image_5",
+          "sha256": "a7472f0511599483db29b7789e9dc563b44fce85125ae8b38715ee27e1ecace5",
+          "bytes": 335440
+        },
+        {
+          "name": "Image_6",
+          "sha256": "e4c0b226048c1f725a922cd57ca9ad7217735f67821b9f47136de6fe1466b8d6",
+          "bytes": 1385990
+        }
+      ],
+      "changes": "Original crossed alpha cards (8 triangles per tree), UVs, vertex colours and all seven embedded PNG byte streams retained. World transforms baked, trees grounded and unit-height normalized. Alpha masking replaces transparent blending for stable instancing. The two LOD slots intentionally share the original cards; no geometry simplification.",
+      "legacyShaderConverted": false,
+      "lineSegmentsConverted": 0,
+      "placement": "Illustrative circuit dressing, not actual building locations or a tree survey.",
+      "file": "trees-european-v1.glb",
+      "verifiedAt": "2026-10-12",
+      "sourceFormat": "Original GLB inside Tree Pack ZIP",
+      "downloadArchiveSha256": "8ef4e7f6fe2799fb8f46cb61f11f95ec0695b313def114e678bba02d2f0dd117"
+    },
+    {
+      "id": "oak-tree",
+      "kind": "tree",
+      "title": "Oak Tree (LowPoly)",
+      "author": "riskris Design",
+      "uid": "6ccd872db7f0429b8dad40c6f00ec75c",
+      "source": "https://sketchfab.com/3d-models/oak-tree-lowpoly-6ccd872db7f0429b8dad40c6f00ec75c",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "sourceSha256": "19b817b4952701348cb9a45e9d920f40aaed0439776304209f6d0e2d522c1352",
+      "derivedSha256": "312ff0b3f699e5a3206d2d56ee7ee0f38225c107b1d7b9d61cf8e5f40e1d33be",
+      "bytes": 22624,
+      "lods": [
+        {
+          "lod": 0,
+          "parts": 2,
+          "triangles": 112
+        },
+        {
+          "lod": 1,
+          "parts": 2,
+          "triangles": 68
+        }
+      ],
+      "variants": [
+        "Oak Tree (LowPoly)"
+      ],
+      "textures": [],
+      "changes": "Original volumetric crown and trunk assembled as one tree variant and two material parts. World transforms baked, grounded and unit-height normalized. Original geometry/vertex colours retained in LOD0; distant topology simplified. No source texture exists; materials are preserved with a non-metallic display response.",
+      "legacyShaderConverted": false,
+      "lineSegmentsConverted": 0,
+      "placement": "Illustrative circuit dressing, not actual building locations or a tree survey.",
+      "file": "tree-oak-v1.glb",
+      "verifiedAt": "2026-10-12",
+      "sourceFormat": "Sketchfab converted GLB"
+    }
+  ]
+}

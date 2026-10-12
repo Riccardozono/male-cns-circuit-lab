@@ -71,11 +71,12 @@ function refreshTrackWidth(car=selected()){
   $('track-local-width').textContent=`${station?'Tratto inquadrato':`A-${pad(car.id+1)}`} · ${info.label} · ${info.widthMeters.toLocaleString('it-IT',{minimumFractionDigits:1,maximumFractionDigits:1})} m${info.estimated?' (stimata)':''}`;
   const ground=FlySim.Vehicle.Terrain.forTrack(sim.track),point=station||car,sample=ground.sample(point.x,point.y),range=ground.profile.max-ground.profile.min;
   $('track-elevation-note').textContent=ground.flat?'Profilo pianeggiante · alberi e cespugli solo visivi.':`Dislivello modellato ${range.toFixed(1)} m · quota locale ${sample.height.toFixed(1)} m sopra il punto minimo · profilo stimato, pendenze attive nella fisica · alberi e cespugli solo visivi.`;
-  if(circuitView==='3d'&&circuit3D?.worldData)$('track-elevation-note').textContent+=' Paesaggio entro 1 km: NASA SRTM (2000), raccordo stimato; non modifica la fisica.';
+  if(circuitView==='3d'&&circuit3D?.worldData)$('track-elevation-note').textContent+=` Paesaggio entro ${(circuit3D.worldData.entry.coverageM||1000)/1000} km: NASA SRTM (2000), raccordo stimato; non modifica la fisica.`;
   $('landscape-source-note').hidden=!(circuitView==='3d'&&circuit3D?.worldData);
 }
 function resetTrackView(){trackCamera.reset();cameraSelect.value='overview';circuit3D?.setMode('overview');circuit3D?.reset();trackFocus='';$('track-landmark').value='';refreshTrackWidth();renderDirty=true;render();}
 function focusTrack(key){
+  if(key==='woodland'&&circuitView==='3d'&&circuit3D?.vegetation?.plan.farTrees){cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;if(!trackRenderer.details)$('track-details').click();circuit3D.focusWoodland();refreshTrackWidth();renderDirty=true;render();return;}
   if(key==='landscape'&&circuitView==='3d'&&circuit3D?.worldData){cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;if(!trackRenderer.details)$('track-details').click();circuit3D.focusLandscape();refreshTrackWidth();renderDirty=true;render();return;}
   if(key==='district'&&circuitView==='3d'&&circuit3D?.districts){cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;if(!trackRenderer.details)$('track-details').click();circuit3D.focusDistrict();refreshTrackWidth();renderDirty=true;render();return;}
   const facility=key.startsWith('facility:')&&circuitView==='3d'?circuit3D?.facilities.focuses.find(p=>p.key===key):null;
@@ -88,8 +89,9 @@ function refreshTrackLandmarks(){
   select.replaceChildren(...[{value:'',label:'Intero circuito'},{value:'start',label:'Partenza / arrivo'},...c.landmarks.map((p,i)=>({value:String(i),label:p.label})),...sim.track.widthStations.map((p,i)=>({value:'width:'+i,label:`${p.label} · ${p.widthMeters.toLocaleString('it-IT')} m stimati`}))].map(option));
   // 3D-only objects have no matching drawing in the 2D map.
   if(circuitView==='3d'&&circuit3D?.facilities){const group=document.createElement('optgroup');group.label='Tribune e box · 3D stimato';group.append(...circuit3D.facilities.focuses.map(option));select.append(group);}
-  if(circuitView==='3d'&&circuit3D?.worldData){select.insertBefore(option({value:'landscape',label:'Paesaggio · fascia 1 km (NASA SRTM)'}),select.options[1]);if(circuit3D.districts?.plan.placements.length)select.insertBefore(option({value:'district',label:'Edifici OSM · dettagli schematici'}),select.options[2]);}
-  if((trackFocus.startsWith('facility:')||trackFocus==='landscape'||trackFocus==='district')&&circuitView!=='3d')trackFocus='';select.value=trackFocus;
+  if(circuitView==='3d'&&circuit3D?.worldData){const km=(circuit3D.worldData.entry.coverageM||1000)/1000;select.insertBefore(option({value:'landscape',label:`Paesaggio · fascia ${km} km (NASA SRTM)`}),select.options[1]);if(circuit3D.districts?.plan.placements.length)select.insertBefore(option({value:'district',label:'Edifici OSM · dettagli schematici'}),select.options[2]);}
+  if(circuitView==='3d'&&circuit3D?.vegetation?.plan.farTrees)select.insertBefore(option({value:'woodland',label:'Bosco · alberi Sketchfab'}),select.options[2]);
+  if((trackFocus.startsWith('facility:')||['landscape','district','woodland'].includes(trackFocus))&&circuitView!=='3d')trackFocus='';select.value=trackFocus;
 }
 function zoomTrack(factor,point={x:view.width/2,y:view.height/2}){
   if(circuitView==='3d'){circuit3D?.zoom(factor);renderDirty=true;render();return;}

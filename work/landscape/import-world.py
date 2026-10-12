@@ -11,6 +11,7 @@ import json
 import math
 from pathlib import Path
 import urllib.request
+import urllib.error
 import zipfile
 
 import numpy as np
@@ -27,6 +28,29 @@ MAP_BOUNDS = {"monza-osm": "9.26,45.604,9.302,45.637", "monaco-osm": "7.416,43.7
               "le-mans-osm-north": "0.192,47.929,0.249,47.958", "le-mans-osm-south": "0.192,47.898,0.249,47.929"}
 CMR = "https://cmr.earthdata.nasa.gov/search/granules.json?collection_concept_id=C2763266360-LPCLOUD"
 DOI = "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003"
+COVERAGE = {"monza": 1000, "monaco": 1000, "le-mans": 2000}
+
+
+def landscape_maps(id, registration, road, boundaries, fallback):
+    if id != "le-mans":
+        return fallback
+    extent = np.vstack([road, *[np.array(ring, dtype=float) for ring in boundaries]])
+    lo, hi = extent.min(axis=0) - COVERAGE[id] - 150, extent.max(axis=0) + COVERAGE[id] + 150
+    corners = np.array([[x, y] for x in [lo[0], hi[0]] for y in [lo[1], hi[1]]])
+    local = corners @ np.array(registration["matrix"]).T + registration["translation"]
+    geo = local / registration["metresPerDegree"] + registration["referenceLonLat"]
+    west, south = np.floor(geo.min(axis=0) * 1000) / 1000
+    east, north = np.ceil(geo.max(axis=0) * 1000) / 1000
+    xs = np.linspace(west, east, math.ceil((east-west) / .03) + 1)
+    ys = np.linspace(south, north, math.ceil((north-south) / .03) + 1)
+    names = []
+    for iy in range(len(ys)-1):
+        for ix in range(len(xs)-1):
+            bbox = ",".join(f"{v:.6f}" for v in [xs[ix], ys[iy], xs[ix+1], ys[iy+1]])
+            name = "le-mans-2km-" + digest(bbox.encode())[:12]
+            MAP_BOUNDS[name] = bbox
+            names.append(name)
+    return names
 
 
 def digest(data):
@@ -36,8 +60,12 @@ def digest(data):
 def download(url, file):
     if not file.exists():
         req = urllib.request.Request(url, headers={"User-Agent": "Male-CNS-Circuit-Lab/offline-scenery"})
-        with urllib.request.urlopen(req, timeout=45) as response:
-            data = response.read()
+        try:
+            with urllib.request.urlopen(req, timeout=45) as response:
+                data = response.read()
+        except urllib.error.HTTPError as error:
+            print('Source download rejected:', url, error.code, error.read(400).decode('utf-8', 'replace'), flush=True)
+            raise
         file.parent.mkdir(parents=True, exist_ok=True)
         file.write_bytes(data)
     return json.loads(file.read_bytes())
@@ -125,18 +153,38 @@ def nearest(points, road):
 
 def places(id, inputs, registration, road):
     elements = {}
+    sources = []
+    def map_elements(name, depth=0):
+        url = "https://api.openstreetmap.org/api/0.6/map.json?bbox=" + MAP_BOUNDS[name]
+        try:
+            values = download(url, CACHE / (name + ".json"))["elements"]
+            sources.append(name)
+            return values
+        except urllib.error.HTTPError as error:
+            if error.code != 400 or depth >= 3:
+                raise
+            west, south, east, north = map(float, MAP_BOUNDS[name].split(","))
+            cx, cy = (west+east)/2, (south+north)/2
+            values = []
+            for w, s, e, n in [(west,south,cx,cy),(cx,south,east,cy),(west,cy,cx,north),(cx,cy,east,north)]:
+                bbox = ",".join(f"{v:.7f}" for v in [w,s,e,n])
+                child = "le-mans-2km-" + digest(bbox.encode())[:12]
+                MAP_BOUNDS[child] = bbox
+                values.extend(map_elements(child, depth+1))
+            return values
     for name in inputs:
-        map_url = "https://api.openstreetmap.org/api/0.6/map.json?bbox=" + MAP_BOUNDS[name]
-        for e in download(map_url, CACHE / (name + ".json"))["elements"]:
+        for e in map_elements(name):
             elements[e["type"], e["id"]] = e
     nodes = {key[1]: e for key, e in elements.items() if key[0] == "node"}
     matrix = np.array(registration["matrix"])
     inv = np.linalg.inv(matrix)
-    result, green = [], []
+    result, green, cover = [], [], []
     for e in elements.values():
         tags = e.get("tags", {})
-        vegetation = tags.get("landuse") == "forest" or tags.get("natural") == "wood" or tags.get("leisure") == "park"
-        if e["type"] != "way" or (not vegetation and ("building" not in tags or tags["building"] in ["no", "grandstand", "roof"])):
+        kind = tags.get("landuse") or tags.get("natural") or tags.get("leisure")
+        vegetation = kind in ["forest", "wood", "park"]
+        landcover = kind in ["forest", "wood", "park", "grass", "meadow", "farmland", "orchard", "scrub", "water", "basin", "reservoir", "residential", "industrial", "commercial"]
+        if e["type"] != "way" or (not landcover and ("building" not in tags or tags["building"] in ["no", "grandstand", "roof"])):
             continue
         ids = e.get("nodes", [])
         if len(ids) < 4 or ids[0] != ids[-1] or any(n not in nodes for n in ids):
@@ -144,14 +192,18 @@ def places(id, inputs, registration, road):
         geo = np.array([[nodes[n]["lon"], nodes[n]["lat"]] for n in ids[:-1]])
         local = (geo - registration["referenceLonLat"]) * registration["metresPerDegree"]
         polygon = (local - registration["translation"]) @ inv.T
-        if not np.isfinite(polygon).all() or len(polygon) > (1000 if vegetation else 100):
+        if not np.isfinite(polygon).all() or len(polygon) > (2000 if landcover else 100):
             continue
+        if landcover:
+            cover.append({"osmWay": e["id"], "polygon": np.round(polygon, 2).tolist(), "kind": kind})
         if vegetation:
-            green.append({"osmWay": e["id"], "polygon": np.round(polygon, 2).tolist(), "kind": tags.get("landuse") or tags.get("natural") or tags.get("leisure")})
+            green.append({"osmWay": e["id"], "polygon": np.round(polygon, 2).tolist(), "kind": kind})
+            continue
+        if "building" not in tags or tags["building"] in ["no", "grandstand", "roof"]:
             continue
         centroid = polygon.mean(axis=0)
         distance = nearest(centroid[None, :], road)[0]
-        if distance < 65 or distance > 1000 or nearest(polygon, road).min() < 40:
+        if distance < 65 or distance > COVERAGE[id] or nearest(polygon, road).min() < 40:
             continue
         signed_area = np.sum(polygon[:, 0] * np.roll(polygon[:, 1], -1) - polygon[:, 1] * np.roll(polygon[:, 0], -1)) / 2
         if not 20 <= abs(signed_area) <= 18000:
@@ -169,7 +221,15 @@ def places(id, inputs, registration, road):
         result.append({"osmWay": e["id"], "polygon": np.round(polygon, 2).tolist(), "heightM": round(height, 2),
                        "heightFromOsmTag": measured, "distanceM": round(float(distance), 2), "kind": tags["building"]})
     result.sort(key=lambda e: (e["distanceM"], e["osmWay"]))
-    return result[:{"monza": 500, "monaco": 1100, "le-mans": 1000}[id]], green
+    limit = {"monza": 500, "monaco": 1100, "le-mans": 2000}[id]
+    if id == "le-mans":
+        # Reserve a share for the extended ring; nearest-first alone can fill
+        # the whole budget inside the old 1 km band.
+        far = []
+        for lower in [1000, 1250, 1500, 1750]:
+            far.extend([e for e in result if lower < e["distanceM"] <= lower+250][:200])
+        result = [e for e in result if e["distanceM"] <= 1000][:1200] + far
+    return result[:limit], green, cover, sources
 
 
 def read_hgt(directory, name):
@@ -191,15 +251,15 @@ def read_hgt(directory, name):
         "file": name + ".SRTMGL1.hgt.zip", "dimensions": [3601, 3601], "noData": -32768}
 
 
-def elevations(road, registration, hgt, name, boundaries):
+def elevations(road, registration, hgt, name, boundaries, coverage=1000):
     # 32 m display sampling is not a claim of survey accuracy.
     step = 32
     extent = np.vstack([road, *[np.array(ring, dtype=float) for ring in boundaries]])
     # The app's framing bounds add 100 m around the road geometry. Include
     # that existing framing margin plus mesh padding, rather than clamping
     # requests to the edge of a smaller real-data crop.
-    lo = np.floor((extent.min(axis=0) - 1250) / step) * step
-    hi = np.ceil((extent.max(axis=0) + 1250) / step) * step
+    lo = np.floor((extent.min(axis=0) - coverage - 250) / step) * step
+    hi = np.ceil((extent.max(axis=0) + coverage + 250) / step) * step
     nx, ny = np.ceil((hi - lo) / step).astype(int) + 1
     xx, yy = np.meshgrid(lo[0] + np.arange(nx) * step, lo[1] + np.arange(ny) * step)
     app = np.column_stack([xx.ravel(), yy.ravel()])
@@ -248,20 +308,21 @@ def main():
             "downloadUrl": next(l["href"] for l in metadata["links"] if not l.get("inherited") and l["rel"].endswith("data#")),
             "doi": DOI, "collectionConceptId": "C2763266360-LPCLOUD", "period": [metadata["time_start"], metadata["time_end"]],
             "format": "HGT int16 big endian, north-to-south rows; 1 arc-second; EGM96 orthometric metres"})
-        data, grid = elevations(road, registration, hgt, name, circuit["boundaries"])
+        data, grid = elevations(road, registration, hgt, name, circuit["boundaries"], COVERAGE[id])
         OUTPUT.mkdir(parents=True, exist_ok=True)
         (OUTPUT / (id + ".f32")).write_bytes(data)
-        buildings, green = places(id, maps, registration, road)
-        place_data = {"license": "ODbL-1.0", "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/", "attribution": "© OpenStreetMap contributors", "estimatedRegistration": True, "buildings": buildings, "greenAreas": green}
+        maps = landscape_maps(id, registration, road, circuit["boundaries"], maps)
+        buildings, green, cover, maps = places(id, maps, registration, road)
+        place_data = {"license": "ODbL-1.0", "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/", "attribution": "© OpenStreetMap contributors", "estimatedRegistration": True, "buildings": buildings, "greenAreas": green, "landCover": cover}
         (OUTPUT / (id + "-places.json")).write_text(json.dumps(place_data, separators=(",", ":")), encoding="utf-8")
-        catalog[id] = {"registration": registration, "srtm": provenance, "grid": {**grid, "file": id + ".f32", "sha256": digest(data)},
+        catalog[id] = {"coverageM": COVERAGE[id], "registration": registration, "srtm": provenance, "grid": {**grid, "file": id + ".f32", "sha256": digest(data)},
             "placesFile": id + "-places.json", "osmRoute": {"relationId": relation_id, "url": url, "sha256": digest(route_file.read_bytes())},
             "buildings": len(buildings), "sourceMapFiles": [{"file": m, "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=" + MAP_BOUNDS[m], "sha256": digest((CACHE / (m + ".json")).read_bytes())} for m in maps]}
         print(id, grid["columns"], grid["rows"], "source range", grid["absoluteRangeM"], "buildings", len(buildings), flush=True)
     CACHE.mkdir(parents=True, exist_ok=True)
     (CACHE.parent / "registration.json").write_text(json.dumps(fit_report, indent=2), encoding="utf-8")
     if not args.fit_only:
-        manifest = {"revision": "nasa-srtm-landscape-1", "source": DOI, "attribution": "NASA JPL SRTMGL1 v003 / LP DAAC; © OpenStreetMap contributors",
+        manifest = {"revision": "nasa-srtm-landscape-2", "source": DOI, "attribution": "NASA JPL SRTMGL1 v003 / LP DAAC; © OpenStreetMap contributors",
                     "notice": "SRTM acquisition February 2000, not a 2026 survey. Estimated similarity registration and near-track blend; decorative buildings.",
                     "circuits": catalog}
         (OUTPUT / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
