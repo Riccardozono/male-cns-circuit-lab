@@ -25,6 +25,8 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       const beforeMotion=await js('JSON.stringify(circuitLab.sim.cars.map(c=>[c.x,c.y,c.heading,c.outputs,c.fitness]))');
       await change('camera-select','overview');await js('render()');
       const metrics=await js('circuitLab.circuit3D.info()');
+      const landscapeExpected=circuitId!=='lab';
+      check(circuitId+': offline NASA landscape and OSM districts cover 1 km without replacing the physical surface',landscapeExpected?metrics.landscape?.coverageM===1000&&metrics.landscape.source==='NASA SRTMGL1 v003'&&metrics.landscape.physicalSurfaceUnchanged&&metrics.landscape.verticalScale===1&&metrics.districts?.buildings>50&&metrics.districts.drawCalls<=4&&!await js('document.getElementById("landscape-source-note").hidden'):!metrics.landscape&&!metrics.districts, {landscape:metrics.landscape,districts:metrics.districts});
       const transform=metrics.carLods?.livery?.transform;
       check(circuitId+': 100 real agents and bounded instanced LOD draw calls',metrics.carCount===100&&metrics.drawCalls<150&&metrics.carRevision==='992-user-glb-lod-3'&&metrics.carLods?.livery?.loaded&&JSON.stringify(transform)===JSON.stringify({offset:[0,2],scale:[1,-1]})&&metrics.roadVertices>20&&!metrics.lost,metrics);
       check(circuitId+': static estimated barriers/runoffs load locally',metrics.scenery?.geometryRevision==='circuit-scenery-1'&&metrics.scenery.estimated&&metrics.scenery.barrierSegments>50&&metrics.scenery.meshes<=9&&metrics.scenery.zones.every(z=>z.renderedTiles>0),metrics.scenery);
@@ -36,10 +38,17 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       const detailsInitiallyOn=await js('document.getElementById("track-details").getAttribute("aria-pressed")==="true"');
       if(!detailsInitiallyOn)await js('document.getElementById("track-details").click();render()');
       await js('document.getElementById("track-details").click();render()');
-      check(circuitId+': Details hides trees, buildings and facilities while paused',await js('!circuitLab.circuit3D.info().scenery.visible&&!circuitLab.circuit3D.vegetation.group.visible&&!circuitLab.circuit3D.facilities.group.visible&&(!circuitLab.circuit3D.buildings||!circuitLab.circuit3D.buildings.group.visible)'));
+      check(circuitId+': Details hides trees, buildings and facilities while paused',await js('!circuitLab.circuit3D.info().scenery.visible&&!circuitLab.circuit3D.vegetation.group.visible&&!circuitLab.circuit3D.facilities.group.visible&&(!circuitLab.circuit3D.buildings||!circuitLab.circuit3D.buildings.group.visible)&&(!circuitLab.circuit3D.districts||!circuitLab.circuit3D.districts.group.visible)'));
       await js('document.getElementById("track-details").click();render()');
       check(circuitId+': Details restores scenery without new physics',await js('circuitLab.circuit3D.info().scenery.visible')&&hash(await engine.exportProgress())===hash(original));
       await js('document.getElementById("track-zoom-in").click();document.getElementById("track-3d-canvas").dispatchEvent(new KeyboardEvent("keydown",{key:"ArrowLeft",bubbles:true}));render()');
+      if(landscapeExpected){
+        await change('track-landmark','landscape');await js('render()');
+        check(circuitId+': Landscape focus is camera-only, keeps paused progress and fits the extended world',hash(await engine.exportProgress())===hash(original)&&await js('circuitLab.circuit3D.mode==="overview"&&document.getElementById("track-landmark").value==="landscape"&&circuitLab.circuit3D.overviewScope==="landscape"&&Math.abs(circuitLab.circuit3D.distance-circuitLab.circuit3D.overviewDistance)<1e-6'));
+        if(capture)await snap(circuitId+'-landscape',1540,980);
+        await js('document.getElementById("track-reset").click();render()');
+        check(circuitId+': reset returns from Landscape to the whole circuit with no training changes',hash(await engine.exportProgress())===hash(original)&&await js('document.getElementById("track-landmark").value===""&&circuitLab.circuit3D.mode==="overview"'));
+      }
       await change('camera-select','follow');await js('render()');
       check(circuitId+': orbit/zoom/follow never alter physics or training',hash(await engine.exportProgress())===hash(original)&&await js('JSON.stringify(circuitLab.sim.cars.map(c=>[c.x,c.y,c.heading,c.outputs,c.fitness]))')===beforeMotion);
       await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('facility:'));if(!option)throw Error('Facility selector unavailable');select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));render();})()`);
@@ -55,16 +64,21 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       }
       await js(`(()=>{const select=document.getElementById('track-landmark');select.value=circuitLab.circuit3D.facilities.focuses[0].key;select.dispatchEvent(new Event('change',{bubbles:true}));render();})()`);
       if(capture&&circuitId!=='lab'){
-        await snap(circuitId+'-grandstand',1540,980,{scope:'Existing Inquadra control focuses an actual estimated placement. No car or learning state is staged.'});
+        if(circuitId==='monaco')await snap('monaco-grandstand',1540,980,{scope:'Existing Inquadra control focuses an actual estimated placement. No car or learning state is staged.'});
         if(circuitId==='monza'){
-          await js(`(()=>{const select=document.getElementById('track-landmark'),p=circuitLab.circuit3D.facilities.focuses.find(p=>p.kind==='pit');select.value=p.key;select.dispatchEvent(new Event('change',{bubbles:true}));render();})()`);await snap('monza-pits',1540,980);
+          await js(`(()=>{const select=document.getElementById('track-landmark'),p=circuitLab.circuit3D.facilities.focuses.find(p=>p.kind==='pit');select.value=p.key;select.dispatchEvent(new Event('change',{bubbles:true}));render();})()`);
           check('Pit focus never changes paused learning state',hash(await engine.exportProgress())===hash(original));
           await js('document.getElementById("track-reset").click();render()');await snap('monza-overview',1540,980);
+          await change('camera-select','follow');await js('render()');await snap('monza-follow',1540,980);
+        }else{
+          await change('track-landmark','district');await js('render()');
+          check(circuitId+': building details are reachable through the normal selector without changing progress',hash(await engine.exportProgress())===hash(original)&&await js('document.getElementById("track-landmark").value==="district"&&circuitLab.circuit3D.districts.info().windows>0'));
+          await snap(circuitId+'-district',1540,980,{scope:'Existing Inquadra selects actual mapped building detail. No staged cars or learning.'});
         }
       }
     }
     // Exercise live physical movement on the full graph at the requested cap.
-    await change('circuit-select','monza');await engine.command({type:'setSpeed',value:30});await js('circuitLab.sim.running=true');await until('circuitLab.sim.elapsed>.3');await js('circuitLab.sim.running=false');await engine.command({type:'pause',value:false});
+    await change('circuit-select','monza');await until('circuitLab.sim.circuitId==="monza"&&circuitLab.sim.cars.length===100');await engine.command({type:'setSpeed',value:30});await engine.command({type:'pause',value:true});await js('circuitLab.sim.running=true');await until('circuitLab.sim.elapsed>.3');await js('circuitLab.sim.running=false');await engine.command({type:'pause',value:false});
     check('100-agent actual solver runs with finite independent pedals',await js('circuitLab.sim.cars.length===100&&circuitLab.sim.cars.every(c=>[c.x,c.y,c.speed,...c.outputs].every(Number.isFinite)&&Math.min(c.outputs[1],c.outputs[2])<=1e-9)'));
     const durations=await js('(()=>{const v=[];for(let i=0;i<25;i++){const start=performance.now();render();v.push(performance.now()-start);}return v;})()');
     check('Render timing sampled without neural ticks',durations.every(Number.isFinite),{medianMs:durations.slice().sort((a,b)=>a-b)[12],maxMs:Math.max(...durations),scope:'CPU submission time for 25 paused renders, not total GPU time or simulation throughput'});

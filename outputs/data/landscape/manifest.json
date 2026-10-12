@@ -1,0 +1,297 @@
+{
+  "revision": "nasa-srtm-landscape-1",
+  "source": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
+  "attribution": "NASA JPL SRTMGL1 v003 / LP DAAC; \u00a9 OpenStreetMap contributors",
+  "notice": "SRTM acquisition February 2000, not a 2026 survey. Estimated similarity registration and near-track blend; decorative buildings.",
+  "circuits": {
+    "monza": {
+      "registration": {
+        "estimated": true,
+        "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
+        "referenceLonLat": [
+          9.287120275085316,
+          45.622984500682584
+        ],
+        "metresPerDegree": [
+          77854.25475300975,
+          111319.49079327358
+        ],
+        "matrix": [
+          [
+            -0.0004057914526383364,
+            -0.9997598588341851
+          ],
+          [
+            -0.9997598588341851,
+            0.0004057914526383364
+          ]
+        ],
+        "translation": [
+          898.578987797229,
+          1072.4561334779169
+        ],
+        "scale": 0.9997599411873096,
+        "rmseM": 2.6356784478705704,
+        "maxResidualM": 5.341044313482853,
+        "phase": 357,
+        "reverse": false,
+        "osmEndpointRepairs": []
+      },
+      "srtm": {
+        "zipSha256": "4eaba6ea80aa8b92ce02cff9eb6087aed2bcb5f4b3c706b5a860928489045455",
+        "hgtSha256": "bd3d1d7836212f67a0e42547e237f8e325607bf08db73750c0a7f434b3991155",
+        "hgtBytes": 25934402,
+        "zipBytes": 8413366,
+        "file": "N45E009.SRTMGL1.hgt.zip",
+        "dimensions": [
+          3601,
+          3601
+        ],
+        "noData": -32768,
+        "granuleConceptId": "G2821081631-LPCLOUD",
+        "producerGranuleId": "N45E009.SRTMGL1.hgt",
+        "downloadUrl": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N45E009.SRTMGL1.hgt/N45E009.SRTMGL1.hgt.zip",
+        "doi": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
+        "collectionConceptId": "C2763266360-LPCLOUD",
+        "period": [
+          "2000-02-11T00:00:00.000Z",
+          "2000-02-21T23:59:59.000Z"
+        ],
+        "format": "HGT int16 big endian, north-to-south rows; 1 arc-second; EGM96 orthometric metres"
+      },
+      "grid": {
+        "origin": [
+          -1120.0,
+          -1120.0
+        ],
+        "stepM": 32,
+        "columns": 148,
+        "rows": 119,
+        "absoluteRangeM": [
+          161.3136515551464,
+          224.1467007718459
+        ],
+        "geoBounds": [
+          9.264536569680768,
+          45.60042656703488,
+          9.31305032248636,
+          45.642686935016776
+        ],
+        "file": "monza.f32",
+        "sha256": "1dddf9f76949c005648d4fa82c73edce2ee78eeec3ac09973e1deaf4da6f00c0"
+      },
+      "placesFile": "monza-places.json",
+      "osmRoute": {
+        "relationId": 284565,
+        "url": "https://api.openstreetmap.org/api/0.6/relation/284565/full.json",
+        "sha256": "bf83c55010c0bbb64efdfc141372e29d7325dbd8ebfd966784635a225c687025"
+      },
+      "buildings": 500,
+      "sourceMapFiles": [
+        {
+          "file": "monza-osm",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=9.26,45.604,9.302,45.637",
+          "sha256": "228e46afa2cb701014bdb7dab945795506de9cce95af33632d432a7fa798e083"
+        }
+      ]
+    },
+    "monaco": {
+      "registration": {
+        "estimated": true,
+        "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
+        "referenceLonLat": [
+          7.425504318313254,
+          43.737248464819295
+        ],
+        "metresPerDegree": [
+          80430.31856523265,
+          111319.49079327358
+        ],
+        "matrix": [
+          [
+            0.9982813975553457,
+            0.02441020445001754
+          ],
+          [
+            0.02441020445001754,
+            -0.9982813975553457
+          ]
+        ],
+        "translation": [
+          -502.7500144543516,
+          551.0974211135781
+        ],
+        "scale": 0.9985797949019126,
+        "rmseM": 7.685085696800523,
+        "maxResidualM": 17.671615636128166,
+        "phase": 458,
+        "reverse": true,
+        "osmEndpointRepairs": [
+          {
+            "fromNode": 14109303022,
+            "toNode": 14109303023,
+            "straightEstimatedGapM": 5.403909729903859
+          },
+          {
+            "fromNode": 12571844664,
+            "toNode": 918118157,
+            "straightEstimatedGapM": 18.23856157761428
+          }
+        ]
+      },
+      "srtm": {
+        "zipSha256": "d96bd19e98366157694dd4d2fc9247c25755c288e6f2dcdbb2986b4507a8b5ab",
+        "hgtSha256": "10ba47f5420bbb5da35ae08e37e8fa9e528ea161b26d428b56d72b1aa4b886db",
+        "hgtBytes": 25934402,
+        "zipBytes": 4274583,
+        "file": "N43E007.SRTMGL1.hgt.zip",
+        "dimensions": [
+          3601,
+          3601
+        ],
+        "noData": -32768,
+        "granuleConceptId": "G2821078201-LPCLOUD",
+        "producerGranuleId": "N43E007.SRTMGL1.hgt",
+        "downloadUrl": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N43E007.SRTMGL1.hgt/N43E007.SRTMGL1.hgt.zip",
+        "doi": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
+        "collectionConceptId": "C2763266360-LPCLOUD",
+        "period": [
+          "2000-02-11T00:00:00.000Z",
+          "2000-02-21T23:59:59.000Z"
+        ],
+        "format": "HGT int16 big endian, north-to-south rows; 1 arc-second; EGM96 orthometric metres"
+      },
+      "grid": {
+        "origin": [
+          -1120.0,
+          -1120.0
+        ],
+        "stepM": 32,
+        "columns": 103,
+        "rows": 110,
+        "absoluteRangeM": [
+          -4.587730351664845,
+          517.5202705183701
+        ],
+        "geoBounds": [
+          7.405012485903519,
+          43.72071791527969,
+          7.446583044548398,
+          43.75271303488199
+        ],
+        "file": "monaco.f32",
+        "sha256": "1e4229d49527232fa90046a39374faa0bd6c4b0c0bc7370c85c987b496a5d313"
+      },
+      "placesFile": "monaco-places.json",
+      "osmRoute": {
+        "relationId": 148194,
+        "url": "https://api.openstreetmap.org/api/0.6/relation/148194/full.json",
+        "sha256": "0e9636c881aa09f2f6d539cae55170efec77796c10e2288d2d086869e32796eb"
+      },
+      "buildings": 1100,
+      "sourceMapFiles": [
+        {
+          "file": "monaco-osm",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=7.416,43.730,7.435,43.745",
+          "sha256": "b75ade32c736744a3407442f0fcf2312ba0a7c54a3f2578785347b77d45106d4"
+        }
+      ]
+    },
+    "le-mans": {
+      "registration": {
+        "estimated": true,
+        "method": "closed-curve similarity least squares; 512 arc-length samples; both orientations and all cyclic phases",
+        "referenceLonLat": [
+          0.22000497470398306,
+          47.94292036329387
+        ],
+        "metresPerDegree": [
+          74569.65582305512,
+          111319.49079327358
+        ],
+        "matrix": [
+          [
+            0.022010918926116705,
+            -0.9947463672370226
+          ],
+          [
+            -0.9947463672370226,
+            -0.022010918926116705
+          ]
+        ],
+        "translation": [
+          1802.1619413313042,
+          2236.4898151799707
+        ],
+        "scale": 0.994989857075551,
+        "rmseM": 34.059868583068805,
+        "maxResidualM": 73.41064411799316,
+        "phase": 455,
+        "reverse": false,
+        "osmEndpointRepairs": []
+      },
+      "srtm": {
+        "zipSha256": "47d4f37719686c7b57600c7b7b4eb040dcb99d92b31dc2b2084fab76fbbf08ba",
+        "hgtSha256": "62c05c8a8f59c714f2b45c082da70ec2a8f981b71a5cb700947e85a3346b2fbf",
+        "hgtBytes": 25934402,
+        "zipBytes": 6109588,
+        "file": "N47E000.SRTMGL1.hgt.zip",
+        "dimensions": [
+          3601,
+          3601
+        ],
+        "noData": -32768,
+        "granuleConceptId": "G2821079900-LPCLOUD",
+        "producerGranuleId": "N47E000.SRTMGL1.hgt",
+        "downloadUrl": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/SRTMGL1.003/N47E000.SRTMGL1.hgt/N47E000.SRTMGL1.hgt.zip",
+        "doi": "https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003",
+        "collectionConceptId": "C2763266360-LPCLOUD",
+        "period": [
+          "2000-02-11T00:00:00.000Z",
+          "2000-02-21T23:59:59.000Z"
+        ],
+        "format": "HGT int16 big endian, north-to-south rows; 1 arc-second; EGM96 orthometric metres"
+      },
+      "grid": {
+        "origin": [
+          -1120.0,
+          -1120.0
+        ],
+        "stepM": 32,
+        "columns": 249,
+        "rows": 164,
+        "absoluteRangeM": [
+          33.36701460338125,
+          91.36492144153466
+        ],
+        "geoBounds": [
+          0.1892019438636741,
+          47.90129370730751,
+          0.2611249753556309,
+          47.97324082156789
+        ],
+        "file": "le-mans.f32",
+        "sha256": "75afd3f1c5d2ecc96a500ba108ffa73cda979921584f24bdaeca728f3636ad0c"
+      },
+      "placesFile": "le-mans-places.json",
+      "osmRoute": {
+        "relationId": 2126739,
+        "url": "https://api.openstreetmap.org/api/0.6/relation/2126739/full.json",
+        "sha256": "e575f796a7deac34a6f5a7ae2d5ffefc700bb1e2a6371b0c15b2f5d5180027a5"
+      },
+      "buildings": 1000,
+      "sourceMapFiles": [
+        {
+          "file": "le-mans-osm-north",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.192,47.929,0.249,47.958",
+          "sha256": "1c05897444725ca011ed7c614910a1556e6824507339788aac0b74e0664cdf4e"
+        },
+        {
+          "file": "le-mans-osm-south",
+          "url": "https://api.openstreetmap.org/api/0.6/map.json?bbox=0.192,47.898,0.249,47.929",
+          "sha256": "4c9bc1c36366bf78f9392d57873c0169bd94ddfdebcf8ec0e75a5107a649e6f0"
+        }
+      ]
+    }
+  }
+}

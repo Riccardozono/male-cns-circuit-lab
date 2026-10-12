@@ -5,7 +5,7 @@ import {EnvironmentInstances} from './environment-assets.mjs';
 
 export function buildingPlan(track,model,scenery,ground,unitSize,exclusions=[]){
   if(!['monaco','le-mans'].includes(model.id))return {placements:[],footprints:[],estimated:true,budget:0};
-  const ppm=track.pixelsPerMeter||1,mask=createRoadMask(track),urban=model.id==='monaco',budget=urban?84:64,placements=[],footprints=[],line=model.center.points;
+  const ppm=track.pixelsPerMeter||1,mask=createRoadMask(track),urban=model.id==='monaco',budget=urban?140:100,placements=[],footprints=[],line=model.center.points;
   let state=urban?81473:51917;const random=()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return (state>>>0)/4294967296;};
   const near=new Map(),cell=40*ppm;
   for(let attempt=0;attempt<budget*60&&placements.length<budget;attempt++){

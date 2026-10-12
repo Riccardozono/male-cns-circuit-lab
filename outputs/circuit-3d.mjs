@@ -10,6 +10,8 @@ import {createVegetation} from './vegetation.mjs';
 import {EnvironmentAssets} from './environment-assets.mjs';
 import {createBuildings} from './buildings.mjs';
 import {createTrackFacilities} from './track-facilities.mjs';
+import {loadLandscape,createWorldTerrain} from './world-terrain.mjs';
+import {createDistrictBuildings} from './district-buildings.mjs';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function overviewFit(bounds,aspect,yaw=2.3,pitch=.90,fov=48,points=null,target={x:0,z:0}){
   const tangent=Math.tan(fov*Math.PI/360),halfX=bounds.width/2,halfZ=bounds.height/2;
@@ -81,7 +83,7 @@ export class Circuit3D{
   listen(name,handler,options){this.canvas.addEventListener(name,handler,options);this.listeners.push([name,handler,options]);}
   modelStatus(){
     const tree=this.environmentAssets.assets.has('tree'),houses=['monaco','le-mans'].includes(this.model?.id),house=this.environmentAssets.assets.has(this.model?.id);
-    return [this.carError||(this.carRevision?'Porsche 992 · livrea originale':'Caricamento Porsche 992…'),this.treeError||(tree?'Alberi ZIP · texture originali':'Caricamento alberi ZIP…'),...(houses?[this.houseError||(house?'Edifici Sketchfab · posizioni illustrative':'Caricamento edifici locali…')]:[]),...(this.facilities?[`${this.facilities.info().grandstands} tribune · box e dettagli stimati`]:[])].join(' · ');
+    return [this.carError||(this.carRevision?'Porsche 992 · livrea originale':'Caricamento Porsche 992…'),this.treeError||(tree?'Alberi ZIP · texture originali':'Caricamento alberi ZIP…'),...(houses?[this.houseError||(house?'Edifici Sketchfab · posizioni illustrative':'Caricamento edifici locali…')]:[]),...(this.facilities?[`${this.facilities.info().grandstands} tribune · box e dettagli stimati`]:[]),...(this.model?.id!=='lab'?[this.worldError||(this.worldData?`NASA SRTM · fascia 1 km · raccordo stimato · ${this.districts?.info().buildings||0} edifici OSM`:'Caricamento paesaggio NASA locale…')]:[])].join(' · ');
   }
   notifyModelStatus(){if(!this.disposed)this.onModelStatus(this.modelStatus());}
   bindControls(){
@@ -101,7 +103,7 @@ export class Circuit3D{
   }
   setTrack(track,model,onRoad){
     if(this.track===track&&this.model===model)return;
-    this.clearStatic();this.track=track;this.model=model;this.houseError=null;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
+    this.clearStatic();this.track=track;this.model=model;this.houseError=null;this.worldError=null;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
     this.scene.background.set(model.theme.ground);
     const add=(geometry,material)=>{const mesh=new T.Mesh(geometry,material);this.staticGroup.add(mesh);return mesh;};
     this.scenery=createTrackScenery(track,model,this.origin);this.staticGroup.add(this.scenery.group);
@@ -113,8 +115,15 @@ export class Circuit3D{
     this.facilities=createTrackFacilities(track,model,this.scenery.plan,this.dressingGround,this.origin);this.staticGroup.add(this.facilities.group);
     this.refreshDressing();
     const house=['monaco','le-mans'].includes(model.id)?this.environmentAssets.load(model.id):Promise.resolve();
+    const landscape=loadLandscape(model.id).then(data=>{
+      if(!data||this.disposed||this.track!==track)return true;
+      const world=createWorldTerrain(track,this.ground,data,this.scenery.groundMaterial());
+      this.terrainObject.geometry.dispose();this.terrainObject.material.dispose();this.terrainObject.removeFromParent();this.terrainObject=world;this.staticGroup.add(world);this.worldData=data;
+      this.dressingGround={...this.ground,visualHeight:(x,y)=>world.userData.heightAt(x,y)/this.ground.ppm,distanceAt:world.userData.distanceAt};
+      this.facilities.dispose();this.facilities=createTrackFacilities(track,model,this.scenery.plan,this.dressingGround,this.origin);this.staticGroup.add(this.facilities.group);return true;
+    }).catch(error=>{if(!this.disposed&&this.track===track)this.worldError='Paesaggio NASA non disponibile: '+error.message;return false;});
     this.notifyModelStatus();
-    this.environmentReady=Promise.all([this.treeReady,house]).then(([tree])=>{if(!this.disposed&&this.track===track){this.refreshDressing();this.notifyModelStatus();return tree;}return false;}).catch(error=>{if(!this.disposed&&this.track===track){this.houseError='Edifici non disponibili: riprova cambiando circuito. '+error.message;this.notifyModelStatus();}return false;});
+    this.environmentReady=Promise.all([this.treeReady,house,landscape]).then(([tree,,world])=>{if(!this.disposed&&this.track===track){this.refreshDressing();this.notifyModelStatus();return tree&&world;}return false;}).catch(error=>{if(!this.disposed&&this.track===track){this.houseError='Edifici non disponibili: riprova cambiando circuito. '+error.message;this.notifyModelStatus();}return false;});
     this.staticGroup.add(groundMesh(b,this.scenery.groundMaterial(),track.pixelsPerMeter||1));
     this.road=add(roadGeometry(track,this.origin),new T.MeshLambertMaterial({color:model.theme.road,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
     const outline=[];for(const wall of track.walls)outline.push(wall.a.x-this.origin.x,.06,wall.a.y-this.origin.y,wall.b.x-this.origin.x,.06,wall.b.y-this.origin.y);
@@ -130,15 +139,18 @@ export class Circuit3D{
     this.overviewDistance=this.fitDistance();this.reset();
   }
   refreshDressing(){
-    this.vegetation?.dispose();this.buildings?.dispose();this.buildings=null;
+    this.vegetation?.dispose();this.buildings?.dispose();this.districts?.dispose();this.buildings=null;this.districts=null;
     const exclusions=this.facilities?.plan.placements||[],house=this.environmentAssets.assets.get(this.model.id);if(house){this.buildings=createBuildings(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,house,exclusions);this.staticGroup.add(this.buildings.group);}
-    this.vegetation=createVegetation(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,this.environmentAssets.assets.get('tree'),[...exclusions,...this.buildings?.plan.placements||[]]);this.staticGroup.add(this.vegetation.group);
-    this.overviewPoints=[...this.baseOverviewPoints,...this.facilities?.plan.footprints||[]];for(const p of this.vegetation.plan.plants)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});if(this.buildings)this.overviewPoints.push(...this.buildings.plan.footprints);
+    const reserved=[...exclusions,...this.buildings?.plan.placements||[]];
+    if(this.worldData){this.districts=createDistrictBuildings(this.track,this.scenery.plan,this.dressingGround,this.origin,this.worldData,reserved);this.staticGroup.add(this.districts.group);reserved.push(...this.districts.plan.placements);}
+    this.vegetation=createVegetation(this.track,this.model,this.scenery.plan,this.dressingGround,this.origin,this.environmentAssets.assets.get('tree'),reserved,this.worldData);this.staticGroup.add(this.vegetation.group);
+    this.overviewPoints=[...this.baseOverviewPoints,...this.facilities?.plan.footprints||[]];for(const p of this.vegetation.plan.plants)if(!p.far)this.overviewPoints.push({...p,height:p.groundY+p.height*1.15});if(this.buildings)this.overviewPoints.push(...this.buildings.plan.footprints);
     this.dirty=true;this.onChange();
   }
-  clearStatic(){this.scenery?.dispose();this.vegetation?.dispose();this.buildings?.dispose();this.facilities?.dispose();this.scenery=null;this.vegetation=null;this.buildings=null;this.facilities=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
-  overviewTarget(){return overviewTarget({...this.track,outer:this.overviewPoints||this.track.outer},this.yaw);}
-  fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.overviewPoints||this.track.outer,this.overviewTarget()):1200;}
+  clearStatic(){this.scenery?.dispose();this.vegetation?.dispose();this.buildings?.dispose();this.districts?.dispose();this.facilities?.dispose();this.scenery=null;this.vegetation=null;this.buildings=null;this.districts=null;this.facilities=null;this.worldData=null;this.overviewPoints=null;for(const o of [...this.staticGroup.children]){o.userData?.dispose?.();o.geometry?.dispose();o.material?.dispose();this.staticGroup.remove(o);}}
+  fitPoints(){return this.overviewScope==='landscape'&&this.worldData?[...this.terrainObject.userData.footprint,...this.districts?.plan.footprints||[]]:this.overviewPoints||this.track.outer;}
+  overviewTarget(){return overviewTarget({...this.track,outer:this.fitPoints()},this.yaw);}
+  fitDistance(){return this.track?overviewFit(this.track.bounds,this.camera.aspect,this.yaw,this.pitch,this.camera.fov,this.fitPoints(),this.overviewTarget()):1200;}
   centreOverview(){const target=this.track?this.overviewTarget():{x:0,z:0};this.focus.set(target.x,target.y||0,target.z);this.overviewDistance=this.fitDistance();this.distance=this.overviewDistance;}
   resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;const dpr=Math.min(1.5,globalThis.devicePixelRatio||1);if(this.width!==r.width||this.height!==r.height||this.dpr!==dpr){
     const ratio=this.distance/(this.overviewDistance||this.distance);
@@ -146,11 +158,16 @@ export class Circuit3D{
     if(this.track){this.overviewDistance=this.fitDistance();if(this.mode==='overview')this.distance=this.overviewDistance*ratio;}
     this.camera.updateProjectionMatrix();this.dirty=true;
   }}
-  setMode(mode){this.mode=mode==='follow'?'follow':'overview';if(this.mode==='overview'){this.pitch=.90;this.yaw=2.3;this.centreOverview();}else{this.pitch=.50;this.yaw=-1.05;}this.dirty=true;}
-  reset(){this.focus.set(0,0,0);this.followDistance=18;this.yaw=this.mode==='follow'?-1.05:2.3;this.pitch=this.mode==='follow'?.50:.90;this.centreOverview();this.dirty=true;this.onChange();}
+  setMode(mode){this.overviewScope='circuit';this.mode=mode==='follow'?'follow':'overview';if(this.mode==='overview'){this.pitch=.90;this.yaw=2.3;this.centreOverview();}else{this.pitch=.50;this.yaw=-1.05;}this.dirty=true;}
+  reset(){this.overviewScope='circuit';this.focus.set(0,0,0);this.followDistance=18;this.yaw=this.mode==='follow'?-1.05:2.3;this.pitch=this.mode==='follow'?.50:.90;this.centreOverview();this.dirty=true;this.onChange();}
   zoom(factor){if(this.mode==='follow')this.followDistance=clamp(this.followDistance/factor,6,150);else this.distance=clamp(this.distance/factor,8,(this.overviewDistance||3000)*2);this.dirty=true;this.onChange();}
-  focusPoint(point){this.mode='overview';this.focus.set(point.x-this.origin.x,this.ground.sample(point.x,point.y).height*this.ground.ppm,point.y-this.origin.y);this.distance=95;this.pitch=.85;this.dirty=true;this.onChange();}
+  focusPoint(point){this.overviewScope='circuit';this.mode='overview';this.focus.set(point.x-this.origin.x,this.ground.sample(point.x,point.y).height*this.ground.ppm,point.y-this.origin.y);this.distance=95;this.pitch=.85;this.dirty=true;this.onChange();}
   focusFacility(point){this.focusPoint(point);const ppm=this.track.pixelsPerMeter||1;this.focus.y=point.groundY+point.height*.35;this.distance=Math.max(65,point.width*1.45,point.depth*3)*ppm;this.yaw=point.yaw+Math.PI;this.pitch=.42;this.dirty=true;}
+  focusLandscape(){
+    if(!this.worldData)return;
+    this.overviewScope='landscape';this.mode='overview';this.yaw=2.3;this.pitch=.90;this.centreOverview();this.dirty=true;this.onChange();
+  }
+  focusDistrict(){const point=this.districts?.plan.placements[0];if(!point)return;this.focusPoint(point);this.focus.y=point.groundY+point.height*.35;this.distance=Math.max(85,point.radius*3);this.pitch=.5;this.yaw=1.8;this.dirty=true;this.onChange();}
   pan(dx,dy){if(this.mode==='follow'){this.mode='overview';this.distance=this.followDistance;}const unit=this.distance/Math.max(200,this.height);this.focus.x-=Math.cos(this.yaw)*dx*unit+Math.sin(this.yaw)*dy*unit;this.focus.z+=Math.sin(this.yaw)*dx*unit-Math.cos(this.yaw)*dy*unit;this.dirty=true;this.onChange();}
   project(car){const v=new T.Vector3(car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+.8)*(car.pixelsPerMeter||1),car.y-this.origin.y).project(this.camera);return {x:(v.x+1)*this.width/2,y:(1-v.y)*this.height/2,visible:v.z>-1&&v.z<1};}
   pick(clientX,clientY){if(!this.cars)return;const r=this.canvas.getBoundingClientRect(),x=clientX-r.left,y=clientY-r.top;let min=22,id=null;for(const car of this.cars){const p=this.project(car),d=Math.hypot(p.x-x,p.y-y);if(p.visible&&d<min){min=d;id=car.id;}}if(id!==null)this.onSelect(id);}
@@ -167,7 +184,7 @@ export class Circuit3D{
     this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
     this.scenery?.setVisible(details,this.mode);
     this.vegetation?.setVisible(details);
-    this.buildings?.setVisible(details);this.facilities?.setVisible(details);this.vegetation?.update(this.camera,this.mode);this.buildings?.update(this.camera,this.mode);this.facilities?.update(this.camera);
+    this.buildings?.setVisible(details);this.districts?.setVisible(details);this.facilities?.setVisible(details);this.vegetation?.update(this.camera,this.mode);this.buildings?.update(this.camera,this.mode);this.districts?.update(this.camera,this.mode);this.facilities?.update(this.camera);
     this.road.material.color.set(this.mode==='overview'?0x62757b:this.model.theme.road);this.outline.material.color.set(this.mode==='overview'?0xb1c0c1:0x82999d);
     this.selection.position.set(selected.x-this.origin.x,elevation+.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
     this.rays.visible=sensors;
@@ -176,6 +193,6 @@ export class Circuit3D{
     for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+1.4)*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
-  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,vegetation:this.vegetation?.info(),buildings:this.buildings?.info(),facilities:this.facilities?.info(),environmentError:this.treeError||this.houseError||null,lost:this.lost};}
+  info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,landscape:this.worldData?this.terrainObject.userData.info:null,districts:this.districts?.info(),vegetation:this.vegetation?.info(),buildings:this.buildings?.info(),facilities:this.facilities?.info(),environmentError:this.treeError||this.houseError||this.worldError||null,lost:this.lost};}
   dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();this.environmentAssets.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }
