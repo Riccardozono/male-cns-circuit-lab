@@ -167,14 +167,13 @@ Questo è un progetto realizzato in modalità **vibe coding**: richieste in ling
 
 I modelli OpenAI utilizzati dall'autore sono:
 
-| Modello OpenAI | Ambiente |
-| --- | --- |
-| **GPT-6 Astra** | OpenAI Codex |
-| **GPT-6 Luna** | OpenAI Codex |
-| **GPT-6.1 Sol** | OpenAI Codex |
-| **GPT-5.6 Luna** | OpenAI Codex |
-
-L'elenco è quello indicato dall'autore. Per la cronologia precedente non esiste un registro completo che attribuisca ogni commit a uno specifico modello. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
+| Modello OpenAI | Ambiente | Commit attribuiti verificabili |
+| --- | --- | ---: |
+| **GPT-6 Astra** | OpenAI Codex | 0* |
+| **GPT-6 Luna** | OpenAI Codex | 0* |
+| **GPT-6.1 Sol** | OpenAI Codex | **9** |
+| **GPT-5.6 Luna** | OpenAI Codex | 0* |
+L'elenco dei modelli è quello indicato dall'autore. Il conteggio riguarda soltanto i commit GitHub che riportano esplicitamente `[AI: ...]` nel titolo oppure `AI-Models:` nel corpo e include questo aggiornamento del README. `0*` significa che non risultano commit attribuiti a quel modello: non dimostra che il modello non sia stato usato nei commit storici privi di attribuzione. **Questi modelli hanno assistito lo sviluppo; non guidano le auto durante la simulazione.**
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
 
