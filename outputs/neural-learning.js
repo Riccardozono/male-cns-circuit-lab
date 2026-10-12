@@ -105,22 +105,35 @@
     update(ranked){
       const eligible=ranked.filter(agent=>valid(this.graph,agent.genome?.policyWeights));
       if(eligible.length<2)return;
+      this.updates++;this.episodes+=eligible.length;
+      // An identical return supplies no preference signal. Never learn a
+      // direction just because an agent happened to be first in the array.
+      if(eligible.every(agent=>agent.fitness===eligible[0].fitness))return;
       const count=Math.min(eligible.length,Math.max(2,Math.ceil(eligible.length/4)));
-      const weights=Array.from({length:count},(_,i)=>Math.log(count+.5)-Math.log(i+1)),total=weights.reduce((a,b)=>a+b,0);
+      const weights=Array.from({length:eligible.length},(_,i)=>i<count?Math.log(count+.5)-Math.log(i+1):0),total=weights.reduce((a,b)=>a+b,0);
       weights.forEach((_,i)=>weights[i]/=total);
+      // Average tied ranks, including a tie that spans the selection cutoff.
+      // Positive affine transformations of rewards leave the update unchanged.
+      for(let start=0;start<eligible.length;){
+        let end=start+1;while(end<eligible.length&&eligible[end].fitness===eligible[start].fitness)end++;
+        const tied=weights.slice(start,end).reduce((a,b)=>a+b,0)/(end-start);
+        for(let i=start;i<end;i++)weights[i]=tied;
+        start=end;
+      }
       const p=this.graph.learning;
       for(let j=0;j<this.mean.length;j++){
-        let mean=0;for(let i=0;i<count;i++)mean+=weights[i]*eligible[i].genome.policyWeights[j];
-        let variance=0;for(let i=0;i<count;i++)variance+=weights[i]*(eligible[i].genome.policyWeights[j]-this.mean[j])**2;
+        let mean=0;for(let i=0;i<eligible.length;i++)mean+=weights[i]*eligible[i].genome.policyWeights[j];
+        let variance=0;for(let i=0;i<eligible.length;i++)variance+=weights[i]*(eligible[i].genome.policyWeights[j]-this.mean[j])**2;
         this.mean[j]=clamp(.35*this.mean[j]+.65*mean,-8,8);
         this.sigma[j]=clamp(Math.sqrt(.85*this.sigma[j]**2+.15*variance),p.scales[j]*.5,p.scales[j]*3);
       }
-      this.updates++;this.episodes+=eligible.length;
     }
     sample(r,amount=.16,stagnation=0,mirror=null){
       const p=this.graph.learning,scale=Math.max(0,amount)/.16*Math.min(2.2,1+stagnation*.055);
       if(mirror)return this.mean.map((v,j)=>clamp(2*v-mirror[j],-8,8));
-      return this.mean.map((v,j)=>clamp(v+normal(r)*this.sigma[j]*scale,-8,8));
+      // Cap the perturbation rather than clipping each child independently:
+      // mirrored trials stay opposite even at the parameter bounds.
+      return this.mean.map((v,j)=>{const radius=Math.max(0,8-Math.abs(v));return v+clamp(normal(r)*this.sigma[j]*scale,-radius,radius);});
     }
     adopt(values){if(!valid(this.graph,values))throw Error('Checkpoint RL incompatibile.');this.mean=values.slice();this.sigma=this.graph.learning.scales.slice();}
     explore(stagnation){

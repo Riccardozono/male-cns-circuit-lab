@@ -40,7 +40,9 @@ test('All 32 V5 synaptic gain groups are used on existing anatomical nodes',()=>
   assert.deepEqual(Array.from(F.synapticGains(g,genome)),Array.from({length:32},(_,j)=>Math.fround(Math.exp(j/64))));
 });
 test('V5 rewards train 346 parameters, preserving optimizer/history and exact-version share files',async()=>{
-  const sim=v5(),before=sim.optimizer.mean.slice();sim.evolve();
+  const sim=v5(),before=sim.optimizer.mean.slice();
+  for(const car of sim.cars)car.rewardBreakdown.rewards.progress=car.reward=100*(car.id+1);
+  sim.evolve();
   assert.equal(sim.optimizer.episodes,4);assert.equal(sim.optimizer.updates,1);assert.notDeepEqual(sim.optimizer.mean,before);
   assert.equal(sim.history[0].learning.version,5);assert.equal(sim.history[0].learning.parameters,346);assert.equal(sim.history[0].rewardRevision,F.Rewards.REVISION);
   const payload=P.fromSimulation(sim),file=await P.decode(await P.encode(payload,'5.0.0'),'5.0.0');

@@ -578,7 +578,9 @@
       if(baseMutation>0&&this.champion&&genomes.length<Math.min(3,this.population-2)&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(this.champion)))genomes.push(cloneGenome(this.champion));
       const eliteCandidates=ranked;
       const eliteGenomes=new Set(genomes.map(g=>JSON.stringify(g)));
-      const eliteLimit=baseMutation>0?Math.min(EVOLUTION_RULES.eliteCount,Math.max(1,this.population-2)):this.population;
+      // Small batches need new evaluated policies, not four copied elites.
+      const eliteBudget=this.population<16?Math.max(1,Math.floor(this.population/8)):EVOLUTION_RULES.eliteCount;
+      const eliteLimit=baseMutation>0?Math.min(eliteBudget,Math.max(1,this.population-2)):this.population;
       for(const candidate of eliteCandidates) {
         const genome=candidate.genome;
         const key=JSON.stringify(genome);if(genomes.length<eliteLimit&&genome&&!eliteGenomes.has(key)) {genomes.push(cloneGenome(genome));eliteGenomes.add(key);}
