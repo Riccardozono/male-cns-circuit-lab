@@ -7,6 +7,28 @@ dist-*/
 
 # Report e stato interno del workflow di revisione.
 .impeccable/
+.codex/
+.env
+.env.*
+!.env.example
+
+# Progressi e diagnostici generati: non sono sorgenti dell'app.
+# I test creano nuovi file in profili/cartelle separati.
+*.malecns-save
+outputs/progress-*/
+outputs/*-progress-*/
+outputs/*-verification*/
+outputs/verification*/
+outputs/*-diagnosis*/
+outputs/*-benchmark*/
+outputs/pulizia-*/
+outputs/*verification*.json
+outputs/*.tap
+
+# Cache del preprocessing Python.
+__pycache__/
+*.pyc
+*.pyo
 
 # File temporanei locali.
 *.log

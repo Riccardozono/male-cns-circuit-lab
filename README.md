@@ -36,6 +36,8 @@ La simulazione usa risorse locali, senza inviare le decisioni di guida a un serv
 
 **Novità 5.5.0:** tribune 3D con sedute, gradoni, scale, parapetti e coperture, più box, cabine di pista, portale di partenza e cartelli di frenata illustrativi. Trovale in **Vista 3D → Inquadra → Tribune e box**. Le zone delle tribune fanno riferimento alle mappe ufficiali 2026; architettura, misure e raccordo con il tracciato sono stime dichiarate. Le sedute vicine usano dettaglio adattivo; tutta la nuova geometria richiede al massimo tre batch di disegno. Fisica e apprendimento della 5.4.0 restano invariati. [Guida e fonti](outputs/TRIBUNE-v550.md) · [Verifiche](outputs/VERIFICA-v550.md).
 
+**Sviluppo corrente, versione invariata:** il sorgente aggiunge il paesaggio NASA SRTM, aree del terreno ed edifici OSM, dintorni di Le Mans fino a **2 km** e nuovi boschi Sketchfab, soprattutto a Monza. La scena verificata contiene 10.626 alberi a Monza e 25.075 a Le Mans; sono istanze decorative, non un censimento delle piante reali. In **Vista 3D → Inquadra** scegli **Bosco** o **Paesaggio**. IA, fisica e formato dei progressi restano invariati. Queste modifiche sono nel sorgente: **i download della release 5.5.0 qui sopra non sono stati sostituiti**. [Guida e limiti](outputs/BOSCHI-PAESAGGIO.md) · [Verifica](outputs/VERIFICA-BOSCHI.md).
+
 Restano gli asset della 5.4.0: i due alberi dello ZIP dell'utente, con la loro texture originale, gli edifici di Monaco e le case di Le Mans scaricate da Sketchfab con licenza **CC BY 4.0**. Case, alberi e cespugli rimangono fuori dalla carreggiata e dalle vie di fuga e lasciano spazio alle nuove strutture; **Dettagli: sì/no** nasconde tutta la scenografia. Posizioni e scale sono illustrative, non un rilievo delle case reali. [Guida agli asset](outputs/ASSET-AMBIENTE-v540.md) · [Crediti e adattamenti](outputs/assets/ENVIRONMENT-CREDITS.md).
 
 Restano attivi i dislivelli della 5.3.0: gravità, accelerazione, frenata e carico degli pneumatici dipendono dalla superficie condivisa. Quote locali e raccordi sono **stime esplicite**, non un rilievo altimetrico completo. Nascondere la scenografia non disattiva la fisica del terreno. [Fonti e limiti del terreno](outputs/TERRENO-v530.md).
@@ -171,7 +173,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | --- | --- | ---: |
 | **GPT-6 Astra** | OpenAI Codex | 0 |
 | **GPT-6 Luna** | OpenAI Codex | 0 |
-| **GPT-6.1 Sol** | OpenAI Codex | **10** |
+| **GPT-6.1 Sol** | OpenAI Codex | **14** |
 | **GPT-5.6 Luna** | OpenAI Codex | 0 |
 
 
@@ -230,6 +232,9 @@ Salite, discese e curvatura verticale modificano gravità e carichi, ma la vettu
 ## Documentazione
 
 - [Documentazione della distribuzione](outputs/README.md) — architettura, fonti, verifiche e limiti.
+- [Boschi e Le Mans a 2 km](outputs/BOSCHI-PAESAGGIO.md) — sviluppo corrente a versione invariata; [verifica](outputs/VERIFICA-BOSCHI.md).
+- [Paesaggio NASA SRTM](outputs/PAESAGGIO-SRTM.md) — quote originali, registrazione stimata e provenienza.
+- [Pulizia del repository](docs/REPOSITORY.md) — file conservati, diagnostici esclusi e progressi locali protetti.
 - [Tribune e dettagli 5.5.0](outputs/TRIBUNE-v550.md) — zone di riferimento, modelli schematici e controllo Inquadra; [verifica 5.5.0](outputs/VERIFICA-v550.md).
 - [Verifica 5.4.0](outputs/VERIFICA-v540.md) — asset, impronte, LOD e regressioni; [verifica 5.3.0](outputs/VERIFICA-v530.md) — gravità e carichi.
 - [Profilo V5](outputs/MODELLO-V5.md) — anatomia, capacità elaborata e costo computazionale.
@@ -273,7 +278,7 @@ npm run dist
 
 Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-La build produce i pacchetti in `dist-terrain-v530/`, separati dalle distribuzioni precedenti. Gli eseguibili sono pubblicati nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
+La configurazione genera i pacchetti in `dist-facilities-v550/`. Se nella cartella esistono già pacchetti da conservare, usa una destinazione di prova separata, per esempio `npx electron-builder --win portable nsis --publish never --config.directories.output=dist-local-preview-5.5.0`. Gli eseguibili pubblicati sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente; gli aggiornamenti di sviluppo non creano automaticamente nuove release.
 
 <details>
 <summary><strong>Struttura del repository</strong></summary>
@@ -289,6 +294,7 @@ La build produce i pacchetti in `dist-terrain-v530/`, separati dalle distribuzio
 | `package.json` | Script di sviluppo, test e distribuzione. |
 
 `node_modules/` e `dist-*` sono generati localmente e non fanno parte del sorgente versionato.
+Salvataggi `.malecns-save`, risultati grezzi dei test, profili diagnostici e cache non fanno parte dell'albero corrente. I test li rigenerano in cartelle separate; le guide storiche possono citarne i percorsi, ma non richiedono di scaricare i progressi dell'autore. [Criteri della pulizia](docs/REPOSITORY.md).
 
 </details>
 
@@ -297,6 +303,8 @@ La build produce i pacchetti in `dist-terrain-v530/`, separati dalle distribuzio
 - **Cervello e strumenti anatomici:** [natverse/malecns](https://github.com/natverse/malecns), [dati ufficiali MaleCNS](https://male-cns.janelia.org/download/) e relativo [manifest di provenienza](outputs/data/provenance.json).
 - **Modello Porsche:** [MattDoesBlender](https://sketchfab.com/MattDoesBlender), asset fornito dall'utente; attribuzione, licenza e modifiche nei [crediti 3D](outputs/assets/PORSCHE-3D-CREDITS.md).
 - **Alberi e case:** 00amza, ChristosRami.studio e Satik64, asset Sketchfab CC BY 4.0; [fonti, licenze e adattamenti](outputs/assets/ENVIRONMENT-CREDITS.md).
+- **Nuovi boschi:** Tree Pack di Fabio Rinaldo Roloff e Oak Tree (LowPoly) di riskris Design, asset Sketchfab CC BY 4.0; [crediti e adattamenti](outputs/assets/WOODLAND-CREDITS.md).
+- **Paesaggio:** NASA SRTMGL1 v003 e © OpenStreetMap contributors; [metodo, hash e limiti](outputs/PAESAGGIO-SRTM.md).
 - **Presentazione del repository:** struttura ispirata al [README di REA](https://github.com/morluto/rea), adattata ai contenuti e alle immagini reali di questo progetto.
 
 Il riferimento al gioco Steam indica l'idea funzionale di partenza; il progetto non riusa codice o asset del gioco. Le condizioni dei dati e degli asset sono documentate separatamente: la modalità vibe coding non ne modifica le licenze.
