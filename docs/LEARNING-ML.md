@@ -58,6 +58,10 @@ La media delle due mediane passa da 569,69 a 710,59 m (+24,73%). Due seed non
 dimostrano un'accelerazione universale. Nessuna delle prove completa un giro.
 Non estendere il risultato a 100 agenti o al backend GPU senza altre misure.
 
+V2 è stato confrontato su Monza, Monaco e Le Mans, con i seed 7717, 1847 e
+9021, 16 agenti e 20 generazioni: i nove storici sono identici alla baseline.
+Questo verifica l'assenza di regressioni in quei casi, non un'accelerazione.
+
 ## Esperimenti scartati
 
 Sono state provate anche ricerche principalmente attorno ai genitori,
@@ -77,6 +81,10 @@ concluse o convergenza. I dati privati di verifica restano ignorati da Git.
   checksum degli eseguibili pubblicati. Non importa salvataggi dell'utente.
 - Smoke nativo dei salvataggi con profilo isolato e fallback CPU: 49 controlli
   superati, nessun errore console.
+- Copia Windows x64 di sviluppo compilata con pubblicazione disabilitata:
+  50 controlli sui sorgenti/dati/asset del pacchetto e 49 controlli nativi di
+  salvataggio/ripristino nell'eseguibile superati. Versione 5.6.0, binario non
+  firmato, nessun installer eseguito o sostituito.
 - V4/V5 sono stati eseguiti sul motore ibrido con WebGPU NVIDIA Lovelace,
   Monza, seed 7717, 16 agenti, senza campioni precedenti o generazioni forzate.
   Nel limite di 120 s reali per caso V4 ha completato 20 generazioni e V5 9:
@@ -105,5 +113,6 @@ dell'app distribuita. Non è una nuova release Windows.
 Evidenze locali: `.impeccable/review/learning-ml/final-all.tap`,
 `baseline-v2.json`, `final-v2.json`, `baseline-large.json`, `final-v3.json`,
 `preservation.json`, `final-progress/progress-smoke.json`,
-`hybrid-final/result.json`. I report grezzi possono contenere percorsi locali:
+`hybrid-final/result.json`, `dev-app-progress/progress-smoke.json`.
+I report grezzi possono contenere percorsi locali:
 non vengono pubblicati o inclusi nei pacchetti.
