@@ -3,7 +3,7 @@ import * as T from './vendor/three.module.js';
 import {createRoadMask} from './track-scenery.mjs';
 import {EnvironmentInstances} from './environment-assets.mjs';
 
-export function buildingPlan(track,model,scenery,ground,unitSize){
+export function buildingPlan(track,model,scenery,ground,unitSize,exclusions=[]){
   if(!['monaco','le-mans'].includes(model.id))return {placements:[],footprints:[],estimated:true,budget:0};
   const ppm=track.pixelsPerMeter||1,mask=createRoadMask(track),urban=model.id==='monaco',budget=urban?84:64,placements=[],footprints=[],line=model.center.points;
   let state=urban?81473:51917;const random=()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return (state>>>0)/4294967296;};
@@ -14,7 +14,7 @@ export function buildingPlan(track,model,scenery,ground,unitSize){
     const x=a.x+(b.x-a.x)*t-Math.sin(heading)*offset*side,y=a.y+(b.y-a.y)*t+Math.cos(heading)*offset*side,yaw=-heading+(side>0?Math.PI:0),cos=Math.cos(yaw),sin=Math.sin(yaw),corners=[];
     const point=(u,v)=>({x:x+cos*u+sin*v,y:y-sin*u+cos*v});
     for(const [u,v]of [[-hx,-hz],[hx,-hz],[hx,hz],[-hx,hz]])corners.push(point(u,v));
-    if(scenery.zones.some(z=>Math.hypot(x-z.point.x,y-z.point.y)<(Math.max(z.before,z.after)+z.width*.5+track.halfWidth/ppm+8)*ppm+radius))continue;
+    if(scenery.zones.some(z=>Math.hypot(x-z.point.x,y-z.point.y)<(Math.max(z.before,z.after)+z.width*.5+track.halfWidth/ppm+8)*ppm+radius)||exclusions.some(p=>Math.hypot(p.x-x,p.y-y)<p.radius+radius+3*ppm))continue;
     let clear=true;const samples=[];
     // Full footprint sampling at <=2m catches the actual >=7m road corridor,
     // including a nearby, parallel section rather than just the nearest road.
@@ -33,8 +33,8 @@ function foundationGeometry(placements,origin){
   for(const p of placements){if(p.groundY-p.minY<.02)continue;const top=p.corners.map(c=>[c.x-origin.x,p.groundY+.005,c.y-origin.y]),bottom=p.corners.map(c=>[c.x-origin.x,p.minY-.08,c.y-origin.y]);for(let i=0;i<4;i++)quad(bottom[i],bottom[(i+1)%4],top[(i+1)%4],top[i]);quad(...top);}
   const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();geometry.computeBoundingSphere();return geometry;
 }
-export function createBuildings(track,model,scenery,ground,origin,asset){
-  const size=[...asset.variants.values()][0],plan=buildingPlan(track,model,scenery,ground,size),group=new T.Group();group.name='illustrative-buildings';
+export function createBuildings(track,model,scenery,ground,origin,asset,exclusions=[]){
+  const size=[...asset.variants.values()][0],plan=buildingPlan(track,model,scenery,ground,size,exclusions),group=new T.Group();group.name='illustrative-buildings';
   const instances=new EnvironmentInstances(asset,plan.placements,{origin,ppm:track.pixelsPerMeter||1,height:230});group.add(instances.group);
   const foundation=new T.Mesh(foundationGeometry(plan.placements,origin),new T.MeshLambertMaterial({color:0x65615a,side:T.DoubleSide}));group.add(foundation);
   return {group,plan,update(camera,mode){instances.update(camera,mode);},setVisible(value){group.visible=Boolean(value);instances.setVisible(value);},info(){return {...instances.info(),estimated:true,buildings:plan.placements.length,budget:plan.budget,drawCalls:instances.parts.length+(foundation.geometry.attributes.position.count?1:0),visible:group.visible};},dispose(){instances.dispose();foundation.geometry.dispose();foundation.material.dispose();foundation.removeFromParent();group.removeFromParent();}};

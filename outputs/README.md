@@ -1,6 +1,20 @@
-# MAL-E CNS / Circuit Lab — Windows 5.4.0
+# MAL-E CNS / Circuit Lab — Windows 5.5.0
 
-Distribuzione corrente in `dist-assets-v540/`: entrambi gli alberi forniti nello
+Distribuzione corrente in `dist-facilities-v550/`: tribune 3D con sedute,
+gradoni, scale, parapetti e coperture; box, cabine, portale di partenza e
+cartelli di frenata illustrativi. In **Vista 3D → Inquadra → Tribune e box**
+puoi ispezionare le strutture. **Dettagli: sì/no** controlla tutta la scenografia.
+Le zone delle tribune fanno riferimento a mappe ufficiali 2026; geometrie,
+dimensioni e raccordo con i tracciati sono stimati, non CAD certificati.
+Le sedute vicine usano dettaglio adattivo, con tre batch condivisi al massimo.
+Fisica e apprendimento della 5.4.0 sono conservati, senza nuove collisioni o
+ingressi sensoriali. Salvataggi nuovi solo **5.5.0**; le vecchie app e i loro
+progressi restano separati. [Guida e fonti](TRIBUNE-v550.md) ·
+[Verifiche](VERIFICA-v550.md).
+
+## Distribuzione precedente 5.4.0
+
+Distribuzione 5.4.0 in `dist-assets-v540/`: entrambi gli alberi forniti nello
 ZIP con texture originale; edifici Sketchfab a Monaco e case a Le Mans, con
 texture incorporate, instancing e due LOD. Posizioni e scale illustrative,
 licenze CC BY 4.0 e attribuzioni nei [crediti](assets/ENVIRONMENT-CREDITS.md).

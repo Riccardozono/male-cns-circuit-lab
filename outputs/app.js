@@ -14,7 +14,7 @@ const carRenderer=new MaleCNSCars.Renderer();
 const agentSelection=new MaleCNSAgents.Selection();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.4.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.5.0',number=n=>n.toLocaleString('it-IT');
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
@@ -74,9 +74,17 @@ function refreshTrackWidth(car=selected()){
 }
 function resetTrackView(){trackCamera.reset();cameraSelect.value='overview';circuit3D?.setMode('overview');circuit3D?.reset();trackFocus='';$('track-landmark').value='';refreshTrackWidth();renderDirty=true;render();}
 function focusTrack(key){
-  const point=key==='start'?sim.track.center[0]:key.startsWith('width:')?sim.track.widthStations[Number(key.slice(6))]:sim.circuit.landmarks[Number(key)];if(!point)return;
+  const facility=key.startsWith('facility:')&&circuitView==='3d'?circuit3D?.facilities.focuses.find(p=>p.key===key):null;
+  const point=facility||(key==='start'?sim.track.center[0]:key.startsWith('width:')?sim.track.widthStations[Number(key.slice(6))]:sim.circuit.landmarks[Number(key)]);if(!point)return;
   cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;trackCamera.focus(point,view);refreshTrackWidth();renderDirty=true;render();
-  if(circuitView==='3d'){circuit3D?.focusPoint(point);render();}
+  if(circuitView==='3d'){if(facility){if(!trackRenderer.details)$('track-details').click();circuit3D?.focusFacility(point);}else circuit3D?.focusPoint(point);render();}
+}
+function refreshTrackLandmarks(){
+  const c=sim.circuit,select=$('track-landmark'),option=p=>{const o=document.createElement('option');o.value=p.value??p.key;o.textContent=p.label;return o;};
+  select.replaceChildren(...[{value:'',label:'Intero circuito'},{value:'start',label:'Partenza / arrivo'},...c.landmarks.map((p,i)=>({value:String(i),label:p.label})),...sim.track.widthStations.map((p,i)=>({value:'width:'+i,label:`${p.label} · ${p.widthMeters.toLocaleString('it-IT')} m stimati`}))].map(option));
+  // 3D-only objects have no matching drawing in the 2D map.
+  if(circuitView==='3d'&&circuit3D?.facilities){const group=document.createElement('optgroup');group.label='Tribune e box · 3D stimato';group.append(...circuit3D.facilities.focuses.map(option));select.append(group);}
+  if(trackFocus.startsWith('facility:')&&circuitView!=='3d')trackFocus='';select.value=trackFocus;
 }
 function zoomTrack(factor,point={x:view.width/2,y:view.height/2}){
   if(circuitView==='3d'){circuit3D?.zoom(factor);renderDirty=true;render();return;}
@@ -133,7 +141,7 @@ async function setCircuitView(mode){
       if(!circuit3D){
         circuit3DLoading??=import('./circuit-3d.mjs');const {Circuit3D}=await circuit3DLoading;
         if(request!==circuitViewRequest)return;
-        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · scenografia solo visiva · dislivello stimato attivo nella fisica';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
+        circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onReset:resetTrackView,onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · scenografia solo visiva · dislivello stimato attivo nella fisica';},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
         circuit3D.setTrack(sim.track,trackRenderer.model,FlySim.onRoad);
         cameraSelect.value='follow';circuit3D.setMode('follow');
       }
@@ -148,6 +156,7 @@ async function setCircuitView(mode){
   $('track-mode-2d').setAttribute('aria-pressed',String(mode==='2d'));$('track-mode-3d').setAttribute('aria-pressed',String(mode==='3d'));
   $('track-navigation-note').textContent=mode==='3d'?'Trascina per orbitare · Maiusc + trascina per spostare · rotella / pizzico per zoom · frecce per orbitare · clic su un’auto':'Trascina per spostare · rotella o pizzico per zoom · clic su un’auto o una curva';
   if(window.circuitLab){window.circuitLab.circuit3D=circuit3D;window.circuitLab.circuitView=mode;}
+  refreshTrackLandmarks();
   resize();
 }
 function invalidateBrainMap(){brainAtlas?.invalidate();}
@@ -392,7 +401,7 @@ function circuitInfo(){
   circuit3D?.setTrack(sim.track,trackRenderer.model,FlySim.onRoad);
   if(!trackCamera)trackCamera=new MaleCNSTracks.Camera(sim.track.bounds);else if(changed)trackCamera.setBounds(sim.track.bounds);
   if(changed){trackFocus='';trackPointers.clear();trackGesture=null;if(circuitView==='3d')circuit3D?.setMode(cameraSelect.value);else cameraSelect.value='overview';}
-  $('track-landmark').replaceChildren(...[{value:'',label:'Intero circuito'},{value:'start',label:'Partenza / arrivo'},...c.landmarks.map((p,i)=>({value:String(i),label:p.label})),...sim.track.widthStations.map((p,i)=>({value:'width:'+i,label:`${p.label} · ${p.widthMeters.toLocaleString('it-IT')} m stimati`}))].map(p=>{const option=document.createElement('option');option.value=p.value;option.textContent=p.label;return option;}));
+  refreshTrackLandmarks();
   $('track-landmark').value=trackFocus;$('track-model-note').textContent=trackRenderer.model.notice;
   const curbReference=trackRenderer.model.curbReference;$('track-curb-reference').hidden=!curbReference;
   if(curbReference){$('track-curb-source').href=curbReference.url;$('track-curb-source').textContent=curbReference.sourceLabel+' · riferimento cordoli ↗';}
