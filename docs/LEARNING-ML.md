@@ -1,5 +1,102 @@
 # Apprendimento: correzioni e verifiche di sviluppo
 
+## 30 ottobre 2026 — diagnostici pubblicati nel branch dev
+
+Questi strumenti sono ricerca separata dall'app: non cambiano fisica, sensori,
+ricompense, controllore, versione o compatibilità dei salvataggi distribuiti.
+Nessuna delle nuove varianti ha raggiunto l'obiettivo di due giri. Dataset,
+pesi allenati, salvataggi e report integrali rimangono locali sotto `.impeccable/`;
+non sono inclusi nel repository. I replay che usano quei dati richiedono quindi
+gli artefatti privati originali; un clone da solo non basta a riprodurli.
+
+### Ordinamento dell'ottimizzatore
+
+`work/research-v3-sensory-compensation.cjs` aggiunge
+`--optimizer-objective=fitness`: cambia soltanto in memoria il ranking ES,
+lasciando invariata la scelta dei genitori e del campione sicuro. L'audit registra
+l'ordinamento effettivo e la variazione dei parametri. V3/decoder7, Monza,
+checkpoint gen.180, 100 auto, seed 850817, tre generazioni allenate:
+
+| Obiettivo ES | Auto sicure gen.181/182/183 | Progresso sicuro gen.181/182/183 | Giri |
+|---|---:|---:|---:|
+| Controllo, progresso sicuro | 67 / 60 / 66 | 798,967 / 798,967 / 799,655 m | 0 |
+| Fitness con penalità | 67 / 59 / 58 | 798,967 / 798,967 / 799,655 m | 0 |
+
+Il ranking per fitness preferisce anche urti precoci: nelle tre generazioni
+allenate i primi classificati dell'ES urtano a 21,918, 9,660 e 13,812 m.
+La frontiera sicura non avanza; variante respinta. Il ramo usa 155.069 chiamate
+CUDA e zero fallback CPU, con checkpoint d'uscita validato. Report locale:
+`progress56-optimizer-objective-v3-monza-gen180-rtx-20261030/fitness/`.
+
+### Trasferimento di una precedente policy neurale
+
+Un replay separato riproduce una policy privata già allenata: 6.590,792 m,
+un giro e 849,483 s, nel suo runtime storico `penalty5`. Questo risultato non
+prova la compatibilità con l'app corrente. I nuovi strumenti
+`work/current-physics-runtime.cjs`, `work/current-statehead-environment.cjs` e
+`work/replay-statehead-current-physics.cjs` mantengono i validatori del modello
+originale e confrontano il suo comportamento nel corpo e sul circuito correnti.
+
+Il prototipo `first-lap-moving` consente di proseguire il primo giro soltanto
+con movimento e progresso effettivi; mantiene i costi del passo lento e le
+terminazioni per urto, uscita, stallo e due giri. È un'ablation esplicita,
+non una nuova regola dell'app. La seconda ablation disattiva solo l'osservazione
+dell'ingombro: le collisioni fisiche rimangono attive.
+
+| Osservazioni della policy storica | Termine per passo lento | Progresso | Giri |
+|---|---|---:|---:|
+| Ingombro corrente | Regola corrente | 19,691 m | 0 |
+| Raggi centrali | Regola corrente | 25,083 m | 0 |
+| Ingombro corrente | Prototipo primo giro in movimento | 690,275 m | 0 |
+| Raggi centrali | Prototipo primo giro in movimento | 6.578,247 m | 1 |
+
+L'ultimo giro dura 744,013 s; l'episodio termina per passo lento a 849,483 s.
+Nessuna combinazione completa due giri. Tutti i replay usano il grafo anatomico
+su RTX 4060, senza fallback CPU. Non viene proposta la rimozione dei sensori
+d'ingombro nell'app. Report locali `progress56-statehead-current-*20261030/`;
+verifica storica `progress56-protected-parent-verification-20261030/`.
+
+### Readout da esperienza neurale propria
+
+`work/collect-neural-self-experience.cjs` registra 7.441 campioni fino al primo
+giro effettivo della policy precedente. I comandi provengono dalle azioni da
+essa eseguite con raggi centrali e il prototipo di passo; contemporaneamente
+un osservatore misura l'attività neurale con i sensori d'ingombro correnti.
+I due osservatori condividono il contatore CUDA: il totale 14.884 non va sommato
+due volte. La raccolta è un prefisso di un episodio, non una generazione conclusa.
+
+`work/train_neural_self_readout.py` allena su RTX 4060 un readout
+514→128→64→2, con quattro frame di 128 neuroni discendenti reali e gli ultimi
+due comandi eseguiti. Non riceve posizione, tracciato, tempo o velocità obiettivo.
+È consolidamento supervisionato della propria esperienza, non SIL/PPO. I 4.500
+aggiornamenti riducono l'errore sui dati di training, senza validazione separata
+sui dati. Il modello esportato resta `research-unverified`.
+
+`work/replay-neural-self-readout.cjs` prova il nuovo readout da fermo con sensori
+d'ingombro attivi. In inferenza non importa la vecchia policy: usa solo attività
+neurale corrente, storia dei comandi e nuovi pesi. Grafo su CUDA, readout su CPU.
+
+| Epoca | Regola corrente: progresso / esito | Prototipo movimento: progresso / esito | Giri |
+|---|---|---|---:|
+| 50 | 762,032 m / passo lento | 826,864 m / urto | 0 |
+| 150 | 645,471 m / urto | 645,471 m / urto | 0 |
+| 300 | 424,600 m / urto | 424,600 m / urto | 0 |
+
+Tutti e sei gli episodi terminano realmente, senza censura o fallback CPU.
+La corrispondenza Torch/JavaScript è verificata su otto campioni reali per epoca,
+con errore massimo 6,67e−16. Il calo della loss non si trasferisce alla guida:
+nessun modello promosso nell'app. Report locali `progress56-self-epoch*20261030/`,
+dataset `progress56-neural-self-experience-20261030/` e training
+`progress56-neural-self-readout-training-20261030/`.
+
+Verifiche del codice pubblicato: `node --test work/neural-self-readout.test.cjs`
+supera 5/5 test, inclusi corruzione dei modelli, evidenze di parità incomplete,
+pedali esclusivi, osservazioni V3 reali e isolamento del prototipo di passo.
+Controllata anche la sintassi dei sette script JavaScript e dello script Python.
+La suite dell'app 464/464 riportata sotto appartiene alla precedente correzione;
+non è stata ripetuta per questi strumenti isolati. L'apprendimento resta aperto
+e non è stata preparata o pubblicata una nuova distribuzione Windows.
+
 ## 30 ottobre 2026 — compensazione dell'encoder e teste motore
 
 `mutateSensoryBlock()` correggeva soltanto gli ultimi due bias, invertendo con
