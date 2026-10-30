@@ -11,6 +11,7 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
   const VERSION=3,CHANNELS=28,GAIN_GROUPS=16,READOUT_LIMIT=64,CONTROL_INTERVAL=6,MIN_POLICY_CONTEXT_SPEED_MPS=2;
+  const LEGACY_SENSOR_MAPPING_VERSION=1,SENSOR_MAPPING_VERSION=2;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const normal=r=>Math.sqrt(-2*Math.log(Math.max(1e-9,r())))*Math.cos(2*Math.PI*r());
   function build(graph){
@@ -54,12 +55,23 @@
     const p=graph.learning;
     return p.mean.map((v,i)=>clamp(v+normal(r)*p.scales[i],-8,8));
   }
-  function drive(graph,genome,sensors,k){
-    const channel=k%CHANNELS,values=genome.policyWeights;
-    const raw=Number.isFinite(sensors?.[channel])?sensors[channel]:0;
-    // Generic input normalization only, with no direction or action preference.
-    const input=channel<11?raw*2-1:raw;
-    return .7*(input*values[channel]+values[CHANNELS+channel]);
+  function supportedSensorMappingVersion(version){return version===LEGACY_SENSOR_MAPPING_VERSION||version===SENSOR_MAPPING_VERSION;}
+  function drive(graph,genome,sensors,k,physicsGain=.35){
+    const values=genome.policyWeights,mappingVersion=genome.sensorMappingVersion??LEGACY_SENSOR_MAPPING_VERSION;
+    if(mappingVersion===LEGACY_SENSOR_MAPPING_VERSION){
+      const channel=k%CHANNELS,raw=Number.isFinite(sensors?.[channel])?sensors[channel]:0;
+      // Preserve the original modulo interpretation for existing checkpoints.
+      const input=channel<11?raw*2-1:raw;
+      return .7*(input*values[channel]+values[CHANNELS+channel]);
+    }
+    if(mappingVersion!==SENSOR_MAPPING_VERSION)throw Error('Versione di mappatura dei sensori non supportata.');
+    const term=channel=>{const raw=Number.isFinite(sensors?.[channel])?sensors[channel]:0,input=channel<11?raw*2-1:raw;return input*values[channel]+values[CHANNELS+channel];};
+    const visualChannel=Number.isInteger(graph.inputChannels?.[k])?graph.inputChannels[k]:k%11;
+    let contribution=term(visualChannel);
+    const physicsChannel=graph.physicsChannels?.[k]??-1,roadChannel=graph.roadChannels?.[k]??-1;
+    if(physicsChannel>=11)contribution+=physicsGain*term(physicsChannel);
+    if(roadChannel>=18)contribution+=physicsGain*term(roadChannel);
+    return .7*contribution;
   }
   function synapticGains(graph,genome){
     const p=graph.learning,values=genome?.adapterVersion===(p?.version??VERSION)&&genome.policyWeights;
@@ -232,5 +244,5 @@
     }
     metrics(){return {algorithm:'diagonal evolution strategy',version:this.graph.learning.version,updates:this.updates,episodes:this.episodes,parameters:this.mean.length,meanExploration:this.sigma.reduce((a,b)=>a+b,0)/this.sigma.length,warmStart:false};}
   }
-  return {VERSION,CHANNELS,GAIN_GROUPS,CONTROL_INTERVAL,MIN_POLICY_CONTEXT_SPEED_MPS,build,valid,supportedVersion,initial,drive,synapticGains,commands,mutate,localMutation,rememberActivity,safeMotorMutation,scaleMutation,mirroredMutation,EvolutionStrategy};
+  return {VERSION,CHANNELS,GAIN_GROUPS,CONTROL_INTERVAL,MIN_POLICY_CONTEXT_SPEED_MPS,LEGACY_SENSOR_MAPPING_VERSION,SENSOR_MAPPING_VERSION,build,valid,supportedVersion,supportedSensorMappingVersion,initial,drive,synapticGains,commands,mutate,localMutation,rememberActivity,safeMotorMutation,scaleMutation,mirroredMutation,EvolutionStrategy};
 });

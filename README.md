@@ -36,6 +36,10 @@ La simulazione usa risorse locali, senza inviare le decisioni di guida a un serv
 
 **Novità 5.7.0:** quando una policy sicura si ferma senza gas, l'esplorazione evolutiva varia il comando longitudinale gas/freno mantenendo invariata la sterzata appresa. In un confronto CUDA appaiato di quattro generazioni V3 a Monza, la media della progressione sicura delle tre generazioni successive è passata da **138,71 m** a **277,86 m** e la media delle auto sicure oltre 500 m da **4,33** a **8,67**. Il miglior risultato è rimasto **790,46 m** e non è stato completato alcun giro: prova su un solo seed, non garanzia di convergenza. La pratica locale ora usa gli stessi guadagni sensoriali e bias motore della pista stretta. [Dettagli e limiti](outputs/RELEASE-v570.md) · [Verifiche](outputs/VERIFICA-v570.md).
 
+### Sviluppo in corso nel branch `dev` (non incluso nella release 5.7.0)
+
+Le nuove policy associano i neuroni di ingresso ai canali visivi compilati per lato e ai relay di fisica/strada. I salvataggi precedenti, privi di `sensorMappingVersion`, conservano la vecchia interpretazione modulo-28. A Monza, con policy V3 inizializzate da zero, popolazione 16, mutazione 0,32 e 12 generazioni, il fronte sicuro è salito in 4 dei 5 seed appaiati: **+0,5, +180,1, −14,6, +392,0 e +591,7 m** rispetto alla baseline; nessun ramo ha completato un giro. Un seed V2 ha migliorato il fronte sicuro da **72,4 a 200,2 m**, sempre senza giro. V4 e V5 hanno verifiche del percorso sensoriale sul grafo completo, ma non una prova di apprendimento comparativa. Questi dati sono sperimentali e non dimostrano convergenza. [Protocollo e misure](docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md).
+
 **Novità 5.5.0:** tribune 3D con sedute, gradoni, scale, parapetti e coperture, più box, cabine di pista, portale di partenza e cartelli di frenata illustrativi. Trovale in **Vista 3D → Inquadra → Tribune e box**. Le zone delle tribune fanno riferimento alle mappe ufficiali 2026; architettura, misure e raccordo con il tracciato sono stime dichiarate. Le sedute vicine usano dettaglio adattivo; tutta la nuova geometria richiede al massimo tre batch di disegno. Fisica e apprendimento della 5.4.0 restano invariati. [Guida e fonti](outputs/TRIBUNE-v550.md) · [Verifiche](outputs/VERIFICA-v550.md).
 
 **Novità 5.6.0:** paesaggio NASA SRTM, aree del terreno ed edifici OSM, dintorni di Le Mans fino a **2 km** e nuovi boschi Sketchfab, soprattutto a Monza. La scena verificata contiene 10.626 alberi a Monza e 25.075 a Le Mans; sono istanze decorative, non un censimento delle piante reali. In **Vista 3D → Inquadra** scegli **Bosco** o **Paesaggio**. IA e fisica restano invariate; i nuovi progressi richiedono la 5.6.0 e quelli 5.5.0 restano utilizzabili nella vecchia release, conservata. [Guida e limiti](outputs/PAESAGGIO-v560.md) · [Verifica](outputs/VERIFICA-v560.md).
@@ -189,7 +193,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | --- | --- | ---: |
 | **GPT-6** | OpenAI Codex | **1** |
 | **GPT-6 Astra** | OpenAI Codex | **1** |
-| **GPT-6 Luna** | OpenAI Codex | **1** |
+| **GPT-6 Luna** | OpenAI Codex | **2** |
 | **GPT-6.1 Sol** | OpenAI Codex | **25** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
 | **GPT-5.6 Luna** | OpenAI Codex | **1** |

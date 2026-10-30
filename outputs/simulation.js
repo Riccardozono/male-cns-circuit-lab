@@ -432,8 +432,8 @@
   }
   function ensureLearning(graph){if(!Learning)throw Error('Modulo di apprendimento neurale mancante.');return graph.learning||Learning.build(graph);}
   function fastNeuralStep(graph,brain,genome,sensors,enabled=true,edgesEnabled=true,launchBias=NEURAL_MOTOR_LAUNCH_BIAS){ensureLearning(graph);return Learning.commands(graph,brain,genome,enabled,edgesEnabled,launchBias);}
-  function makeLearningGenome(graph,random){const genome=makeGenome(random,graph.outputs.length);genome.adapterVersion=ensureLearning(graph).version;genome.policyWeights=Learning.initial(graph,random);return genome;}
-  function cloneGenome(g) {return {encoder:[...g.encoder],readout:[...g.readout],gain:g.gain,...(g.policyWeights?{adapterVersion:g.adapterVersion,policyWeights:[...g.policyWeights]}:{})};}
+  function makeLearningGenome(graph,random){const genome=makeGenome(random,graph.outputs.length);genome.adapterVersion=ensureLearning(graph).version;genome.sensorMappingVersion=Learning.SENSOR_MAPPING_VERSION;genome.policyWeights=Learning.initial(graph,random);return genome;}
+  function cloneGenome(g) {return {encoder:[...g.encoder],readout:[...g.readout],gain:g.gain,...(g.policyWeights?{adapterVersion:g.adapterVersion,sensorMappingVersion:g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION,policyWeights:[...g.policyWeights]}:{})};}
   function crossoverGenome(a,b,random) {
     const pick=(left,right)=>random()<.5?left:right;
     const child={
@@ -441,12 +441,12 @@
       readout:a.readout.map((value,index)=>pick(value,b.readout[index]??value)),
       gain:pick(a.gain,b.gain)
     };
-    if(a.policyWeights){child.adapterVersion=a.adapterVersion;child.policyWeights=a.policyWeights.map((v,i)=>pick(v,b.policyWeights?.[i]??v));}
+    if(a.policyWeights){const inputVersion=a.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;if(inputVersion!==(b.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION))throw Error('Non si possono incrociare policy con mappature sensoriali diverse.');child.adapterVersion=a.adapterVersion;child.sensorMappingVersion=inputVersion;child.policyWeights=a.policyWeights.map((v,i)=>pick(v,b.policyWeights?.[i]??v));}
     return child;
   }
   function crossoverPolicyBlocks(graph,a,b,random) {
     const policy=ensureLearning(graph);
-    if(a?.adapterVersion!==policy.version||b?.adapterVersion!==policy.version||!Learning.valid(graph,a.policyWeights)||!Learning.valid(graph,b.policyWeights))throw Error('Policy MaleCNS incompatibile per la ricombinazione funzionale.');
+    if(a?.adapterVersion!==policy.version||b?.adapterVersion!==policy.version||(a?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)!==(b?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)||!Learning.valid(graph,a.policyWeights)||!Learning.valid(graph,b.policyWeights))throw Error('Policy MaleCNS incompatibile per la ricombinazione funzionale.');
     const weights=a.policyWeights.slice(),pick=()=>random()<.5?a.policyWeights:b.policyWeights;
     // Preserve complete functional groups: each sensor's gain/bias block,
     // shared synaptic gains, and each complete action readout with its bias.
@@ -473,8 +473,8 @@
     }
     const readout=Array.from({length:outputCount*3},(_,i)=>Number.isFinite(g?.readout?.[i])?g.readout[i]:0);
     if(g?.fastMotor)throw Error('Controller assistito 4.3 rimosso: premere Reset per apprendere con la rete MaleCNS.');
-    if((g?.policyWeights!==undefined||g?.adapterVersion!==undefined)&&(!Learning.supportedVersion(g.adapterVersion)||!Array.isArray(g.policyWeights)||!g.policyWeights.every(v=>Number.isFinite(v)&&Math.abs(v)<=8)))throw Error('Policy MaleCNS incompatibile: usare Reset.');
-    return {encoder,readout,gain:Number.isFinite(g?.gain)&&g.gain>0?g.gain:1,...(Learning.supportedVersion(g?.adapterVersion)&&Array.isArray(g.policyWeights)&&g.policyWeights.every(v=>Number.isFinite(v)&&Math.abs(v)<=8)?{adapterVersion:g.adapterVersion,policyWeights:[...g.policyWeights]}:{})};
+    if((g?.policyWeights!==undefined||g?.adapterVersion!==undefined)&&(!Learning.supportedVersion(g.adapterVersion)||!Learning.supportedSensorMappingVersion(g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)||!Array.isArray(g.policyWeights)||!g.policyWeights.every(v=>Number.isFinite(v)&&Math.abs(v)<=8)))throw Error('Policy MaleCNS incompatibile: usare Reset.');
+    return {encoder,readout,gain:Number.isFinite(g?.gain)&&g.gain>0?g.gain:1,...(Learning.supportedVersion(g?.adapterVersion)&&Array.isArray(g.policyWeights)&&g.policyWeights.every(v=>Number.isFinite(v)&&Math.abs(v)<=8)?{adapterVersion:g.adapterVersion,sensorMappingVersion:g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION,policyWeights:[...g.policyWeights]}:{})};
   }
   function mutateGenome(g,random,amount) {
     const child=cloneGenome(g),intensity=clamp(Number(amount)||0,0,EVOLUTION_RULES.mutationCeiling); if(intensity===0) return child;
@@ -504,7 +504,7 @@
     return {activity:new Float32Array(graph.n),next:new Float32Array(graph.n),sum:new Float32Array(graph.n),inputDrive:new Float32Array(graph.inputs.length),active:new Uint32Array(graph.n),nextActive:new Uint32Array(graph.n),touched:new Uint32Array(graph.n),marked:new Uint8Array(graph.n),buckets:new Uint32Array(256),activeCount:0,lastTouchedCount:0,peakActiveCount:0};
   }
   function sensorDrive(graph,genome,sensors,k,physicsGain){
-    if(genome.policyWeights){if(genome.adapterVersion!==ensureLearning(graph).version)throw Error('Versione della policy neurale incompatibile.');return Learning.drive(graph,genome,sensors,k);}
+    if(genome.policyWeights){if(genome.adapterVersion!==ensureLearning(graph).version||!Learning.supportedSensorMappingVersion(genome.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION))throw Error('Versione della policy neurale incompatibile.');return Learning.drive(graph,genome,sensors,k,physicsGain);}
     const channel=graph.inputChannels?graph.inputChannels[k]:k%VISUAL_SENSOR_COUNT,value=Number.isFinite(sensors?.[channel])?sensors[channel]:0,weight=Number.isFinite(genome.encoder?.[channel])?genome.encoder[channel]:0,bias=Number.isFinite(genome.encoder?.[SENSOR_COUNT+channel])?genome.encoder[SENSOR_COUNT+channel]:0;
     let contribution=value*weight+bias;const physicsChannel=graph.physicsChannels?.[k]??-1,roadChannel=graph.roadChannels?.[k]??-1;
     if(physicsChannel>=VISUAL_SENSOR_COUNT){const physicsValue=Number.isFinite(sensors?.[physicsChannel])?sensors[physicsChannel]:0,physicsWeight=Number.isFinite(genome.encoder?.[physicsChannel])?genome.encoder[physicsChannel]:0,physicsBias=Number.isFinite(genome.encoder?.[SENSOR_COUNT+physicsChannel])?genome.encoder[SENSOR_COUNT+physicsChannel]:0;contribution+=physicsGain*(physicsValue*physicsWeight+physicsBias);}
@@ -1032,7 +1032,7 @@
     return !!(saved && saved.schema===1 && saved.rewardRevision===Rewards.REVISION && saved.vehicleRevision===Vehicle.REVISION && graphCompatible(saved,sim,dataset) &&
       (saved.circuitId||'lab')===sim.circuitId && (saved.circuitRevision||1)===(sim.circuit.revision||1) &&
       Number.isFinite(saved.fitness) && (g?.encoder?.length===LEGACY_ENCODER_LENGTH||g?.encoder?.length===PREVIOUS_ENCODER_LENGTH||g?.encoder?.length===SENSOR_COUNT*2) && g?.readout?.length===sim.graph.outputs.length*3 &&
-      [...g.encoder,...g.readout,g.gain].every(Number.isFinite) && g.gain>0&&!g.fastMotor&&(sim.graph.modelId!=='v5'||g.policyWeights)&&(!g.policyWeights||(saved.graphRevision===sim.graph.revision&&saved.nodes===sim.graph.n&&saved.edges===sim.graph.edgeCount&&g.adapterVersion===ensureLearning(sim.graph).version&&Learning.valid(sim.graph,g.policyWeights))));
+      [...g.encoder,...g.readout,g.gain].every(Number.isFinite) && g.gain>0&&!g.fastMotor&&(sim.graph.modelId!=='v5'||g.policyWeights)&&(!g.policyWeights||(saved.graphRevision===sim.graph.revision&&saved.nodes===sim.graph.n&&saved.edges===sim.graph.edgeCount&&g.adapterVersion===ensureLearning(sim.graph).version&&Learning.supportedSensorMappingVersion(g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)&&Learning.valid(sim.graph,g.policyWeights))));
   }
   function compareAgents(a,b){
     const aFitness=Number.isFinite(a?.fitness)?a.fitness:-Infinity,bFitness=Number.isFinite(b?.fitness)?b.fitness:-Infinity;

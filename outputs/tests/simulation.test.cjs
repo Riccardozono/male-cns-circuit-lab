@@ -496,6 +496,22 @@ test('Road relay telemetry changes with the real circuit walls',()=>{
   assert.ok(initial.slice(7).every(Number.isFinite)&&shifted.slice(7).every(Number.isFinite));
   assert.ok(initial.slice(7).some((value,index)=>Math.abs(value-shifted[7+index])>1e-6));
 });
+test('Learned policies use the compiled visual and physical relay map without changing legacy saves',()=>{
+  const sim=new F.Simulation(data,{population:1,circuitId:'monza',circuits:require('../data/circuits.json')}),graph=sim.graph,
+    mapped=F.cloneGenome(sim.cars[0].genome),legacy=F.cloneGenome(mapped),k=graph.physicsRelayStart,
+    visual=graph.inputChannels[k],physics=graph.physicsChannels[k],road=graph.roadChannels[k],oldChannel=k%28,
+    sensors=Array(F.SENSOR_COUNT).fill(0);
+  assert.equal(mapped.sensorMappingVersion,2);assert.deepEqual([visual,physics,road,oldChannel],[0,11,18,24]);
+  mapped.policyWeights.fill(0);mapped.policyWeights[visual]=1;mapped.policyWeights[physics]=2;mapped.policyWeights[road]=3;
+  sensors[visual]=.75;sensors[physics]=.4;sensors[road]=.2;
+  near(F.sensorDrive(graph,mapped,sensors,k,F.MAP_PHYSICS_ADAPTER_GAIN),1.134);
+  legacy.sensorMappingVersion=1;legacy.policyWeights.fill(0);legacy.policyWeights[oldChannel]=1;sensors[oldChannel]=.3;
+  near(F.sensorDrive(graph,legacy,sensors,k,F.MAP_PHYSICS_ADAPTER_GAIN),.21);
+  const normalizedOld=F.normalizeGenome({...legacy,sensorMappingVersion:undefined},graph.outputs.length);
+  assert.equal(normalizedOld.sensorMappingVersion,1,'old checkpoints without an explicit mapping stay modulo-28');
+  assert.throws(()=>F.normalizeGenome({...mapped,sensorMappingVersion:99},graph.outputs.length),/incompatibile/);
+  assert.throws(()=>F.crossoverGenome(mapped,legacy,F.rng(19)),/mappature sensoriali diverse/);
+});
 test('Expanded ray and road adapter preserve previous checkpoints',()=>{
   const graph=F.compileGraph(data),modern=F.makeGenome(F.rng(7),graph.outputs.length),previous={encoder:Array.from({length:28},(_,i)=>i+1),readout:Array(graph.outputs.length*3).fill(.2),gain:1.5},legacy={encoder:Array.from({length:14},(_,i)=>i+1),readout:Array(graph.outputs.length*3).fill(.2),gain:1.5};
   assert.equal(F.normalizeGenome(modern,graph.outputs.length).encoder.length,56);

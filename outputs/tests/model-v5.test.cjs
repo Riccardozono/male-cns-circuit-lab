@@ -12,6 +12,16 @@ test('V5 reuses verified real anatomy without modifying V4 or inventing neurons/
   extended.solver.activeNeuronBudget=1;assert.equal(metadata.solver.activeNeuronBudget,8192);assert.equal(Profiles.V5.solver.activeNeuronBudget,32768);
   assert.throws(()=>Profiles.buildV5({...original,nodeCount:166701}),/verificato/);
 });
+test('V4 and V5 fresh policies use the compiled visual, vehicle and road relays',()=>{
+  for(const modelId of ['v4','v5']){
+    const sim=modelId==='v4'?new F.Simulation(original,{modelId,population:1,circuits:catalog}):v5({population:1}),graph=sim.graph,
+      genome=F.cloneGenome(sim.cars[0].genome),k=graph.physicsRelayStart,visual=graph.inputChannels[k],physics=graph.physicsChannels[k],road=graph.roadChannels[k],sensors=Array(F.SENSOR_COUNT).fill(0);
+    assert.equal(genome.sensorMappingVersion,2,`${modelId} new policy mapping version`);
+    genome.policyWeights.fill(0);genome.policyWeights[visual]=1;genome.policyWeights[physics]=2;genome.policyWeights[road]=3;
+    sensors[visual]=.75;sensors[physics]=.4;sensors[road]=.2;
+    assert.ok(Math.abs(F.sensorDrive(graph,genome,sensors,k,F.MAP_PHYSICS_ADAPTER_GAIN)-1.134)<1e-10,`${modelId} mapped policy drive`);
+  }
+});
 test('V5 actually reads 128 reachable descending neurons including 64 beyond the V4 core',()=>{
   const old=F.compileGraph(original),baseline=F.ensureLearning(old),sim=v5({population:1}),g=sim.graph,p=g.learning;
   assert.equal(p.version,5);assert.equal(p.length,346);assert.equal(p.gainGroups,32);assert.equal(p.nodes.length,128);assert.equal(new Set(p.nodes).size,128);

@@ -15,9 +15,9 @@
   function vector(v,length,label,min=-12,max=12){if(!Array.isArray(v)||v.length!==length)fail(label+': dimensioni incompatibili.');v.forEach(n=>finite(n,label,min,max));}
   function compatibleGraph(graph){const p=F.ensureLearning(graph);return {dataset:graph.dataset,revision:graph.revision,nodes:graph.n,edges:graph.edgeCount,policyVersion:p.version,parameters:p.length,outputs:graph.outputs.length,...(graph.modelId==='v5'?{solver:{...graph.solver},gainGroups:p.gainGroups,readoutNodes:Array.from(p.nodes)}:{})};}
   function genome(g,graph){
-    keys(g,['encoder','readout','gain','adapterVersion','policyWeights'],'Genoma');
+    keys(g,['encoder','readout','gain','adapterVersion','sensorMappingVersion','policyWeights'],'Genoma');
     vector(g.encoder,F.SENSOR_COUNT*2,'Encoder');vector(g.readout,graph.outputs.length*3,'Readout',-100,100);finite(g.gain,'Guadagno',.01,100);
-    if(g.adapterVersion!==F.ensureLearning(graph).version||!Learning.valid(graph,g.policyWeights))fail('Policy neurale incompatibile.');
+    if(g.adapterVersion!==F.ensureLearning(graph).version||!Learning.supportedSensorMappingVersion(g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)||!Learning.valid(graph,g.policyWeights))fail('Policy neurale incompatibile.');
   }
   function stats(v,label,withGenome,graph){
     keys(v,withGenome?['genome','fitness','progress','bestProgress','laps','bestLapTime']:['fitness','bestProgress','laps','bestLapTime'],label);
