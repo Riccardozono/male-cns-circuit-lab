@@ -194,6 +194,7 @@ function createWindow() {
         const population = 16;
         const mutation = .16;
         const speedMultiplier = 30;
+        const seed = 7717;
         const caseTimeoutMs = ${benchmarkTimeoutMs};
         const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
         const waitFor = async (predicate, timeoutMs) => {
@@ -226,12 +227,19 @@ function createWindow() {
           if (globalThis.desktopCompute) await globalThis.desktopCompute.command({type: 'setWorkerCount', value: 1});
           const singleWorker = await waitFor(() => Number(currentSim()?.engine?.workerCount) === 1, 20000);
           if (!singleWorker) throw new Error('Timeout configurazione worker singolo per ' + modelId);
+          const mutationControl = document.getElementById('mutation-range');
+          const selectedSimulation = currentSim();
+          selectedSimulation.seed = seed;
+          mutationControl.value = String(Math.round(mutation * 100));
+          mutationControl.dispatchEvent(new Event('input', {bubbles: true}));
+          if (Math.abs(Number(selectedSimulation?.mutation) - mutation) > 1e-9 || selectedSimulation?.seed !== seed) throw new Error('Seed o mutazione non applicati per ' + modelId);
         };
         const selectCircuit = async circuitId => {
           dispatchChange('circuit-select', circuitId);
           const selected = await waitFor(() => currentSim()?.circuitId === circuitId, 5000);
           if (!selected) throw new Error('Timeout caricamento circuito ' + circuitId);
           const sim = currentSim();
+          if (Math.abs(Number(sim?.mutation) - mutation) > 1e-9 || sim?.seed !== seed) throw new Error('Configurazione benchmark incoerente per ' + modelId + '/' + circuitId);
           sim.speedMultiplier = speedMultiplier;
           sim.running = true;
           await wait(500);
@@ -258,6 +266,7 @@ function createWindow() {
           const result = {
             modelId,
             circuitId,
+            seed,
             adapter: 'reward-trained recurrent MaleCNS policy, no assisted driving',
             learning: {neurons:globalThis.FlySim.ensureLearning(sim.graph).nodes.length,parameters:sim.graph.learning.length,warmStart:false,stats:sim.learningStats},
             population: sim.population,
@@ -291,7 +300,7 @@ function createWindow() {
           benchmarkMode: 'Electron DesktopEngine + WebGPU/CPU fallback',
           stoppingRule: 'stop each model/circuit case after the first agent completes at least one lap',
           safetyGuard: '${benchmarkTimeoutMs / 1000} seconds wall time per case; not a simulated-time limit',
-          configuration: {models, circuits, population, mutation, speedMultiplier, caseTimeoutMs},
+          configuration: {models, circuits, population, mutation, seed, speedMultiplier, caseTimeoutMs},
           summary: {totalCases: results.length, completedCases, pendingCases: results.length - completedCases},
           results
         };
