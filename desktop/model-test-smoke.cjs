@@ -20,7 +20,8 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
   await js('circuitLab.sim.running=false');await engine.exportProgress();await wait(300);
   check('Test disclosure starts closed',await js("!document.getElementById('model-test-panel').open"));
   check('Requested champion/rules box is removed, file save/load remain',await js("!document.getElementById('load-champion')&&!document.getElementById('storage-status')&&!document.querySelector('.training-details')&&Boolean(document.getElementById('save-progress')&&document.getElementById('load-progress'))"));
-  check('Labeled test entry is ready in the top bar',await js("(()=>{const b=document.getElementById('open-model-test');return b&&!b.disabled&&b.closest('header')&&b.textContent==='Apri test modelli'&&b.getAttribute('aria-expanded')==='false';})()"));
+  const testEntry=await js("(()=>{const b=document.getElementById('open-model-test');return {exists:Boolean(b),disabled:b?.disabled??null,inHeader:Boolean(b?.closest('header')),text:b?.textContent?.trim()??null,expanded:b?.getAttribute('aria-expanded')??null,mainInert:document.getElementById('app-main')?.inert??null,busy:document.getElementById('app-main')?.getAttribute('aria-busy')??null,tests:Boolean(globalThis.circuitLab?.tests)};})()");
+  check('Labeled test entry is ready in the top bar',testEntry.exists&&!testEntry.disabled&&testEntry.inHeader&&testEntry.text==='Confronto modelli'&&testEntry.expanded==='false',testEntry);
   if(capture){
     for(const [name,width,height]of [['desktop-entry',1540,980],['mobile-entry',390,1100]]){
       window.setSize(width,height);await js('window.scrollTo(0,0)');await wait(300);
