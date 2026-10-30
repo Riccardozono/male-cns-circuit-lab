@@ -876,12 +876,19 @@
           :EVOLUTION_RULES.stagnantFrontierOffspringRate
         :EVOLUTION_RULES.frontierOffspringRate;
        let mirrored=null;const practiceBases=new Map();
-       const optimizerSampleTarget=usesLearningOutcome&&baseMutation>0&&!noSafeLearningCandidate
-         ?Math.min(Math.max(this.population<=8?2:1,Math.floor(this.population*.1)),Math.max(0,this.population-genomes.length-immigrantCount)):0;
-       const frontierOffspringTarget=frontierParent?Math.min(Math.ceil(this.population*frontierOffspringRate),Math.max(0,this.population-immigrantCount-genomes.length-optimizerSampleTarget)):0;
+       const riskRepairReservedSlots=riskRepairCandidate&&baseMutation>0&&this.riskRepairOffspringRate>0
+         ?Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)):0;
+       const optimizerSampleCapacity=Math.max(0,this.population-genomes.length-immigrantCount-riskRepairReservedSlots);
+       // The evolution strategy needs at least two ranked samples to learn a
+       // direction. A singleton produces no comparative signal, so reserve a
+       // pair even at the default 16-car population instead of silently
+       // leaving the optimizer frozen after its initial batch.
+       const optimizerSampleTarget=usesLearningOutcome&&baseMutation>0&&!noSafeLearningCandidate&&optimizerSampleCapacity>=2
+         ?Math.min(Math.max(2,Math.ceil(this.population*.1)),optimizerSampleCapacity):0;
+       const frontierOffspringTarget=frontierParent?Math.min(Math.ceil(this.population*frontierOffspringRate),Math.max(0,this.population-immigrantCount-genomes.length-optimizerSampleTarget-riskRepairReservedSlots)):0;
        const riskRepairOffspringTarget=riskRepairCandidate&&baseMutation>0&&this.riskRepairOffspringRate>0
          ?Math.min(Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)),Math.max(0,this.population-genomes.length-immigrantCount-frontierOffspringTarget-optimizerSampleTarget)):0;
-         let frontierOffspringCount=0,riskRepairOffspringCount=0,optimizerSampleCount=0,functionalCrossoverCount=0;
+        let frontierOffspringCount=0,riskRepairOffspringCount=0,optimizerSampleCount=0,functionalCrossoverCount=0,optimizerPairSeed=null;
         const optimizerSampleIdsForNext=[];
       while(genomes.length<this.population) {
          if(noSafeLearningCandidate&&baseMutation>0){genomes.push(makeLearningGenome(this.graph,this.random));continue;}
@@ -902,7 +909,8 @@
         }
         if(optimizerSampleCount<optimizerSampleTarget&&this.optimizer&&winner.genome.policyWeights){
           const child=cloneGenome(selectionWinner?.genome||winner.genome);
-          child.policyWeights=this.optimizer.sample(this.random,mutationAmount*.35,this.stagnation);
+          child.policyWeights=this.optimizer.sample(this.random,mutationAmount*.35,this.stagnation,optimizerSampleCount===1?optimizerPairSeed:null);
+          if(optimizerSampleCount===0)optimizerPairSeed=child.policyWeights.slice();
            optimizerSampleIdsForNext.push(genomes.length);genomes.push(child);optimizerSampleCount++;continue;
         }
         if(this.optimizer&&winner.genome.policyWeights){

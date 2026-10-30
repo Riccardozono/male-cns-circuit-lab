@@ -392,6 +392,25 @@ test('An all-crash generation preserves the clean checkpoint and restarts mutate
   assert.equal(sim.safeLearningFrontier.progress,120);
   assert.ok(!sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(winner.genome)),'no crash policy is copied forward');
 });
+test('A 16-car learning generation evaluates a mirrored ES pair and updates from its ranking',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12,seed:7717});
+  const finish=(score)=>{for(const [i,car] of sim.cars.entries()){
+    car.alive=false;car.reason='ferma / senza progresso';car.laps=0;car.bestLapTime=Infinity;car.bestProgress=score(i);
+    car.fitness=car.reward=car.baseFitness=car.bestProgress;car.penalty=0;car.rewardState.finalized=true;
+  }};
+  finish(i=>120-i);sim.evolve();
+  const ids=[...sim.optimizerSampleIds];
+  assert.equal(sim.lastOptimizerSampleCount,2,'16 agents reserve two comparable ES samples');
+  assert.ok(ids.length>=2);
+  const center=sim.optimizer.mean.slice(),left=sim.cars[ids[0]].genome.policyWeights,right=sim.cars[ids[1]].genome.policyWeights;
+  const symmetric=[];
+  for(let j=0;j<center.length;j++)if(Math.abs(left[j])<8-1e-9&&Math.abs(right[j])<8-1e-9)symmetric.push(Math.abs(left[j]+right[j]-2*center[j]));
+  assert.ok(symmetric.length>0,'the first two ES candidates form a mirrored pair around the current mean');
+  assert.ok(Math.max(...symmetric)<1e-9);
+  const updates=sim.optimizer.updates;
+  finish(i=>{const rank=ids.indexOf(i);return rank>=0?1000-rank*100:100+i;});sim.evolve();
+  assert.equal(sim.optimizer.updates,updates+1,'the pair provides a comparative signal to EvolutionStrategy.update');
+});
 test('Prolonged stagnation widens mutation and assigns half the population to the physical frontier',()=>{
   const legacy=require('../legacy-models.js');
   for(const modelData of [legacy.buildV2(data),data]){
