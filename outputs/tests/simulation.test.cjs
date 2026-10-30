@@ -411,6 +411,23 @@ test('A 16-car learning generation evaluates a mirrored ES pair and updates from
   finish(i=>{const rank=ids.indexOf(i);return rank>=0?1000-rank*100:100+i;});sim.evolve();
   assert.equal(sim.optimizer.updates,updates+1,'the pair provides a comparative signal to EvolutionStrategy.update');
 });
+test('A sub-coarse-threshold safe gain advances the frontier and resets stagnation',()=>{
+  const legacy=require('../legacy-models.js'),circuits=require('../data/circuits.json');
+  const sim=new F.Simulation(legacy.tagV3(data),{population:16,mutation:.12,circuits,circuitId:'monza',seed:7717});
+  const oldTolerance=Math.max(sim.track.pixelsPerMeter||1,sim.track.total*.0005);
+  const safeTolerance=Math.max(.5*(sim.track.pixelsPerMeter||1),sim.track.total*.0001);
+  assert.ok(safeTolerance<oldTolerance,'the measured frontier tolerance is finer than the previous gate');
+  const gain=(safeTolerance+oldTolerance)/2;
+  sim.safeLearningFrontier={progress:100,laps:0,lapTime:null};sim.stagnation=4;
+  for(const [index,car] of sim.cars.entries()){
+    car.alive=false;car.reason='ferma / senza progresso';car.laps=0;car.bestLapTime=Infinity;
+    car.bestProgress=100+(index===0?gain:0);car.fitness=car.reward=car.baseFitness=car.bestProgress;
+    car.penalty=0;car.rewardState.finalized=true;
+  }
+  sim.evolve();
+  assert.equal(sim.safeLearningFrontier.progress,100+gain,'the incremental safe gain is recorded');
+  assert.equal(sim.stagnation,0,'accepted safe progress resets the stagnation counter');
+});
 test('Prolonged stagnation widens mutation and assigns half the population to the physical frontier',()=>{
   const legacy=require('../legacy-models.js');
   for(const modelData of [legacy.buildV2(data),data]){

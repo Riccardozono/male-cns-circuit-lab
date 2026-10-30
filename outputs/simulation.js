@@ -768,7 +768,10 @@
           safeFrontier.lapTime=evidenceFrontier.lapTime;frontierRebased=true;
         }
       }
-      const safeDrivingImproved=Boolean(safeProgressLeader&&(safeProgressLeader.bestProgress>safeFrontier.progress+Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005)||safeMaxLaps>safeFrontier.laps||
+      // Keep frontier promotion consistent with the risk-repair tolerance. A
+      // coarser 0.05% gate can hide several small safe gains and leave the
+      // mutation schedule stagnant even when the population is progressing.
+      const safeDrivingImproved=Boolean(safeProgressLeader&&(safeProgressLeader.bestProgress>safeFrontier.progress+safeProgressTolerance||safeMaxLaps>safeFrontier.laps||
         (Number.isFinite(safeFastestLapTime)&&(safeFrontier.lapTime===null||safeFastestLapTime<safeFrontier.lapTime*.999))));
       if(safeDrivingImproved)this.safeLearningFrontier={progress:Math.max(safeFrontier.progress,safeProgressLeader.bestProgress),laps:Math.max(safeFrontier.laps,safeMaxLaps),lapTime:Number.isFinite(safeFastestLapTime)?Math.min(safeFrontier.lapTime??Infinity,safeFastestLapTime):safeFrontier.lapTime};
       else if(frontierRebased)this.safeLearningFrontier=safeFrontier;
