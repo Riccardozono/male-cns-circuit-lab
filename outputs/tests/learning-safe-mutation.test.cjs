@@ -98,6 +98,68 @@ test('Sensory trials and their mirrored partners cannot overflow saved parameter
     assert.ok(L.valid(s.graph,c.policyWeights)&&L.valid(s.graph,mirror));
   }
 });
+test('Sensory compensation preserves every latent motor logit in a nonlinear three-head decoder',()=>{
+  const s=sim(),p=s.graph.learning,n=p.nodes.length,readoutOffset=p.readoutOffset;
+  // Exercise the decoder7 layout, including the negative throttle preactivation
+  // hidden by its rectified output. Anatomy and recurrent propagation are real.
+  const featureCount=n*2,thresholdOffset=readoutOffset+featureCount*3,biasOffset=thresholdOffset+n,length=biasOffset+3;
+  s.graph.learning={...p,version:7,actionCount:3,featureCount,featureNorm:1/Math.sqrt(n),readoutStride:3,thresholdOffset,biasOffset,length};
+  const g=F.cloneGenome(s.cars[0].genome);g.adapterVersion=7;
+  g.policyWeights=Array.from({length},(_,i)=>i<readoutOffset?p.mean[i]:Math.sin(i*.43)*.35);
+  for(let j=0;j<n;j++)g.policyWeights[thresholdOffset+j]=Math.sin(j*.2)*.05;
+  g.policyWeights[biasOffset+1]=-2;
+  const originalCommands=L.commands;
+  const logits=(brain,genome)=>{
+    const weights=genome.policyWeights,features=brain.policyFeatures=new Float64Array(featureCount);
+    for(let j=0;j<n;j++){features[j]=Math.tanh(8*brain.activity[p.nodes[j]]);features[n+j]=Math.tanh(32*(brain.activity[p.nodes[j]]-weights[thresholdOffset+j]));}
+    return Array.from({length:3},(_,action)=>features.reduce((sum,value,j)=>sum+value*weights[readoutOffset+j*3+action]/Math.sqrt(n),weights[biasOffset+action]));
+  };
+  L.commands=(graph,brain,genome)=>{const z=logits(brain,genome);return [Math.tanh(z[0]),Math.max(0,Math.tanh(z[1])),Math.max(0,Math.tanh(z[2]))];};
+  try{
+    const context={activity:F.makeBrain(s.graph).activity,sensors:Array.from({length:28},(_,j)=>Math.sin(j*.31)*.3+.5)};
+    const before=g.policyWeights.slice(),child=F.mutateSensoryBlock(s.graph,g,F.rng(12),.16,context);
+    const evaluate=genome=>{const brain=F.makeBrain(s.graph);brain.activity.set(context.activity);for(let k=0;k<8;k++)F.neuralStep(s.graph,brain,genome,context.sensors);return logits(brain,genome);};
+    const a=evaluate(g),b=evaluate(child);
+    assert.ok(a[1]<0,'the throttle logit must be invisible in the rectified output');
+    for(let action=0;action<3;action++)assert.ok(Math.abs(a[action]-b[action])<1e-10,`action ${action} logit changed by ${b[action]-a[action]}`);
+    assert.notDeepEqual(child.policyWeights.slice(0,56),before.slice(0,56));
+    assert.deepEqual(child.policyWeights.slice(readoutOffset,biasOffset),before.slice(readoutOffset,biasOffset));
+    assert.deepEqual(g.policyWeights,before);
+  }finally{L.commands=originalCommands;}
+});
+test('Sensory compensation retains the latent command when a two-head output is saturated',()=>{
+  const s=sim(),p=s.graph.learning,g=F.cloneGenome(s.cars[0].genome);
+  const context={activity:F.makeBrain(s.graph).activity,sensors:Array.from({length:28},(_,j)=>Math.sin(j*.31)*.3+.5)};
+  const evaluate=genome=>{
+    const brain=F.makeBrain(s.graph);brain.activity.set(context.activity);
+    for(let k=0;k<8;k++)F.neuralStep(s.graph,brain,genome,context.sensors);
+    return {brain,logit:brain.policyFeatures.reduce((sum,value,j)=>sum+value*genome.policyWeights[p.readoutOffset+j*2]/Math.sqrt(p.nodes.length),genome.policyWeights.at(-2))};
+  };
+  const observed=evaluate(g);
+  for(let j=0;j<p.nodes.length;j++)g.policyWeights[p.readoutOffset+j*2]=Math.sign(observed.brain.policyFeatures[j])*7;
+  const a=evaluate(g),child=F.mutateSensoryBlock(s.graph,g,F.rng(12),.16,context),b=evaluate(child);
+  assert.ok(a.logit>15,'the output must be beyond the invertible tanh range used by the old compensation');
+  assert.ok(Math.abs(a.logit-b.logit)<1e-10,`saturated logit changed by ${b.logit-a.logit}`);
+});
+test('Bounding sensory exploration preserves its context after scaling the encoder step',()=>{
+  const s=sim(),p=s.graph.learning,g=F.cloneGenome(s.cars[0].genome);
+  g.policyWeights[Math.floor(F.rng(12)()*28)]=7.99;
+  const context={activity:F.makeBrain(s.graph).activity,sensors:Array.from({length:28},(_,j)=>Math.sin(j*.31)*.3+.5)};
+  const evaluate=genome=>{
+    const brain=F.makeBrain(s.graph);brain.activity.set(context.activity);
+    for(let k=0;k<8;k++)F.neuralStep(s.graph,brain,genome,context.sensors);
+    return [0,1].map(action=>brain.policyFeatures.reduce((sum,v,j)=>sum+v*genome.policyWeights[p.readoutOffset+j*2+action]/Math.sqrt(p.nodes.length),genome.policyWeights.at(-2+action)));
+  };
+  const child=F.mutateSensoryBlock(s.graph,g,F.rng(12),.35,context),a=evaluate(g),b=evaluate(child);
+  assert.notDeepEqual(child.policyWeights,g.policyWeights);
+  for(let action=0;action<2;action++)assert.ok(Math.abs(a[action]-b[action])<1e-9,`bounded action ${action} logit changed by ${b[action]-a[action]}`);
+  assert.ok(L.valid(s.graph,child.policyWeights)&&L.valid(s.graph,L.mirroredMutation(g.policyWeights,child.policyWeights)));
+});
+test('Sensory exploration rejects a step when a locked bias cannot preserve both mirrored policies',()=>{
+  const s=sim(),g=F.cloneGenome(s.cars[0].genome);g.policyWeights[g.policyWeights.length-2]=8;
+  const context={activity:F.makeBrain(s.graph).activity,sensors:Array.from({length:28},(_,j)=>Math.sin(j*.31)*.3+.5)};
+  assert.deepEqual(F.mutateSensoryBlock(s.graph,g,F.rng(12),.35,context),g);
+});
 test('Scaled motor trials keep both mirrored weights valid without changing the anchor',()=>{
   const s=sim(),x=context(s.graph.learning.nodes.length),values=s.cars[0].genome.policyWeights;
   const child=L.safeMotorMutation(s.graph,values,F.rng(91),.35,x);

@@ -1,5 +1,108 @@
 # Apprendimento: correzioni e verifiche di sviluppo
 
+## 30 ottobre 2026 — compensazione dell'encoder e teste motore
+
+`mutateSensoryBlock()` correggeva soltanto gli ultimi due bias, invertendo con
+`atanh` le azioni già tagliate o saturate. Nel decoder sperimentale 7 le teste
+sono tre: la correzione dello sterzo finiva nel gas e lo sterzo restava senza
+correzione. Anche con due teste, l'inversione non recuperava il segnale latente
+quando `tanh` era saturo. Questo violava lo scopo della mutazione sensoriale:
+esplorare l'encoder preservando la risposta del genitore in un contesto osservato.
+
+La compensazione ora legge attività e caratteristiche effettivamente prodotte
+dalla rete, usa disposizione e normalizzazione dichiarate dal decoder e corregge
+ogni preattivazione prima di `tanh` e del taglio dei pedali a zero. Restano attivi
+i limiti dei pesi e delle coppie di mutazioni opposte. Il passo dell'encoder
+viene limitato prima di misurarne l'effetto; se la compensazione di un bias
+non rientra nei limiti, prova passi più piccoli e respinge un tentativo impossibile.
+Ridurre il passo dopo la compensazione rendeva quest'ultima inesatta per la
+rete non lineare. Non introduce azioni da
+imitare, coordinate del circuito o nuove informazioni nei salvataggi.
+
+La regressione a tre teste fallisce sul sorgente precedente (sterzo latente
+variato di circa −0,001003 nel caso riprodotto) e passa con la correzione.
+I test mirati verificano anche una testa del gas negativa nascosta dal taglio
+a zero e un comando a due teste oltre la saturazione; sul sorgente precedente
+quest'ultimo perdeva 0,406132 di segnale latente. Entrambe le regressioni
+falliscono prima della correzione e passano dopo. I 19 test mirati passano;
+la suite finale supera 464/464 test e l'ultimo aggiornamento del gate di
+confronto è verificato separatamente (3/3). Sono prove del contratto del
+mutatore, non di un giro.
+
+Confronto fisico: checkpoint decoder7 gen.180, V3/Monza, popolazione 100, seed
+850817, gen.180 di riferimento e gen.181–183 allenate, RTX 4060. Il ramo legacy
+ripristina in memoria la sola funzione di `ad801d7`; il ramo corretto usa il
+sorgente corrente. L'audit richiede che la mutazione sensoriale sia eseguita
+realmente e che checkpoint d'ingresso e salvataggio personale restino invariati.
+I risultati vengono confrontati per giri, progresso sicuro, frontiera e urti;
+la promozione come miglioramento dell'apprendimento richiede un giro o almeno
+2 m persistenti di frontiera sicura. Il runner riproducibile è
+`work/research-v3-sensory-compensation.cjs`.
+
+| Ramo, seed 850817 | Auto sicure gen.181/182/183 | Progresso sicuro gen.181/182/183 | Giri |
+|---|---:|---:|---:|
+| Compensazione precedente | 67 / 62 / 66 | 798,967 / 798,967 / 799,655 m | 0 |
+| Compensazione corretta | 67 / 60 / 66 | 798,967 / 798,967 / 799,655 m | 0 |
+
+L'audit conta sette mutazioni sensoriali per ramo. La correzione cambia gli
+esiti di due auto in gen.181 e dieci in gen.182, ma non aggiorna la frontiera
+storica (798,967 m). Non va presentata come soluzione all'apprendimento.
+Entrambi i checkpoint gen.184 sono validati; zero fallback CPU e input invariati.
+Il confronto riproducibile è in `work/compare-learning-replays.cjs`; rifiuta
+seed, checkpoint o sorgenti non corrispondenti e un baseline fisico diverso.
+I giri degli episodi terminati con un urto non valgono come vantaggio sicuro.
+Il confronto è stato rieseguito dopo la rifinitura dei limiti: stessi conteggi,
+stesso progresso sicuro e zero giri. Il ramo finale corretto registra 155.490
+chiamate GPU, zero fallback CPU; checkpoint gen.184 validato con SHA-256
+`61b84c34ee9a9653c9b77dfc191ec83b02783fdafbaaa5469ad105eff13dd36e`.
+Il sorgente `outputs/simulation.js` verificato ha SHA-256
+`34a723cd33fed6862132780c3b76cac773dc1ba667f8b2470477ba141bd0284b`.
+
+Un replay di sola osservazione del leader, 712 chiamate CUDA, registra 128
+caratteristiche ricorrenti e riproduce lo stop a 798,967 m. Nel campione a
+790,575 m, una variazione ipotetica di 0,1 del segnale latente di sterzo richiede
+una variazione di norma 0,08631 dei pesi, pur preservando quattro risposte
+precedenti. È una misura algebrica di espressività di quel singolo genoma:
+non è una traiettoria, un peso installato nell'app o un risultato di guida.
+Analisi: `work/analyze-neural-readout-geometry.cjs`.
+
+La variante sperimentale `work/neural-context-mutation.cjs` preserva invece le
+quattro situazioni neurali più frequenti nella memoria del genitore, senza
+usare coordinate. Esplora anche sterzo e pedali insieme. Il primo confronto
+senza limite dell'ampiezza mantiene gli ancoraggi entro 8,89e-16, ma peggiora
+gli esiti fisici: 34/34/45 auto sicure contro 67/60/66 e zero giri; non promossa.
+La conservazione di poche risposte non garantisce stabilità durante la guida.
+
+Il ramo successivo limita la variazione RMS dei comandi al budget di rumore
+atteso dalle scale di mutazione esistenti, misurato sui contesti osservati, e
+limita le variazioni nei contesti rari. Nei due seed appaiati:
+
+| Seed | Auto sicure controllo | Auto sicure variante | Progresso sicuro finale controllo / variante | Giri |
+|---|---:|---:|---:|---:|
+| 850817 | 67 / 60 / 66 | 38 / 43 / 56 | 799,655 / 800,132 m | 0 |
+| 850816 | 66 / 61 / 52 | 53 / 45 / 53 | 800,656 / 798,967 m | 0 |
+
+Il limite viene rispettato negli audit, ma non emerge un vantaggio stabile:
+entrambe le frontiere restano ferme e le collisioni aumentano in gran parte
+delle generazioni. Anche questa variante è scartata come miglioramento della
+guida. Le mutazioni di contesto restano strumenti di ricerca; non sono
+integrate nel controllore dell'app. Il problema di apprendimento è ancora aperto.
+La progettazione si riferisce ai principi di esplorazione nei parametri e
+controllo delle variazioni in uscita descritti da
+[Plappert et al.](https://arxiv.org/abs/1706.01905) e
+[Lehman et al.](https://arxiv.org/abs/1712.06563); questo esperimento non è una
+replica dei loro algoritmi né una prova dei risultati riportati nei paper.
+
+Report locali, checksum, checkpoint di ricerca e inventario della pulizia:
+`.impeccable/review/learning-ml/progress55-sensory-bias-heads-seed850817-gen180-rtx-20261030/`.
+La review automatica ha respinto con «blocked by policy» la rimozione di 150
+cartelle di cache in profili di prova inattivi (630 file, 202.238.640 byte).
+Nessun file di cache è stato eliminato. Le prove di apprendimento restano
+isolate dai pacchetti Windows distribuiti. La preparazione della versione pronta
+da pubblicare resta incompleta: nessuna prova di un giro, tanto meno dei due
+giri richiesti, è stata ottenuta in questi confronti. Non sono state create
+versioni, tag o release aggiuntivi.
+
 ## 29 ottobre 2026 — soglia del passo e mutazione delle nuove sessioni
 
 Un V2 da zero procedeva a **2,001–2,011 m/s**, appena sopra il vecchio limite

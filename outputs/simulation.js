@@ -316,21 +316,41 @@
     const child=cloneGenome(genome),scale=Math.max(0,amount)/.16;
     if(!scale||!context||graph.full)return child;
     // Explore the existing learned encoder, not a hand-calibrated sensor or
-    // a new driving controller. Preserve the parent's own recurrent response
-    // in a previously observed context by compensating the two readout biases.
+    // a new driving controller. Preserve each motor preactivation in a
+    // previously observed context, including heads whose output is clipped.
     for(let k=0;k<2;k++){
       const channel=Math.floor(random()*Learning.CHANNELS);
       child.policyWeights[channel]=clamp(child.policyWeights[channel]+normal(random)*1.5*scale,-8,8);
       child.policyWeights[Learning.CHANNELS+channel]=clamp(child.policyWeights[Learning.CHANNELS+channel]+normal(random)*1.5*scale,-8,8);
     }
-    const before=makeBrain(graph),after=makeBrain(graph);before.activity.set(context.activity);after.activity.set(context.activity);
-    let a,b;
-    for(let n=0;n<8;n++){a=neuralStep(graph,before,genome,context.sensors);b=neuralStep(graph,after,child,context.sensors);}
-    const logit=v=>Math.atanh(clamp(v,-1+1e-12,1-1e-12)),last=child.policyWeights.length;
-    child.policyWeights[last-2]=clamp(child.policyWeights[last-2]+logit(a[0])-logit(b[0]),-8,8);
-    child.policyWeights[last-1]=clamp(child.policyWeights[last-1]+logit(a[1]-a[2])-logit(b[1]-b[2]),-8,8);
-    child.policyWeights=Learning.scaleMutation(genome.policyWeights,child.policyWeights,1);
-    return child;
+    const proposal=Learning.scaleMutation(genome.policyWeights,child.policyWeights,1);
+    const policy=ensureLearning(graph),actionCount=policy.actionCount??2,featureCount=policy.featureCount??policy.nodes.length;
+    const stride=policy.readoutStride??2,biasOffset=policy.biasOffset??child.policyWeights.length-actionCount,norm=policy.featureNorm??1/Math.sqrt(policy.nodes.length);
+    const observe=candidate=>{
+      const brain=makeBrain(graph);brain.activity.set(context.activity);
+      for(let n=0;n<8;n++)neuralStep(graph,brain,candidate,context.sensors);
+      if(brain.policyFeatures?.length!==featureCount)throw Error('Contesto del readout neurale incompatibile.');
+      return brain;
+    };
+    const preactivation=(brain,weights,action)=>{
+      let value=weights[biasOffset+action];
+      for(let j=0;j<featureCount;j++)value+=brain.policyFeatures[j]*weights[policy.readoutOffset+j*stride+action]*norm;
+      return value;
+    };
+    const before=observe(genome),baseline=Array.from({length:actionCount},(_,action)=>preactivation(before,genome.policyWeights,action));
+    // Bound the encoder BEFORE observing its response. Scaling it after bias
+    // compensation invalidates that compensation in a nonlinear network.
+    // If a bias has too little room, retry a smaller encoder step; a rejected
+    // trial is preferable to corrupting the parent's protected behaviour.
+    for(let attempt=0;attempt<12;attempt++){
+      const factor=2**-attempt;
+      child.policyWeights=proposal.map((value,index)=>genome.policyWeights[index]+(value-genome.policyWeights[index])*factor);
+      const after=observe(child),corrections=baseline.map((value,action)=>value-preactivation(after,child.policyWeights,action));
+      if(corrections.some((delta,action)=>Math.abs(genome.policyWeights[biasOffset+action]+delta)>8||Math.abs(genome.policyWeights[biasOffset+action]-delta)>8))continue;
+      for(let action=0;action<actionCount;action++)child.policyWeights[biasOffset+action]=genome.policyWeights[biasOffset+action]+corrections[action];
+      return child;
+    }
+    return cloneGenome(genome);
   }
   function evaluatePractice(track,graph,genome,state,maxTicks=720){
     if(graph.full)throw Error('La pratica densa non può sostituire il solver completo GPU.');
