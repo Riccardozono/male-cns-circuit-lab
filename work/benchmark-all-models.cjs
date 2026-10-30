@@ -9,6 +9,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const F = require('../outputs/simulation.js');
 const Legacy = require('../outputs/legacy-models.js');
+const Profiles = require('../outputs/model-profiles.js');
 
 const ROOT = path.join(__dirname, '..');
 const OUTPUT_DIR = path.join(ROOT, 'outputs');
@@ -16,7 +17,7 @@ const catalog = JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, 'data', 'circui
 const source = JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, 'data', 'connectome.json'), 'utf8'));
 const fullMetadata = JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, 'data', 'connectome-full.json'), 'utf8'));
 const constructors = {float64: Float64Array, float32: Float32Array, int32: Int32Array, uint32: Uint32Array, uint8: Uint8Array, int8: Int8Array};
-const MODEL_IDS = ['v2', 'v3', 'v4'];
+const MODEL_IDS = ['v2', 'v3', 'v4', 'v5'];
 const CIRCUIT_IDS = ['lab', ...catalog.circuits.map(circuit => circuit.id)];
 
 function readArg(name, fallback) {
@@ -70,14 +71,16 @@ function loadFullData() {
   return data;
 }
 
+const fullModelData = loadFullData();
 const modelData = {
   v2: Legacy.buildV2(source),
   v3: Legacy.tagV3(source),
-  v4: loadFullData()
+  v4: fullModelData,
+  v5: Profiles.buildV5(fullModelData)
 };
 
 function modelLabel(modelId, graph) {
-  return graph.modelLabel || ({v2: 'MaleCNS V2 compatto ricostruito', v3: 'MaleCNS V3 storico', v4: 'MaleCNS V4 completo'}[modelId] || modelId);
+  return graph.modelLabel || ({v2: 'MaleCNS V2 compatto ricostruito', v3: 'MaleCNS V3 storico', v4: 'MaleCNS V4 completo', v5: 'MaleCNS V5 esteso'}[modelId] || modelId);
 }
 
 function rounded(value) {
@@ -108,6 +111,9 @@ function runCase(modelId, circuitId, sim) {
   let firstLap = null;
   let last = null;
   let lastEvaluation = null;
+  const generations = [];
+  let maximumObservedProgress = 0;
+  let maximumSafeProgress = 0;
 
   for (let generation = 1; generation <= config.maxGenerations; generation++) {
     const evaluation=evaluateGeneration(sim);
@@ -120,10 +126,15 @@ function runCase(modelId, circuitId, sim) {
       generation: last.generation,
       best: rounded(last.best),
       bestProgress: rounded(last.bestProgress),
+      bestSafeProgress: rounded(last.bestSafeProgress),
+      meanSafeProgress: rounded(last.meanSafeProgress),
       completedAgentCount,
       fastestLap: rounded(last.bestLapTime),
       stagnation: last.stagnation
     };
+    generations.push(line);
+    maximumObservedProgress = Math.max(maximumObservedProgress, Number(last.bestProgress) || 0);
+    maximumSafeProgress = Math.max(maximumSafeProgress, Number(last.bestSafeProgress) || 0);
     console.log('BENCHMARK_GENERATION ' + JSON.stringify(line));
     if (completedAgentCount > 0) {
       firstLap = {
@@ -162,6 +173,10 @@ function runCase(modelId, circuitId, sim) {
     generationsEvaluated: last?.generation ?? 0,
     finalBest: rounded(last?.best),
     finalBestProgress: rounded(last?.bestProgress),
+    finalBestSafeProgress: rounded(last?.bestSafeProgress),
+    maximumObservedProgress: rounded(maximumObservedProgress),
+    maximumSafeProgress: rounded(maximumSafeProgress),
+    generations,
     finalStagnation: last?.stagnation ?? null,
     wallTimeSeconds: Number(((Date.now() - started) / 1000).toFixed(3))
   };
@@ -179,8 +194,9 @@ function writeReports(results) {
   const report = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
-    benchmarkMode: 'headless recurrent MaleCNS policy, trained through reward-ranked evolution strategies; V4 uses sparse CPU rather than desktop WebGPU',
-    sourceSha256: Object.fromEntries(['simulation.js','neural-learning.js'].map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(OUTPUT_DIR,file))).digest('hex')])),
+    benchmarkMode: 'headless recurrent MaleCNS policy trained through reward-ranked evolution strategies; V4/V5 use the sparse CPU path, not desktop WebGPU',
+    progressUnits: 'track metric units; catalogued real circuits are calibrated in metres',
+    sourceSha256: Object.fromEntries(['simulation.js','neural-learning.js','model-profiles.js'].map(file=>[file,crypto.createHash('sha256').update(fs.readFileSync(path.join(OUTPUT_DIR,file))).digest('hex')])),
     stoppingRule: 'stop each model/circuit case after the first agent completes at least one lap',
     safetyGuard: 'maxGenerations is a benchmark guard only; the simulation has no global simulated-time limit',
     configuration: reportConfiguration,
@@ -191,7 +207,6 @@ function writeReports(results) {
     results
   };
   fs.writeFileSync(path.join(OUTPUT_DIR, 'benchmark-all-results.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  const rows = results.map(result => `| ${result.modelId.toUpperCase()} | ${result.circuitName} | ${result.reachedOneLap ? 'sì' : 'no'} | ${result.firstLapGeneration ?? '—'} | ${result.firstLapTime ?? '—'} | ${result.generationsEvaluated} | ${result.wallTimeSeconds}s |`).join('\n');
   const markdown = [
     '# Benchmark modelli × circuiti',
     '',
@@ -200,16 +215,17 @@ function writeReports(results) {
     'Ogni caso si ferma quando almeno un agente completa un giro. `maxGenerations` è solo una protezione contro un processo infinito; non è un limite globale di tempo della simulazione.',
     '',
     `Adattatore: ${reportConfiguration.learningEnabled ? 'policy appresa per ricompense sull’attività ricorrente MaleCNS, partenza casuale e nessuna assistenza di guida' : 'readout DNa storico'}. Nessuna coordinata, mezzeria o traiettoria di riferimento entra nella policy.`,
+    'Il report conserva separatamente il progresso osservato e quello ottenuto da episodi sicuri; le colonne mostrano la massima frontiera sicura misurata.',
     '',
     `Configurazione dell’ultima passata: popolazione ${reportConfiguration.population}, mutazione ${(reportConfiguration.mutation * 100).toFixed(1)}%, budget automatico proporzionale alla pista (target sopravvivenza ${reportConfiguration.targetSurvivalSpeed.toFixed(1)} px/s, minimo ${reportConfiguration.minimumEpisodeSeconds} s simulati)${reportConfiguration.evaluationTicks ? `, oppure ${reportConfiguration.evaluationTicks} tick espliciti` : ''}, massimo ${reportConfiguration.maxGenerations} generazioni, seed ${reportConfiguration.seed}. Ogni riga conserva i propri parametri effettivi.`,
     '',
     `Risultato: ${completed}/${expectedCases} combinazioni hanno raggiunto almeno un giro; ${results.length}/${expectedCases} sono state misurate in questa tabella e ${Math.max(0,expectedCases-results.length)} non sono ancora state eseguite.`,
     '',
-    '| Modello | Circuito | 1 giro | Generazione | Miglior tempo | Generazioni | Tempo reale |',
-    '| --- | --- | ---: | ---: | ---: | ---: | ---: |',
-    rows || '| — | — | — | — | — | — | — |',
+    '| Modello | Circuito | 1 giro | Generazione | Miglior tempo | Progresso sicuro max | Gen. | Tempo reale |',
+    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
+    results.map(result => `| ${result.modelId.toUpperCase()} | ${result.circuitName} | ${result.reachedOneLap ? 'sì' : 'no'} | ${result.firstLapGeneration ?? '—'} | ${result.firstLapTime ?? '—'} | ${result.maximumSafeProgress ?? '—'} | ${result.generationsEvaluated} | ${result.wallTimeSeconds}s |`).join('\n') || '| — | — | — | — | — | — | — | — |',
     '',
-    'Il benchmark è headless: V4 usa il percorso sparse CPU di `simulation.js`. Non va interpretato come misura del throughput WebGPU della build Electron.'
+    'Il benchmark è headless: V4/V5 usano il percorso sparse CPU di `simulation.js`. Non va interpretato come misura del throughput WebGPU della build Electron.'
   ].join('\n') + '\n';
   fs.writeFileSync(path.join(OUTPUT_DIR, 'benchmark-all-results.md'), markdown, 'utf8');
 }

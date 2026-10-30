@@ -193,7 +193,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | --- | --- | ---: |
 | **GPT-6** | OpenAI Codex | **1** |
 | **GPT-6 Astra** | OpenAI Codex | **1** |
-| **GPT-6 Luna** | OpenAI Codex | **2** |
+| **GPT-6 Luna** | OpenAI Codex | **3** |
 | **GPT-6.1 Sol** | OpenAI Codex | **25** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
 | **GPT-5.6 Luna** | OpenAI Codex | **1** |
@@ -294,14 +294,14 @@ Se hai già clonato senza submodule: `git submodule update --init --recursive`.
 # Test automatici
 npm test
 
-# Benchmark headless CPU: V2, V3 e V4
+# Benchmark headless CPU: V2, V3, V4 e V5
 npm run benchmark:all
 
 # Genera portable e installer Windows x64
 npm run dist
 ```
 
-Il benchmark CLI attuale copre **V2, V3 e V4**, non V5 e non il throughput WebGPU. Per confrontare **V2–V5** con il runtime desktop usa la modalità test dell'app. Il completamento del benchmark non è una promessa di apprendimento. [Protocollo CLI](work/benchmark-all-models.cjs).
+Il benchmark CLI copre **V2–V5** e tutte le piste del catalogo, fermando ogni combinazione al primo giro o al limite di sicurezza configurato. V4/V5 usano il percorso sparse CPU, non WebGPU: i tempi non misurano il throughput dell'app desktop. Il report distingue progresso grezzo e progresso sicuro; completare un giro nel benchmark non garantisce convergenza né apprendimento generale. [Protocollo CLI](work/benchmark-all-models.cjs).
 
 La configurazione genera i pacchetti in `dist-learning-v570/`. La cartella conserva portable e installer della candidata 5.7.0 separati dalle vecchie distribuzioni. Gli eseguibili ufficiali sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
 
