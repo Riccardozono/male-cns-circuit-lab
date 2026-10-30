@@ -58,6 +58,7 @@ def main():
     parser.add_argument('--critic-prior', choices=('zero', 'common-failure'), default='common-failure')
     parser.add_argument('--reward-mode', choices=('fitness', 'optimizer-progress-curriculum'), default='fitness')
     parser.add_argument('--unsafe-terminal-penalty-track-lengths', type=float, default=6.0)
+    parser.add_argument('--training-pace-mode', choices=('strict', 'first-lap-moving'), default='strict')
     args = parser.parse_args()
     model, output = args.model.resolve(), args.output.resolve()
     if not model.is_relative_to(RESEARCH) or not output.is_relative_to(RESEARCH) or output.exists():
@@ -119,7 +120,8 @@ def main():
     try:
         metadata = request('init', configuration={'modelFile': str(model), 'population': args.population,
                                                    'seed': args.seed, 'rewardMode': args.reward_mode,
-                                                   'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths})
+                                                   'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
+                                                   'paceMode': args.training_pace_mode})
         baseline = request('evaluate', weights=flatten())
         print('NEURAL_SELF_PPO_BASELINE ' + json.dumps(baseline), flush=True)
         records = []
@@ -202,6 +204,7 @@ def main():
                                      'seed': args.seed, 'initialExplorationStd': list(args.exploration_std),
                                      'criticPrior': args.critic_prior, 'rewardMode': args.reward_mode,
                                      'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
+                                     'trainingPaceMode': args.training_pace_mode,
                                      'fitOnly': False,
                                      'independentDrivingValidation': True}
             payload = json.dumps(candidate, ensure_ascii=False, allow_nan=False, separators=(',', ':'))
@@ -235,6 +238,7 @@ def main():
                   'criticPriorMode': args.critic_prior, 'initialValuePrior': initial_value_prior,
                   'explorationStdInitial': list(args.exploration_std), 'klBacktracking': True,
                   'trainingRewardMode': args.reward_mode,
+                  'trainingPaceMode': args.training_pace_mode,
                   'trainerSha256': sha(Path(__file__).read_bytes()),
                   'environmentExitCode': proc.returncode,
                   'learningSucceeded': any(r['evaluation']['meetsTwoLapPhysicalGoal'] for r in records),

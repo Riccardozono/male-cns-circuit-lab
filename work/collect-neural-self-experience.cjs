@@ -5,15 +5,18 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const E=require('./current-statehead-environment.cjs'),Readout=require('./neural-self-readout.cjs');
 const Cuda=require('./cuda-exact-v3-runtime.cjs'),Dense=require('../outputs/dense-neural.js');
-const root=path.resolve(__dirname,'..'),tag=process.argv[2];
+const root=path.resolve(__dirname,'..'),tag=process.argv[2],footprint=process.argv[3]||'off',paceMode=process.argv[4]||'first-lap-moving',allowSafeTerminalPrefix=process.argv[5]==='--allow-safe-terminal-prefix';
 if(!tag||!/^[A-Za-z0-9-]+$/.test(tag))throw Error('A new scoped collection tag is required.');
+if(!['on','off'].includes(footprint)||!['strict','first-lap-moving'].includes(paceMode))throw Error('Declared behavior footprint and pace mode are required.');
 const output=path.join(root,'.impeccable/review/learning-ml',tag);
 if(fs.existsSync(output))throw Error('Preserve existing experience.');
 const previousDense=Dense.step;let xFile=null,yFile=null,created=false;
 try{
-  const env=E.create({footprint:'off',paceMode:'first-lap-moving'});
+  const env=E.create({footprint,paceMode});
   Dense.step=(...args)=>Cuda.pass(...args);
   const observed=Readout.observer(env.currentF,env.currentGraph,env.track,env.observerSpec);
+  const behaviorFootprint=env.currentCar().footprintSensorsEnabled===true,observerFootprint=true;
+  if(allowSafeTerminalPrefix&&(!behaviorFootprint||!observerFootprint))throw Error('Safe-prefix data must use the same active footprint sensors for behavior and observation.');
   fs.mkdirSync(output);created=true;
   xFile=fs.openSync(path.join(output,'observations.f64'),'wx');yFile=fs.openSync(path.join(output,'actions.f64'),'wx');
   const xHash=crypto.createHash('sha256'),yHash=crypto.createHash('sha256');
@@ -30,17 +33,20 @@ try{
     if(performance.now()-last>20000){last=performance.now();console.log('NEURAL_SELF_COLLECTION '+JSON.stringify({rows,progress:state.bestProgress,laps:state.laps}));}
   }
   fs.closeSync(xFile);xFile=null;fs.closeSync(yFile);yFile=null;env.verifySources();
-  if(state.laps<1||!env.currentF.isSafeLearningOutcome(state.car))throw Error('A physically completed safe lap is required for this warm-start dataset.');
+  const safe=env.currentF.isSafeLearningOutcome(state.car),completedLap=state.laps>=1,
+    safeTerminalPrefix=allowSafeTerminalPrefix&&!completedLap&&state.complete&&safe;
+  if(!safe||!completedLap&&!safeTerminalPrefix)throw Error('A safe lap or explicitly allowed safe terminal prefix is required for this warm-start dataset.');
   const observerGpu=Cuda.stats(),behaviorGpu=E.stats();
   if(!(observerGpu.gpuCalls>0)||observerGpu.cpuFallbacks!==0||!(behaviorGpu.gpuCalls>0)||behaviorGpu.cpuFallbacks!==0)throw Error('Both actual brains must run on exact CUDA.');
-  const report={format:'male-cns-neural-self-experience-v1',dtype:'<f8',rows,inputSize:514,outputSize:2,
-    observationDefinition:'Four current footprint-aware descending-neuron frames, then previous executed steering and signed longitudinal command. No position, route, time or desired speed.',
+  const report={format:'male-cns-neural-self-experience-v2',dtype:'<f8',rows,inputSize:514,outputSize:2,
+    experienceType:safeTerminalPrefix?'safe-terminal-prefix':'completed-lap',behaviorFootprint:behaviorFootprint?'on':'off',observerFootprint:observerFootprint?'on':'off',sensorModeMatch:behaviorFootprint===observerFootprint,
+    observationDefinition:'Four current descending-neuron frames from the active footprint-aware observer, then previous executed steering and signed longitudinal command. No position, route, time or desired speed.',
     behavior:'Previously learned private neural policy; commands were executed in the current physical environment. Own replay experience, not invented labels or a driving-rule controller.',
     identity:env.identity,sourceSha256:env.identity.sourceSha256,observerSpec:env.observerSpec,
     observationsSha256:xHash.digest('hex'),actionsSha256:yHash.digest('hex'),observerGpu,behaviorGpu,
     gpuCounterScope:'Both interfaces share cuda-exact-v3-runtime; totals are not additive.',observerPasses,behaviorPasses,
-    sourceResult:{laps:state.laps,progress:state.bestProgress,firstLapSeconds:state.lapTimes[0],episodeComplete:state.complete,collectionStoppedAtFirstActualLap:true},
-    limits:'One previously learned successful prefix, with central-ray behavior observations and a declared first-lap termination prototype. Warm start only; no evidence of the new readout driving, learning two laps or generalizing.'};
+    sourceResult:{laps:state.laps,progress:state.bestProgress,firstLapSeconds:state.lapTimes[0]??null,episodeComplete:state.complete,safe,reason:state.reason,safeTerminalPrefix,collectionStoppedAtFirstActualLap:completedLap},
+    limits:'One executed policy prefix in the declared sensor mode. A safe terminal prefix can be used as a warm start, but is not a completed lap or proof that the new readout drives, learns two laps or generalizes.'};
   fs.writeFileSync(path.join(output,'dataset.json'),JSON.stringify(report,null,2),{flag:'wx'});
   console.log('NEURAL_SELF_COLLECTION_DONE '+JSON.stringify({rows,sourceResult:report.sourceResult,observerGpuCalls:observerGpu.gpuCalls,behaviorGpuCalls:behaviorGpu.gpuCalls,output}));
 }catch(error){if(created)fs.writeFileSync(path.join(output,'failure.json'),JSON.stringify({error:error.stack},null,2),{flag:'wx'});throw error;}
