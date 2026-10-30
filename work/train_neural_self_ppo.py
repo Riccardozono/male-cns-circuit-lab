@@ -57,6 +57,7 @@ def main():
     parser.add_argument('--exploration-std', type=float, nargs=2, default=(.1, .3), metavar=('STEER', 'LONGITUDINAL'))
     parser.add_argument('--critic-prior', choices=('zero', 'common-failure'), default='common-failure')
     parser.add_argument('--reward-mode', choices=('fitness', 'optimizer-progress-curriculum'), default='fitness')
+    parser.add_argument('--unsafe-terminal-penalty-track-lengths', type=float, default=6.0)
     args = parser.parse_args()
     model, output = args.model.resolve(), args.output.resolve()
     if not model.is_relative_to(RESEARCH) or not output.is_relative_to(RESEARCH) or output.exists():
@@ -67,6 +68,8 @@ def main():
         raise ValueError('Finite exploration standard deviations in [.003,.3] required.')
     if args.reward_mode == 'optimizer-progress-curriculum' and args.critic_prior != 'zero':
         raise ValueError('The shaped progress objective requires a zero critic prior.')
+    if not math.isfinite(args.unsafe_terminal_penalty_track_lengths) or not 0 <= args.unsafe_terminal_penalty_track_lengths <= 6:
+        raise ValueError('Unsafe terminal penalty must be in [0,6] track lengths.')
     raw = model.read_bytes()
     envelope = json.loads(raw)
     if envelope['format'] != 'male-cns-neural-self-gru-envelope-v1' or sha(envelope['payloadJson'].encode()) != envelope['sha256']:
@@ -115,7 +118,8 @@ def main():
     started = time.perf_counter()
     try:
         metadata = request('init', configuration={'modelFile': str(model), 'population': args.population,
-                                                   'seed': args.seed, 'rewardMode': args.reward_mode})
+                                                   'seed': args.seed, 'rewardMode': args.reward_mode,
+                                                   'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths})
         baseline = request('evaluate', weights=flatten())
         print('NEURAL_SELF_PPO_BASELINE ' + json.dumps(baseline), flush=True)
         records = []
@@ -197,6 +201,7 @@ def main():
                                      'warmStart': data['training'], 'parentModelSha256': sha(raw),
                                      'seed': args.seed, 'initialExplorationStd': list(args.exploration_std),
                                      'criticPrior': args.critic_prior, 'rewardMode': args.reward_mode,
+                                     'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
                                      'fitOnly': False,
                                      'independentDrivingValidation': True}
             payload = json.dumps(candidate, ensure_ascii=False, allow_nan=False, separators=(',', ':'))
@@ -204,11 +209,13 @@ def main():
             write(output / filename, {'format': 'male-cns-neural-self-gru-envelope-v1', 'payloadJson': payload,
                                       'sha256': sha(payload.encode())})
             record = {'update': update, 'onPolicyTransitions': len(rows), 'actorSteps': actor_steps,
+                      'actorActiveTransitions': int(actor_enabled.sum().item()),
                       'actorMeanParityMaxError': parity, 'kl': kl, 'klStopped': stopped,
                       'klBacktracking': True, 'backtrackedSteps': backtracked_steps,
                       'minimumAcceptedStepScale': min_step_scale,
                       'criticPriorMode': args.critic_prior, 'initialValuePrior': initial_value_prior,
                       'trainingRewardMode': args.reward_mode,
+                      'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
                       'headDeltaL2': math.dist(before, current), 'std': log_std.detach().exp().cpu().tolist(),
                       'trainingEpisodes': batch['episodes'], 'trainingLanes': batch['lanes'],
                       'evaluation': evaluation, 'gpu': batch['gpu'],

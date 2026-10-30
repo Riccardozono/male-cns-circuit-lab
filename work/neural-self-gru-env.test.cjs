@@ -24,6 +24,13 @@ test('unsafe two-lap terminal outcome ranks below a safe zero-progress outcome',
   assert.ok(signal.reward<0);
 });
 
+test('unsafe terminal penalty can be bounded for controlled research comparison',()=>{
+  const signal=learningSignal('optimizer-progress-curriculum',{progressDelta:30,lapsDelta:0,fitnessDelta:0,terminal:true,safe:false,trackLength:5793,unsafeTerminalPenaltyTrackLengths:1});
+  assert.equal(signal.unsafeTerminalPenalty,5793);
+  assert.equal(signal.reward,-5763);
+  assert.throws(()=>learningSignal('optimizer-progress-curriculum',{progressDelta:0,lapsDelta:0,fitnessDelta:0,terminal:true,safe:false,trackLength:5793,unsafeTerminalPenaltyTrackLengths:7}));
+});
+
 test('unknown modes and invalid measurements are rejected',()=>{
   assert.throws(()=>learningSignal('route-following',{}));
   assert.throws(()=>learningSignal('optimizer-progress-curriculum',{progressDelta:NaN,lapsDelta:0,fitnessDelta:0,terminal:false,safe:true,trackLength:5793}));

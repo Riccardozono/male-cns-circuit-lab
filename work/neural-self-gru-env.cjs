@@ -1,21 +1,21 @@
 'use strict';
 // On-policy physical environment. The actor sees only actual anatomical
-// neural activity through a fixed recurrent encoder; reward is current app fitness.
+// neural activity through a fixed recurrent encoder; official fitness is always recorded.
+// Optional progress/safety shaping is training-only and never changes app scoring.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const Runtime=require('./current-physics-runtime.cjs'),G=require('./neural-self-gru.cjs'),R=require('./neural-self-readout.cjs');
 const Dense=require('../outputs/dense-neural.js'),Cuda=require('./cuda-exact-v3-runtime.cjs');
-function learningSignal(mode,{progressDelta,lapsDelta,fitnessDelta,terminal,safe,trackLength}){
+function learningSignal(mode,{progressDelta,lapsDelta,fitnessDelta,terminal,safe,trackLength,unsafeTerminalPenaltyTrackLengths=6}){
   if(mode==='fitness')return {reward:fitnessDelta,progressReward:0,lapReward:0,unsafeTerminalPenalty:0};
-  if(mode!=='optimizer-progress-curriculum'||![progressDelta,lapsDelta,fitnessDelta,trackLength].every(Number.isFinite)||trackLength<=0)throw Error('Supported, finite learning reward required.');
+  if(mode!=='optimizer-progress-curriculum'||![progressDelta,lapsDelta,fitnessDelta,trackLength,unsafeTerminalPenaltyTrackLengths].every(Number.isFinite)||trackLength<=0||unsafeTerminalPenaltyTrackLengths<0||unsafeTerminalPenaltyTrackLengths>6)throw Error('Supported, finite learning reward required.');
   const progressReward=Math.max(0,progressDelta),lapReward=Math.max(0,lapsDelta)*trackLength;
-  // With a two-lap cap, all safe distance and lap credits total at most 4L;
-  // 6L makes every terminal unsafe episode rank below any safe no-lap run.
-  const unsafeTerminalPenalty=terminal&&!safe?6*trackLength:0;
+  const unsafeTerminalPenalty=terminal&&!safe?unsafeTerminalPenaltyTrackLengths*trackLength:0;
   return {reward:progressReward+lapReward-unsafeTerminalPenalty,progressReward,lapReward,unsafeTerminalPenalty};
 }
-function create({modelFile,population=16,seed=850820,rewardMode='fitness'}={}){
+function create({modelFile,population=16,seed=850820,rewardMode='fitness',unsafeTerminalPenaltyTrackLengths=6}={}){
   if(!Number.isInteger(population)||population<1||population>16)throw Error('Owned population in [1,16] required.');
   if(!['fitness','optimizer-progress-curriculum'].includes(rewardMode))throw Error('Unsupported research reward mode.');
+  if(!Number.isFinite(unsafeTerminalPenaltyTrackLengths)||unsafeTerminalPenaltyTrackLengths<0||unsafeTerminalPenaltyTrackLengths>6)throw Error('Unsafe terminal penalty must be in [0,6] track lengths.');
   const d=G.load(path.resolve(modelFile)),before=Runtime.sourceHashes();
   if(JSON.stringify(d.sourceSha256)!==JSON.stringify(before))throw Error('Model/current source mismatch.');
   const F=Runtime.create('strict').F,sim=new F.Simulation(require('../outputs/legacy-models.js').tagV3(require('../outputs/data/connectome.json')),
@@ -41,7 +41,7 @@ function create({modelFile,population=16,seed=850820,rewardMode='fitness'}={}){
     const oldFitness=value.car.fitness,oldProgress=value.car.bestProgress,oldLaps=value.car.laps;
     for(let tick=0;tick<6&&value.car.alive;tick++)F.drive(track,value.car,commands,F.DT);
     const car=value.car,done=!car.alive,safe=F.isSafeLearningOutcome(car),rawFitnessDelta=car.fitness-oldFitness;
-    const objective=learningSignal(rewardMode,{progressDelta:car.bestProgress-oldProgress,lapsDelta:car.laps-oldLaps,fitnessDelta:rawFitnessDelta,terminal:done,safe,trackLength:track.total});
+    const objective=learningSignal(rewardMode,{progressDelta:car.bestProgress-oldProgress,lapsDelta:car.laps-oldLaps,fitnessDelta:rawFitnessDelta,terminal:done,safe,trackLength:track.total,unsafeTerminalPenaltyTrackLengths});
     const reward=objective.reward;value.learningRewardTotal+=reward;
     const episode=done?{id:value.id,progress:car.bestProgress,laps:car.laps,fitness:car.fitness,learningRewardTotal:value.learningRewardTotal,reward:car.reward,penalty:car.penalty,baseFitness:car.baseFitness,rewardBreakdown:JSON.parse(JSON.stringify(car.rewardBreakdown)),reason:car.reason,seconds:car.lifetime,safe,lapTimes:car.lapTimes.slice()}:null;
     value.previous=[car.outputs[0],car.outputs[1]-car.outputs[2]];
@@ -73,7 +73,7 @@ function create({modelFile,population=16,seed=850820,rewardMode='fitness'}={}){
   function lanesSnapshot(){return lanes.map(value=>{const c=value.car;return {id:value.id,progress:c.bestProgress,laps:c.laps,fitness:c.fitness,reason:c.reason||null,seconds:c.lifetime,alive:c.alive,speedMps:c.vehicle.speedMps,safe:F.isSafeLearningOutcome(c),rewardBreakdown:JSON.parse(JSON.stringify(c.rewardBreakdown))};});}
   const legacy=Object.keys(require.cache).filter(p=>/neural-statehead|neural-frontier-chain|neural-command-live/.test(p));
   if(legacy.length)throw Error('No prior driving policy may be imported.');
-  return {rollout,evaluate,metadata:()=>({format:'male-cns-neural-self-gru-ppo-env-v1',hiddenSize:d.hiddenSize,population,seed,rewardMode,
+  return {rollout,evaluate,metadata:()=>({format:'male-cns-neural-self-gru-ppo-env-v1',hiddenSize:d.hiddenSize,population,seed,rewardMode,unsafeTerminalPenaltyTrackLengths,
     sourceSha256:before,rewardRevision:F.Rewards.REVISION,modelSha256:R.sha(fs.readFileSync(modelFile)),legacyPolicyModules:legacy,
     boundary:'Actual current physical episodes and footprint-aware brain; frozen recurrent neural encoder, learned two-action head. Strict app physical termination and official scores remain recorded. optimizer-progress-curriculum mirrors safe-first, pre-lap progress selection; terminal failures receive a separate training-only safety cost. No practice restoration or prior controller.'}),
     close:()=>{Dense.step=oldDense;Cuda.close();}};
