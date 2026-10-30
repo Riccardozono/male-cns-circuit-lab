@@ -110,21 +110,25 @@ runnerSource = replaceExactly(
 );
 const sensorSteeringFocus = process.argv.includes('--sensor-steering-focus');
 const sensorSteeringAntithetic = process.argv.includes('--antithetic-steering');
+const sensorSteeringHandoff = process.argv.includes('--sensor-steering-handoff');
 if (sensorSteeringAntithetic && !sensorSteeringFocus) {
   throw new Error('Antithetic steering requires --sensor-steering-focus.');
+}
+if (sensorSteeringHandoff && (!sensorSteeringFocus || !sensorSteeringAntithetic)) {
+  throw new Error('Steering handoff requires sensor-conditioned antithetic steering.');
 }
 if (sensorSteeringFocus) {
   runnerSource = replaceExactly(
     runnerSource,
     "const brakeAwareStoppedFocus=process.argv.includes('--brake-aware-stopped-focus');",
-    "const brakeAwareStoppedFocus=process.argv.includes('--brake-aware-stopped-focus');\n  const sensorSteeringFocus=process.argv.includes('--sensor-steering-focus');\n  const sensorSteeringAntithetic=process.argv.includes('--antithetic-steering');",
+    "const brakeAwareStoppedFocus=process.argv.includes('--brake-aware-stopped-focus');\n  const sensorSteeringFocus=process.argv.includes('--sensor-steering-focus');\n  const sensorSteeringAntithetic=process.argv.includes('--antithetic-steering');\n  const sensorSteeringHandoff=process.argv.includes('--sensor-steering-handoff');",
     1,
     'runner sensor-conditioned steering flag'
   );
   runnerSource = replaceExactly(
     runnerSource,
     "const runMode=pedalHeadFocus?pedalHeadFocus+'-focused-mutation':brakeAwareStoppedFocus?'brake-aware-stopped-longitudinal-focus':signedMotorDecoder?'signed-longitudinal-decoder':fitnessBandMeters>0?'safe-progress-fitness-band':sparseSteeringOverride?'sparse-context-steering-mutation':focusSteeringOverride?'steering-focused-mutation':focusCombinedOverride?'combined-steering-longitudinal-mutation':contextMutation?'context-preserving-mutation':'natural-evolution';",
-    "const runMode=sensorSteeringAntithetic?'sensor-conditioned-antithetic-steering-focus':sensorSteeringFocus?'sensor-conditioned-steering-focus':pedalHeadFocus?pedalHeadFocus+'-focused-mutation':brakeAwareStoppedFocus?'brake-aware-stopped-longitudinal-focus':signedMotorDecoder?'signed-longitudinal-decoder':fitnessBandMeters>0?'safe-progress-fitness-band':sparseSteeringOverride?'sparse-context-steering-mutation':focusSteeringOverride?'steering-focused-mutation':focusCombinedOverride?'combined-steering-longitudinal-mutation':contextMutation?'context-preserving-mutation':'natural-evolution';",
+    "const runMode=sensorSteeringHandoff?'sensor-conditioned-antithetic-steering-longitudinal-handoff':sensorSteeringAntithetic?'sensor-conditioned-antithetic-steering-focus':sensorSteeringFocus?'sensor-conditioned-steering-focus':pedalHeadFocus?pedalHeadFocus+'-focused-mutation':brakeAwareStoppedFocus?'brake-aware-stopped-longitudinal-focus':signedMotorDecoder?'signed-longitudinal-decoder':fitnessBandMeters>0?'safe-progress-fitness-band':sparseSteeringOverride?'sparse-context-steering-mutation':focusSteeringOverride?'steering-focused-mutation':focusCombinedOverride?'combined-steering-longitudinal-mutation':contextMutation?'context-preserving-mutation':'natural-evolution';",
     1,
     'runner sensor-conditioned mode label'
   );
@@ -140,6 +144,7 @@ if (sensorSteeringFocus) {
     const sampled=originalSafeMotorMutation(graph,values,r,amount,experience,focus);
     if(focus!=='steering'){
       if(pendingSensorSteeringPair){sensorSteeringAntitheticAudit.unmatched++;pendingSensorSteeringPair=null;}
+      if(sensorSteeringHandoff&&focus==='longitudinal')recordFocusedMutation(graph,values,sampled);
       return sampled;
     }
     sensorSteeringAntitheticAudit.focusedMutations++;
@@ -170,22 +175,22 @@ if (sensorSteeringFocus) {
   );
   runnerSource = replaceExactly(
     runnerSource,
-    'if((focusSteeringOverride||sparseSteeringOverride)&&',
-    'if((sensorSteeringFocus||focusSteeringOverride||sparseSteeringOverride)&&',
+    'mutationFocusAudit.changedByAction[1]!==0||mutationFocusAudit.changedByAction[2]!==0||mutationFocusAudit.nonActionChanges!==0',
+    '(!sensorSteeringHandoff&&(mutationFocusAudit.changedByAction[1]!==0||mutationFocusAudit.changedByAction[2]!==0))||mutationFocusAudit.nonActionChanges!==0',
     2,
     'sensor-focused mutation action validation'
   );
   runnerSource = replaceExactly(
     runnerSource,
     'fitnessTieBandMeters:fitnessBandMeters||null,signedMotorDecoder,steeringGain,sparseContextSteeringMutation:sparseSteeringOverride?{selectedPerMutation:sparseFeatureCount,selection:"top-32 empirical neural-context variance with weighted sampling",energyMatched:true}:null,mutationFocusAudit,localSteeringDiagnostic:',
-    'fitnessTieBandMeters:fitnessBandMeters||null,signedMotorDecoder,steeringGain,sparseContextSteeringMutation:sparseSteeringOverride?{selectedPerMutation:sparseFeatureCount,selection:"top-32 empirical neural-context variance with weighted sampling",energyMatched:true}:null,mutationFocusAudit,sensorSteeringAntitheticAudit,localSteeringDiagnostic:',
+    'fitnessTieBandMeters:fitnessBandMeters||null,signedMotorDecoder,steeringGain,sparseContextSteeringMutation:sparseSteeringOverride?{selectedPerMutation:sparseFeatureCount,selection:"top-32 empirical neural-context variance with weighted sampling",energyMatched:true}:null,mutationFocusAudit,sensorSteeringAntitheticAudit,sensorSteeringHandoff,localSteeringDiagnostic:',
     1,
     'runner antithetic steering report field'
   );
   runnerSource = replaceExactly(
     runnerSource,
     "if(focusCombinedOverride&&(mutationFocusAudit.calls<1||mutationFocusAudit.changedByAction.some(count=>count<1)||mutationFocusAudit.nonActionChanges!==0))throw Error('Combined-focus mutation audit failed.');",
-    "if(sensorSteeringAntithetic&&pendingSensorSteeringPair){sensorSteeringAntitheticAudit.unmatched++;pendingSensorSteeringPair=null;}\n    if(sensorSteeringAntithetic&&(sensorSteeringAntitheticAudit.focusedMutations!==mutationFocusAudit.calls||sensorSteeringAntitheticAudit.pairs*2<sensorSteeringAntitheticAudit.focusedMutations*.9||sensorSteeringAntitheticAudit.maxSymmetryError>=1e-7))throw Error('Antithetic steering-pair audit failed.');\n    if(focusCombinedOverride&&(mutationFocusAudit.calls<1||mutationFocusAudit.changedByAction.some(count=>count<1)||mutationFocusAudit.nonActionChanges!==0))throw Error('Combined-focus mutation audit failed.');",
+    "if(sensorSteeringAntithetic&&pendingSensorSteeringPair){sensorSteeringAntitheticAudit.unmatched++;pendingSensorSteeringPair=null;}\n    if(sensorSteeringAntithetic&&((!sensorSteeringHandoff&&sensorSteeringAntitheticAudit.focusedMutations!==mutationFocusAudit.calls)||sensorSteeringAntitheticAudit.focusedMutations<1||sensorSteeringAntitheticAudit.pairs*2<sensorSteeringAntitheticAudit.focusedMutations*.9||sensorSteeringAntitheticAudit.maxSymmetryError>=1e-7))throw Error('Antithetic steering-pair audit failed.');\n    if(sensorSteeringHandoff&&(mutationFocusAudit.changedByAction[1]+mutationFocusAudit.changedByAction[2]===0))throw Error('Steering-to-longitudinal handoff did not mutate either pedal head.');\n    if(focusCombinedOverride&&(mutationFocusAudit.calls<1||mutationFocusAudit.changedByAction.some(count=>count<1)||mutationFocusAudit.nonActionChanges!==0))throw Error('Combined-focus mutation audit failed.');",
     1,
     'runner antithetic steering integrity gate'
   );
@@ -213,7 +218,12 @@ if (sensorSteeringFocus) {
 if(process.argv.includes('--sensor-steering-focus')){
   const current="const frontierMutationFocus=stagnantFrontier&&safeLeaderStopped?'longitudinal':null;";
   if(simulationRuntimeSource.split(current).length-1!==1)throw Error('Expected one frontier mutation-focus expression.');
-  simulationRuntimeSource=simulationRuntimeSource.replace(current,"const frontierMutationFocus=stagnantFrontier&&safeLeaderStopped?(Number(safeProgressLeader.inputs?.[3])<.08&&Math.abs(Number(safeProgressLeader.outputs?.[0])||0)<.05?'steering':'longitudinal'):null;");
+  const sensorCondition="Number(safeProgressLeader.inputs?.[3])<.08&&Math.abs(Number(safeProgressLeader.outputs?.[0])||0)<.05";
+  const handoffFlag=sensorSteeringHandoff?'true':'false';
+  const steeringProgressHandoff=handoffFlag+"&&this.lastFrontierDiagnostics?.frontierMutationFocus==='steering'&&safeProgressLeader.bestProgress>(this.safeLearningFrontier?.progress??0)+1";
+  const replacement="const frontierMutationFocus=stagnantFrontier&&safeLeaderStopped?("+sensorCondition+"?("+steeringProgressHandoff+"?'longitudinal':'steering'):'longitudinal'):null;";
+  if(replacement.includes('sensorSteeringHandoff'))throw Error('Research handoff flag leaked into the simulation runtime.');
+  simulationRuntimeSource=simulationRuntimeSource.replace(current,replacement);
 }`,
     1,
     'research-only sensor-conditioned frontier action focus'
@@ -227,10 +237,11 @@ if (process.argv.includes('--preflight') && !process.argv.includes('--runner-pre
     sensitiveFrontier,
     sensorSteeringFocus,
     sensorSteeringAntithetic,
+    sensorSteeringHandoff,
     decoderOverlaySha256: hash(patchedDecoder),
     runnerOverlaySha256: hash(runnerSource),
     checkpointGuard: runnerSource.match(/if\(state\.generation[\s\S]{0,260}/)?.[0] || null,
-    runnerReplacements: 9 + Number(sensitiveFrontier) + (sensorSteeringFocus ? 6 : 0),
+    runnerReplacements: 9 + Number(sensitiveFrontier) + (sensorSteeringFocus ? 6 : 0) + Number(sensorSteeringHandoff),
     productionFilesChanged: false
   }));
   process.exit(0);
@@ -276,9 +287,9 @@ process.on('exit', () => {
     runtimeOnly: true,
     productionFilesChanged: false,
     savesChanged: false,
-    branch: sensorSteeringFocus ? 'sensor-steering-focus' : branchMode,
-    mutatedAction: sensorSteeringFocus ? 0 : pedalHeadFocus === 'steering-only' ? 0 : pedalHeadFocus === 'gas-only' ? 1 : pedalHeadFocus === 'brake-only' ? 2 : null,
-    mutatedActions: sensorSteeringFocus ? [0] : pedalHeadFocus === 'steering-brake' ? [0, 2] : branchMode === 'control' ? [] : [pedalHeadFocus === 'steering-only' ? 0 : pedalHeadFocus === 'gas-only' ? 1 : 2],
+    branch: sensorSteeringHandoff ? 'sensor-steering-to-longitudinal-handoff' : sensorSteeringFocus ? 'sensor-steering-focus' : branchMode,
+    mutatedAction: sensorSteeringHandoff ? null : sensorSteeringFocus ? 0 : pedalHeadFocus === 'steering-only' ? 0 : pedalHeadFocus === 'gas-only' ? 1 : pedalHeadFocus === 'brake-only' ? 2 : null,
+    mutatedActions: sensorSteeringHandoff ? [0, 1, 2] : sensorSteeringFocus ? [0] : pedalHeadFocus === 'steering-brake' ? [0, 2] : branchMode === 'control' ? [] : [pedalHeadFocus === 'steering-only' ? 0 : pedalHeadFocus === 'gas-only' ? 1 : pedalHeadFocus === 'brake-only' ? 2 : 2],
     actionNames: ['steering', 'throttle', 'brake'],
     originalDecoderSha256: decoderSha256,
     runtimeDecoderOverlaySha256: patchedDecoderSha256,
@@ -286,10 +297,11 @@ process.on('exit', () => {
     patchedRunnerSha256,
     sensorSteeringFocus,
     sensorSteeringAntithetic,
+    sensorSteeringHandoff,
     sensitiveFrontier,
     safeFrontierThresholdScale: sensitiveFrontier ? 0.0001 : null,
     overlay: [
-      sensorSteeringAntithetic ? 'The research runtime generates audited antithetic steering-only mutation pairs for the sensor-conditioned stopped frontier.' : sensorSteeringFocus ? 'The research runtime selects steering-only mutation when a stopped safe leader has a close front sensor and near-zero steering.' : null,
+      sensorSteeringHandoff ? 'The research runtime hands mutation from steering to throttle/brake after a safe steering gain greater than 1 m that remains stopped.' : sensorSteeringAntithetic ? 'The research runtime generates audited antithetic steering-only mutation pairs for the sensor-conditioned stopped frontier.' : sensorSteeringFocus ? 'The research runtime selects steering-only mutation when a stopped safe leader has a close front sensor and near-zero steering.' : null,
       sensitiveFrontier ? 'The research runtime changes the safe-frontier threshold scale from 0.05% to 0.01% of track length.' : null,
       !sensorSteeringFocus && !sensitiveFrontier ? 'Only decoder7 localMutation focus mapping was extended.' : null,
       'Production sources and saves were not modified.'
