@@ -56,9 +56,14 @@ def main():
     parser.add_argument('--seed', type=int, default=850820)
     parser.add_argument('--exploration-std', type=float, nargs=2, default=(.1, .3), metavar=('STEER', 'LONGITUDINAL'))
     parser.add_argument('--critic-prior', choices=('zero', 'common-failure'), default='common-failure')
-    parser.add_argument('--reward-mode', choices=('fitness', 'optimizer-progress-curriculum'), default='fitness')
+    parser.add_argument('--reward-mode', choices=('fitness', 'optimizer-progress-curriculum', 'progress-pace-curriculum'), default='fitness')
     parser.add_argument('--unsafe-terminal-penalty-track-lengths', type=float, default=6.0)
+    parser.add_argument('--pace-penalty-scale', type=float, default=.01)
     parser.add_argument('--training-pace-mode', choices=('strict', 'first-lap-moving'), default='strict')
+    parser.add_argument('--kl-budget', type=float, default=.02,
+                        help='Maximum measured PPO KL per update step (0.001 to 0.02).')
+    parser.add_argument('--gae-lambda', type=float, default=.98,
+                        help='GAE lambda for long physical episodes (0.90 to 1.0).')
     args = parser.parse_args()
     model, output = args.model.resolve(), args.output.resolve()
     if not model.is_relative_to(RESEARCH) or not output.is_relative_to(RESEARCH) or output.exists():
@@ -67,10 +72,16 @@ def main():
         raise ValueError('Bounded actual on-policy training required.')
     if any(not math.isfinite(value) or not .003 <= value <= .3 for value in args.exploration_std):
         raise ValueError('Finite exploration standard deviations in [.003,.3] required.')
-    if args.reward_mode == 'optimizer-progress-curriculum' and args.critic_prior != 'zero':
-        raise ValueError('The shaped progress objective requires a zero critic prior.')
+    if not math.isfinite(args.kl_budget) or not .001 <= args.kl_budget <= .02:
+        raise ValueError('Finite PPO KL budget in [.001,.02] required.')
+    if not math.isfinite(args.gae_lambda) or not .90 <= args.gae_lambda <= 1.0:
+        raise ValueError('Finite GAE lambda in [.90,1.0] required.')
+    if args.reward_mode in ('optimizer-progress-curriculum', 'progress-pace-curriculum') and args.critic_prior != 'zero':
+        raise ValueError('Shaped progress objectives require a zero critic prior.')
     if not math.isfinite(args.unsafe_terminal_penalty_track_lengths) or not 0 <= args.unsafe_terminal_penalty_track_lengths <= 6:
         raise ValueError('Unsafe terminal penalty must be in [0,6] track lengths.')
+    if not math.isfinite(args.pace_penalty_scale) or not 0 <= args.pace_penalty_scale <= .1:
+        raise ValueError('Pace penalty scale must be in [0,.1].')
     raw = model.read_bytes()
     envelope = json.loads(raw)
     if envelope['format'] != 'male-cns-neural-self-gru-envelope-v1' or sha(envelope['payloadJson'].encode()) != envelope['sha256']:
@@ -121,7 +132,14 @@ def main():
         metadata = request('init', configuration={'modelFile': str(model), 'population': args.population,
                                                    'seed': args.seed, 'rewardMode': args.reward_mode,
                                                    'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
+                                                   'pacePenaltyScale': args.pace_penalty_scale,
                                                    'paceMode': args.training_pace_mode})
+        metadata['trainerConfiguration'] = {'klBudget': args.kl_budget,
+                                            'gaeLambda': args.gae_lambda,
+                                            'pacePenaltyScale': args.pace_penalty_scale,
+                                            'explorationStd': list(args.exploration_std),
+                                            'rewardMode': args.reward_mode,
+                                            'trainingPaceMode': args.training_pace_mode}
         baseline = request('evaluate', weights=flatten())
         print('NEURAL_SELF_PPO_BASELINE ' + json.dumps(baseline), flush=True)
         records = []
@@ -142,7 +160,7 @@ def main():
                 old_logp = log_prob(action, old_mean, log_std)
                 value = critic(x).reshape(args.population, args.steps)
                 next_value = critic(next_x).reshape(args.population, args.steps)
-                advantage = advantages(reward, done, value, next_value, gamma=1, lam=.98)
+                advantage = advantages(reward, done, value, next_value, gamma=1, lam=args.gae_lambda)
                 returns = (advantage + value).reshape(-1)
                 advantage = advantage.reshape(-1)
                 advantage = (advantage - advantage.mean()) / advantage.std().clamp_min(1e-8)
@@ -175,7 +193,7 @@ def main():
                             return ((log_ratio.exp() - 1) - log_ratio).mean().item()
                     accepted, step_scale, kl = enforce_kl_step(actor_parameters, saved_parameters,
                                                                actor_optimizer, saved_optimizer,
-                                                               measure_kl, budget=.02)
+                                                               measure_kl, budget=args.kl_budget)
                     if not accepted:
                         stopped = True
                         break
@@ -189,7 +207,7 @@ def main():
                 with torch.no_grad():
                     full_log_ratio = log_prob(action, actor(x), log_std) - old_logp
                     kl = ((full_log_ratio.exp() - 1) - full_log_ratio).mean().item()
-                if not math.isfinite(kl) or kl > .02 + 1e-12:
+                if not math.isfinite(kl) or kl > args.kl_budget + 1e-12:
                     raise RuntimeError('Finite bounded PPO KL required.')
                 if stopped:
                     break
@@ -204,7 +222,10 @@ def main():
                                      'seed': args.seed, 'initialExplorationStd': list(args.exploration_std),
                                      'criticPrior': args.critic_prior, 'rewardMode': args.reward_mode,
                                      'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
+                                     'pacePenaltyScale': args.pace_penalty_scale,
                                      'trainingPaceMode': args.training_pace_mode,
+                                     'klBudget': args.kl_budget,
+                                     'gaeLambda': args.gae_lambda,
                                      'fitOnly': False,
                                      'independentDrivingValidation': True}
             payload = json.dumps(candidate, ensure_ascii=False, allow_nan=False, separators=(',', ':'))
@@ -218,7 +239,10 @@ def main():
                       'minimumAcceptedStepScale': min_step_scale,
                       'criticPriorMode': args.critic_prior, 'initialValuePrior': initial_value_prior,
                       'trainingRewardMode': args.reward_mode,
+                      'klBudget': args.kl_budget,
+                      'gaeLambda': args.gae_lambda,
                       'unsafeTerminalPenaltyTrackLengths': args.unsafe_terminal_penalty_track_lengths,
+                      'pacePenaltyScale': args.pace_penalty_scale,
                       'headDeltaL2': math.dist(before, current), 'std': log_std.detach().exp().cpu().tolist(),
                       'trainingEpisodes': batch['episodes'], 'trainingLanes': batch['lanes'],
                       'evaluation': evaluation, 'gpu': batch['gpu'],
@@ -234,11 +258,14 @@ def main():
             raise RuntimeError(f'Physical environment exited with code {proc.returncode}.')
         report = {'format': 'male-cns-neural-self-ppo-v1', 'metadata': metadata, 'baseline': baseline,
                   'records': records, 'torchVersion': torch.__version__, 'device': torch.cuda.get_device_name(0),
-                  'rewardScale': 1000, 'gamma': 1, 'lambda': .98, 'clip': .2, 'actorLearningRate': .0003,
+                  'rewardScale': 1000, 'gamma': 1, 'lambda': args.gae_lambda, 'clip': .2, 'actorLearningRate': .0003,
                   'criticPriorMode': args.critic_prior, 'initialValuePrior': initial_value_prior,
                   'explorationStdInitial': list(args.exploration_std), 'klBacktracking': True,
+                  'klBudget': args.kl_budget,
+                  'gaeLambda': args.gae_lambda,
                   'trainingRewardMode': args.reward_mode,
                   'trainingPaceMode': args.training_pace_mode,
+                  'pacePenaltyScale': args.pace_penalty_scale,
                   'trainerSha256': sha(Path(__file__).read_bytes()),
                   'environmentExitCode': proc.returncode,
                   'learningSucceeded': any(r['evaluation']['meetsTwoLapPhysicalGoal'] for r in records),

@@ -5,17 +5,20 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const Runtime=require('./current-physics-runtime.cjs'),G=require('./neural-self-gru.cjs'),R=require('./neural-self-readout.cjs');
 const Dense=require('../outputs/dense-neural.js'),Cuda=require('./cuda-exact-v3-runtime.cjs');
-function learningSignal(mode,{progressDelta,lapsDelta,fitnessDelta,terminal,safe,trackLength,unsafeTerminalPenaltyTrackLengths=6}){
+function learningSignal(mode,{progressDelta,lapsDelta,fitnessDelta,terminal,safe,trackLength,unsafeTerminalPenaltyTrackLengths=6,pacePenaltyScale=.01,stallPenaltyDelta=0,slowProgressPenaltyDelta=0}){
   if(mode==='fitness')return {reward:fitnessDelta,progressReward:0,lapReward:0,unsafeTerminalPenalty:0};
-  if(mode!=='optimizer-progress-curriculum'||![progressDelta,lapsDelta,fitnessDelta,trackLength,unsafeTerminalPenaltyTrackLengths].every(Number.isFinite)||trackLength<=0||unsafeTerminalPenaltyTrackLengths<0||unsafeTerminalPenaltyTrackLengths>6)throw Error('Supported, finite learning reward required.');
+  if(!['optimizer-progress-curriculum','progress-pace-curriculum'].includes(mode)||![progressDelta,lapsDelta,fitnessDelta,trackLength,unsafeTerminalPenaltyTrackLengths,pacePenaltyScale,stallPenaltyDelta,slowProgressPenaltyDelta].every(Number.isFinite)||trackLength<=0||unsafeTerminalPenaltyTrackLengths<0||unsafeTerminalPenaltyTrackLengths>6||pacePenaltyScale<0||pacePenaltyScale>.1)throw Error('Supported, finite learning reward required.');
   const progressReward=Math.max(0,progressDelta),lapReward=Math.max(0,lapsDelta)*trackLength;
+  const pacePenalty=mode==='progress-pace-curriculum'?pacePenaltyScale*(Math.max(0,stallPenaltyDelta)+Math.max(0,slowProgressPenaltyDelta)):0;
   const unsafeTerminalPenalty=terminal&&!safe?unsafeTerminalPenaltyTrackLengths*trackLength:0;
-  return {reward:progressReward+lapReward-unsafeTerminalPenalty,progressReward,lapReward,unsafeTerminalPenalty};
+  if(mode==='optimizer-progress-curriculum')return {reward:progressReward+lapReward-unsafeTerminalPenalty,progressReward,lapReward,unsafeTerminalPenalty};
+  return {reward:progressReward+lapReward-pacePenalty-unsafeTerminalPenalty,progressReward,lapReward,pacePenalty,unsafeTerminalPenalty};
 }
-function create({modelFile,population=16,seed=850820,rewardMode='fitness',unsafeTerminalPenaltyTrackLengths=6,paceMode='strict'}={}){
+function create({modelFile,population=16,seed=850820,rewardMode='fitness',unsafeTerminalPenaltyTrackLengths=6,pacePenaltyScale=.01,paceMode='strict'}={}){
   if(!Number.isInteger(population)||population<1||population>16)throw Error('Owned population in [1,16] required.');
-  if(!['fitness','optimizer-progress-curriculum'].includes(rewardMode))throw Error('Unsupported research reward mode.');
+  if(!['fitness','optimizer-progress-curriculum','progress-pace-curriculum'].includes(rewardMode))throw Error('Unsupported research reward mode.');
   if(!Number.isFinite(unsafeTerminalPenaltyTrackLengths)||unsafeTerminalPenaltyTrackLengths<0||unsafeTerminalPenaltyTrackLengths>6)throw Error('Unsafe terminal penalty must be in [0,6] track lengths.');
+  if(!Number.isFinite(pacePenaltyScale)||pacePenaltyScale<0||pacePenaltyScale>.1)throw Error('Pace penalty scale must be in [0,.1].');
   if(!['strict','first-lap-moving'].includes(paceMode))throw Error('Unsupported training pace mode.');
   const d=G.load(path.resolve(modelFile)),before=Runtime.sourceHashes();
   if(JSON.stringify(d.sourceSha256)!==JSON.stringify(before))throw Error('Model/current source mismatch.');
@@ -45,10 +48,13 @@ function create({modelFile,population=16,seed=850820,rewardMode='fitness',unsafe
   function mean(x,w){return Array.from({length:2},(_,a)=>{let v=w[2*d.hiddenSize+a];for(let j=0;j<x.length;j++)v+=w[a*d.hiddenSize+j]*x[j];return v;});}
   function step(value,latent){
     const x=value.x.slice(),signal=value.signal,commands=signal?[Math.tanh(latent[0]),Math.max(0,Math.tanh(latent[1])),Math.max(0,-Math.tanh(latent[1]))]:[0,0,0];
-    const oldFitness=value.car.fitness,oldProgress=value.car.bestProgress,oldLaps=value.car.laps;
+    const oldFitness=value.car.fitness,oldProgress=value.car.bestProgress,oldLaps=value.car.laps,
+      oldStallPenalty=value.car.rewardBreakdown.penalties.stall,oldSlowProgressPenalty=value.car.rewardBreakdown.penalties.slowProgress;
     for(let tick=0;tick<6&&value.car.alive;tick++)F.drive(track,value.car,commands,F.DT);
     const car=value.car,done=!car.alive,safe=F.isSafeLearningOutcome(car),rawFitnessDelta=car.fitness-oldFitness;
-    const objective=learningSignal(rewardMode,{progressDelta:car.bestProgress-oldProgress,lapsDelta:car.laps-oldLaps,fitnessDelta:rawFitnessDelta,terminal:done,safe,trackLength:track.total,unsafeTerminalPenaltyTrackLengths});
+    const objective=learningSignal(rewardMode,{progressDelta:car.bestProgress-oldProgress,lapsDelta:car.laps-oldLaps,fitnessDelta:rawFitnessDelta,terminal:done,safe,trackLength:track.total,unsafeTerminalPenaltyTrackLengths,pacePenaltyScale,
+      stallPenaltyDelta:car.rewardBreakdown.penalties.stall-oldStallPenalty,
+      slowProgressPenaltyDelta:car.rewardBreakdown.penalties.slowProgress-oldSlowProgressPenalty});
     const reward=objective.reward;value.learningRewardTotal+=reward;
     const episode=done?{id:value.id,progress:car.bestProgress,laps:car.laps,fitness:car.fitness,learningRewardTotal:value.learningRewardTotal,reward:car.reward,penalty:car.penalty,baseFitness:car.baseFitness,rewardBreakdown:JSON.parse(JSON.stringify(car.rewardBreakdown)),reason:car.reason,seconds:car.lifetime,safe,lapTimes:car.lapTimes.slice()}:null;
     value.previous=[car.outputs[0],car.outputs[1]-car.outputs[2]];
@@ -86,7 +92,7 @@ function create({modelFile,population=16,seed=850820,rewardMode='fitness',unsafe
   function lanesSnapshot(){return lanes.map(value=>{const c=value.car;return {id:value.id,progress:c.bestProgress,laps:c.laps,fitness:c.fitness,reason:c.reason||null,seconds:c.lifetime,alive:c.alive,speedMps:c.vehicle.speedMps,safe:F.isSafeLearningOutcome(c),rewardBreakdown:JSON.parse(JSON.stringify(c.rewardBreakdown))};});}
   const legacy=Object.keys(require.cache).filter(p=>/neural-statehead|neural-frontier-chain|neural-command-live/.test(p));
   if(legacy.length)throw Error('No prior driving policy may be imported.');
-  return {rollout,evaluate,metadata:()=>({format:'male-cns-neural-self-gru-ppo-env-v1',hiddenSize:d.hiddenSize,population,seed,rewardMode,unsafeTerminalPenaltyTrackLengths,trainingPaceMode:paceMode,evaluationPaceMode:'strict',
+  return {rollout,evaluate,metadata:()=>({format:'male-cns-neural-self-gru-ppo-env-v1',hiddenSize:d.hiddenSize,population,seed,rewardMode,unsafeTerminalPenaltyTrackLengths,pacePenaltyScale,trainingPaceMode:paceMode,evaluationPaceMode:'strict',
     sourceSha256:before,rewardRevision:F.Rewards.REVISION,modelSha256:R.sha(fs.readFileSync(modelFile)),legacyPolicyModules:legacy,
     boundary:'Actual current physical episodes and footprint-aware brain; frozen recurrent neural encoder, learned two-action head. Strict app physical termination and official scores remain recorded. optimizer-progress-curriculum mirrors safe-first, pre-lap progress selection; terminal failures receive a separate training-only safety cost. No practice restoration or prior controller.'}),
     close:()=>{Dense.step=oldDense;Cuda.close();}};

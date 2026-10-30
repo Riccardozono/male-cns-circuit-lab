@@ -13,6 +13,11 @@ test('safe zero-lap outcomes learn from real progress even when fitness falls',(
   assert.deepEqual(signal,{reward:40,progressReward:40,lapReward:0,unsafeTerminalPenalty:0});
 });
 
+test('progress-pace curriculum charges measured brake-lock and slow-progress penalties',()=>{
+  const signal=learningSignal('progress-pace-curriculum',{progressDelta:2,lapsDelta:0,fitnessDelta:-1400,terminal:false,safe:true,trackLength:1000,stallPenaltyDelta:350,slowProgressPenaltyDelta:1400,pacePenaltyScale:.01});
+  assert.deepEqual(signal,{reward:-15.5,progressReward:2,lapReward:0,pacePenalty:17.5,unsafeTerminalPenalty:0});
+});
+
 test('completed laps receive an actual track-length bonus',()=>{
   const signal=learningSignal('optimizer-progress-curriculum',{progressDelta:0,lapsDelta:1,fitnessDelta:-2000,terminal:false,safe:true,trackLength:5793});
   assert.equal(signal.reward,5793);

@@ -189,7 +189,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | --- | --- | ---: |
 | **GPT-6 Astra** | OpenAI Codex | **1** |
 | **GPT-6 Luna** | OpenAI Codex | **1** |
-| **GPT-6.1 Sol** | OpenAI Codex | **23** |
+| **GPT-6.1 Sol** | OpenAI Codex | **24** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
 | **GPT-5.6 Luna** | OpenAI Codex | **1** |
 | **GPT-5.6** | OpenAI Codex | **1** |
