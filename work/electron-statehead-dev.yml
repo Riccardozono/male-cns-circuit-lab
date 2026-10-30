@@ -1,0 +1,37 @@
+appId: it.malecns.circuitlab.statehead.dev
+productName: MAL-E CNS Circuit Lab V3 DEV
+asar: false
+compression: normal
+files:
+  - desktop/**/*
+  - outputs/**/*
+  - work/neural-*.cjs
+  - work/exact-*.cjs
+  - work/cuda-exact-*.cjs
+  - work/neural-grown-app.js
+  - work/neural-chain-index.html
+  - work/neural-statehead-cuda-ui.js
+  - .impeccable/experimental-penalty5/outputs/**/*
+  - .impeccable/experimental-context8/outputs/**/*
+  - .impeccable/review/neural-sacl/neuronal-verified-model-catalog.json
+  - .impeccable/review/neural-sacl/neuronal-statehead-6584-cma-search/clean.malecns-statehead.json
+  - .impeccable/review/neural-sacl/neuronal-statehead-6584-cma-search/report.json
+  - .impeccable/review/neural-sacl/neuronal-statehead-6584-cma-search/verification.json
+  - .impeccable/review/neural-sacl/neuronal-statehead-cuda-lockstep-20261019-01/report.json
+  - .impeccable/runtime-node24/node.exe
+  - .impeccable/cuda-node-runtime/node_modules/**/*
+  - .impeccable/review/neural-sacl/cuda-v3-kernel-prepared-r2/**/*
+  - package.json
+  - '!outputs/tests/**/*'
+extraMetadata:
+  main: work/neural-statehead-cuda-main.cjs
+directories:
+  output: dist-statehead-v3-dev-560
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  artifactName: MAL-E-CNS-Circuit-Lab-V3-state-head-DEV-${version}-${arch}.${ext}
+portable:
+  artifactName: MAL-E-CNS-Circuit-Lab-V3-state-head-DEV-${version}-${arch}.${ext}

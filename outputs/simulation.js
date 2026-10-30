@@ -9,6 +9,7 @@
   const Learning=typeof module!=='undefined'&&module.exports?require('./neural-learning.js'):root.MaleCNSLearning;
   const Vehicle=typeof module!=='undefined'&&module.exports?require('./vehicle-992.js'):root.MaleCNSVehicle;
   const Rewards=typeof module!=='undefined'&&module.exports?require('./rewards.js'):root.MaleCNSRewards;
+  const Dense=typeof module!=='undefined'&&module.exports?require('./dense-neural.js'):root.MaleCNSDense;
   if(!Vehicle)throw Error('Modello fisico Porsche mancante');
   if(!Rewards)throw Error('Sistema di ricompense mancante');
   const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
@@ -27,6 +28,9 @@
     return [steering,throttle,brake];
   }
   const TAU = Math.PI*2, DT = 1/60, SENSOR_MAX = 240, MAX_SPEED = 120;
+  // This development revision opts into phase-aligned, safe local practice.
+  // Historical reward revisions retain their previous selection behavior.
+  const CONSISTENT_PRACTICE_REVISIONS=Object.freeze(['progress-7-moving-pace','progress-8-pace-recovery-margin']);
   // Dynamics now run in SI. Map coordinates remain display/scoring units;
   // each circuit has an explicit length-based pixels/metre conversion.
   const PHYSICS=Object.freeze({
@@ -47,6 +51,7 @@
   // first corner, without adding a route cue or changing the connectome.
   const NEURAL_MOTOR_LAUNCH_BIAS=.18;
   const MAP_NEURAL_MOTOR_LAUNCH_BIAS=.02;
+  const NEURAL_MOTOR_LAUNCH_MAX_SPEED_MPS=2;
   const SCORE_RULES=Rewards.RULES;
   // Evolution must preserve useful partial solutions while retaining enough
   // variation to escape a controller that only drives straight into the first
@@ -54,13 +59,21 @@
   const EVOLUTION_RULES=Object.freeze({
     eliteCount:4,
     parentPoolFraction:.5,
+    frontierOffspringRate:.25,
+    stagnantFrontierOffspringRate:.25,
+    prolongedStagnantFrontierOffspringRate:.5,
     crossoverRate:.76,
+    functionalCrossoverRate:.5,
     immigrantRate:.16,
     stagnationWindow:3,
     stagnationMutationMultiplier:1.5,
+    prolongedStagnationWindow:6,
+    prolongedStagnationMutationMultiplier:2,
     mutationFloor:.035,
     mutationCeiling:.35,
-    progressTieTolerance:1,
+    progressTieTolerance:0,
+    riskRepairOffspringRate:.06,
+    riskRepairWindowFraction:.02,
     hallOfFameCount:4,
     explorerRate:.14,
     hyperMutationRate:.12,
@@ -192,8 +205,26 @@
   function roadSense(track,car) {
     if(!track) return Array(ROAD_PHYSICS_SENSOR_COUNT).fill(0);
     const distances=sensorDistances(track,car),narrowProfile=track.halfWidth<20,sensorRange=Math.max(32,Math.min(SENSOR_MAX,track.halfWidth*5));
-    const nearLeft=(distances[1]+distances[2]+distances[0]*.35)/2.35,nearRight=(distances[4]+distances[5]+distances[6]*.35)/2.35;
     const farLeft=(distances[0]+distances[7])*.5,farRight=(distances[6]+distances[10])*.5;
+    if(car.footprintSensorsEnabled){
+      // V3 road channels describe clearance for the actual Porsche footprint,
+      // not just rays from its centre. Body corners and bumper use the same
+      // walls as collision detection; no route/centreline cue is introduced.
+      const hx=Vehicle.SPEC.lengthM*.5*(car.pixelsPerMeter||1),hy=Vehicle.SPEC.widthM*.5*(car.pixelsPerMeter||1),cos=Math.cos(car.heading),sin=Math.sin(car.heading);
+      const sideClearance=side=>Math.max(0,Math.min(...[-1,1].map(longitudinal=>{
+        const x=car.x+longitudinal*hx*cos-side*hy*sin,y=car.y+longitudinal*hx*sin+side*hy*cos;
+        return onRoad(track,x,y)?raycast(track,x,y,car.heading+side*Math.PI/2):0;
+      })));
+      const nearLeft=sideClearance(-1),nearRight=sideClearance(1),frontX=car.x+hx*cos,frontY=car.y+hx*sin,
+        frontClearance=onRoad(track,frontX,frontY)?raycast(track,frontX,frontY,car.heading):0;
+      return [
+        clamp((nearRight-nearLeft)/Math.max(1,nearLeft+nearRight),-1,1),
+        clamp((farRight-farLeft)/Math.max(1,farLeft+farRight),-1,1),
+        clamp(frontClearance/SENSOR_MAX,0,1),
+        clamp((nearLeft+nearRight)/(2*(narrowProfile?sensorRange:SENSOR_MAX)),0,1)
+      ];
+    }
+    const nearLeft=(distances[1]+distances[2]+distances[0]*.35)/2.35,nearRight=(distances[4]+distances[5]+distances[6]*.35)/2.35;
     // These channels are derived exclusively from intersections with the
     // actual closed walls. They provide a compact preview of corridor
     // asymmetry without using center-line progress or prescribing a route.
@@ -221,7 +252,7 @@
       clamp((t?.tyreC||0)/150,0,1),clamp((t?.brakeC||0)/1000,0,1)
     ];
   }
-  function makeCar(track,id=0,genome=null) {
+  function makeCar(track,id=0,genome=null,rewardRevision=Rewards.REVISION) {
     const a=track.center[0],b=track.center[1];
     const ppm=track.pixelsPerMeter||1;
     const car=Rewards.initialise(track,{id,genome,x:a.x,y:a.y,heading:Math.atan2(b.y-a.y,b.x-a.x),speed:0,steer:0,scale:Vehicle.SPEC.lengthM*ppm/24,
@@ -231,7 +262,7 @@
       noLapPenalty:0,lapRegressionPenalty:0,previousGenerationLapTime:null,lapRegression:0,noLapPenaltyApplied:false,lapRegressionPenaltyApplied:false,
       alive:true,reason:'',distance:0,progress:0,lastAlong:0,bestProgress:0,fitness:0,reward:0,penalty:0,lastReward:0,lastPenalty:0,
       laps:0,lapTimes:[],lastLapTime:null,lastLapReward:0,lastLapPenalty:0,bestLapTime:Infinity,lastLapStartTime:0,
-      lifetime:0,lastProgressTime:0,inputs:Array(VISUAL_SENSOR_COUNT).fill(0),physicsInputs:Array(PHYSICS_SENSOR_COUNT).fill(0),sensorVector:Array(SENSOR_COUNT).fill(0),outputs:[0,0,0],trail:[],brain:null});
+      lifetime:0,lastProgressTime:0,inputs:Array(VISUAL_SENSOR_COUNT).fill(0),physicsInputs:Array(PHYSICS_SENSOR_COUNT).fill(0),sensorVector:Array(SENSOR_COUNT).fill(0),outputs:[0,0,0],trail:[],brain:null},null,rewardRevision);
     Vehicle.placeOnSurface(car,Vehicle.Terrain.forTrack(track));return car;
   }
   function collided(track,car) {
@@ -262,6 +293,70 @@
     Rewards.step(track,car,{along:nearest.along,onRoad:track.explicitBoundaries?onRoad(track,car.x,car.y):nearest.distance<=track.halfWidth+5,
       collision:collided(track,car),forwardClearance:raycast(track,car.x,car.y,car.heading),dt});
     if(!car.alive)Vehicle.stop(car);
+  }
+  function capturePracticeState(car){
+    // Real previously visited body/neural state; never a pose on a prescribed
+    // route or a teacher action. Dense legacy models only, without replacing
+    // the full-graph GPU solver with a synthetic CPU brain.
+    const state={x:car.x,y:car.y,heading:car.heading,speed:car.speed,along:car.rewardState.along,rewardRevision:car.rewardRevision,
+      footprintSensorsEnabled:car.footprintSensorsEnabled===true,
+      vehicle:JSON.parse(JSON.stringify(car.vehicle)),activity:car.brain.activity.slice(),
+      physics:{longitudinalG:car.longitudinalG,lateralG:car.lateralG,totalG:car.totalG,
+        loadTransfer:car.loadTransfer,slipAngle:car.slipAngle,yawRate:car.yawRate}};
+    // Store only the phase actually observed for this car. The state is a
+    // transient local-practice snapshot, not a new field in saved sessions.
+    if(CONSISTENT_PRACTICE_REVISIONS.includes(car.rewardRevision)&&Number.isInteger(car.practiceNextControlPhase)&&
+       Number.isInteger(car.practiceControlInterval)&&Array.isArray(car.slowOutputs)&&car.slowOutputs.length===3){
+      state.nextControlPhase=car.practiceNextControlPhase;state.controlInterval=car.practiceControlInterval;
+      state.heldOutputs=car.slowOutputs.slice();
+    }
+    return state;
+  }
+  function mutateSensoryBlock(graph,genome,random,amount,context){
+    const child=cloneGenome(genome),scale=Math.max(0,amount)/.16;
+    if(!scale||!context||graph.full)return child;
+    // Explore the existing learned encoder, not a hand-calibrated sensor or
+    // a new driving controller. Preserve the parent's own recurrent response
+    // in a previously observed context by compensating the two readout biases.
+    for(let k=0;k<2;k++){
+      const channel=Math.floor(random()*Learning.CHANNELS);
+      child.policyWeights[channel]=clamp(child.policyWeights[channel]+normal(random)*1.5*scale,-8,8);
+      child.policyWeights[Learning.CHANNELS+channel]=clamp(child.policyWeights[Learning.CHANNELS+channel]+normal(random)*1.5*scale,-8,8);
+    }
+    const before=makeBrain(graph),after=makeBrain(graph);before.activity.set(context.activity);after.activity.set(context.activity);
+    let a,b;
+    for(let n=0;n<8;n++){a=neuralStep(graph,before,genome,context.sensors);b=neuralStep(graph,after,child,context.sensors);}
+    const logit=v=>Math.atanh(clamp(v,-1+1e-12,1-1e-12)),last=child.policyWeights.length;
+    child.policyWeights[last-2]=clamp(child.policyWeights[last-2]+logit(a[0])-logit(b[0]),-8,8);
+    child.policyWeights[last-1]=clamp(child.policyWeights[last-1]+logit(a[1]-a[2])-logit(b[1]-b[2]),-8,8);
+    child.policyWeights=Learning.scaleMutation(genome.policyWeights,child.policyWeights,1);
+    return child;
+  }
+  function evaluatePractice(track,graph,genome,state,maxTicks=720){
+    if(graph.full)throw Error('La pratica densa non può sostituire il solver completo GPU.');
+    const rewardRevision=state.rewardRevision??Rewards.REVISION,car=makeCar(track,0,cloneGenome(genome),rewardRevision);
+    Object.assign(car,{x:state.x,y:state.y,heading:state.heading,speed:state.speed,_physicsSpeed:state.speed},state.physics);
+    car.footprintSensorsEnabled=state.footprintSensorsEnabled??graph.modelId==='v3';
+    car.vehicle=JSON.parse(JSON.stringify(state.vehicle));car.brain=makeBrain(graph);car.brain.activity.set(state.activity);
+    // Reward only actual motion AFTER this copied start. No gifted distance,
+    // checkpoints, laps or replacement of the main generation's statistics.
+    Rewards.initialise(track,car,null,rewardRevision);car.rewardState.along=state.along;
+    const aligned=CONSISTENT_PRACTICE_REVISIONS.includes(rewardRevision)&&Number.isInteger(state.controlInterval)&&
+      (state.controlInterval===3||state.controlInterval===Learning.CONTROL_INTERVAL)&&
+      Number.isInteger(state.nextControlPhase)&&state.nextControlPhase>=0&&state.nextControlPhase<state.controlInterval&&
+      Array.isArray(state.heldOutputs)&&state.heldOutputs.length===3&&state.heldOutputs.every(Number.isFinite);
+    const interval=aligned?state.controlInterval:Learning.CONTROL_INTERVAL,phase=aligned?state.nextControlPhase:0;
+    let commands=aligned?state.heldOutputs.slice():[0,0,0],brakeMax=0,steeringMax=0;
+    for(let tick=0;tick<maxTicks&&car.alive;tick++){
+      if((tick+phase)%interval===0){commands=neuralStepForTrack(track,graph,car.brain,car.genome,sense(track,car).concat(physicsSense(car,track)),true,true,car.vehicle?.speedMps??car.speed/(car.pixelsPerMeter||1));}
+      brakeMax=Math.max(brakeMax,commands[2]);steeringMax=Math.max(steeringMax,Math.abs(commands[0]));drive(track,car,commands,DT);
+    }
+    if(car.alive)Rewards.finish(track,car,'fine prova locale');
+    return {fitness:car.fitness,progress:car.bestProgress,laps:car.laps,reason:car.reason,brakeMax,steeringMax,safe:isSafeLearningOutcome(car)};
+  }
+  function shouldPromotePracticeCandidate(result,baseline,best,pixelsPerMeter,rewardRevision){
+    return (!CONSISTENT_PRACTICE_REVISIONS.includes(rewardRevision)||result.safe===true)&&
+      result.progress>baseline.progress+pixelsPerMeter&&result.fitness>best.fitness;
   }
   function compileGraph(data) {
     if(!data) throw Error('Dataset MaleCNS mancante o vuoto. Nessun controller sostitutivo.');
@@ -316,7 +411,7 @@
       gain:1+random()*2};
   }
   function ensureLearning(graph){if(!Learning)throw Error('Modulo di apprendimento neurale mancante.');return graph.learning||Learning.build(graph);}
-  function fastNeuralStep(graph,brain,genome,sensors,enabled=true,edgesEnabled=true){ensureLearning(graph);return Learning.commands(graph,brain,genome,enabled,edgesEnabled);}
+  function fastNeuralStep(graph,brain,genome,sensors,enabled=true,edgesEnabled=true,launchBias=NEURAL_MOTOR_LAUNCH_BIAS){ensureLearning(graph);return Learning.commands(graph,brain,genome,enabled,edgesEnabled,launchBias);}
   function makeLearningGenome(graph,random){const genome=makeGenome(random,graph.outputs.length);genome.adapterVersion=ensureLearning(graph).version;genome.policyWeights=Learning.initial(graph,random);return genome;}
   function cloneGenome(g) {return {encoder:[...g.encoder],readout:[...g.readout],gain:g.gain,...(g.policyWeights?{adapterVersion:g.adapterVersion,policyWeights:[...g.policyWeights]}:{})};}
   function crossoverGenome(a,b,random) {
@@ -328,6 +423,26 @@
     };
     if(a.policyWeights){child.adapterVersion=a.adapterVersion;child.policyWeights=a.policyWeights.map((v,i)=>pick(v,b.policyWeights?.[i]??v));}
     return child;
+  }
+  function crossoverPolicyBlocks(graph,a,b,random) {
+    const policy=ensureLearning(graph);
+    if(a?.adapterVersion!==policy.version||b?.adapterVersion!==policy.version||!Learning.valid(graph,a.policyWeights)||!Learning.valid(graph,b.policyWeights))throw Error('Policy MaleCNS incompatibile per la ricombinazione funzionale.');
+    const weights=a.policyWeights.slice(),pick=()=>random()<.5?a.policyWeights:b.policyWeights;
+    // Preserve complete functional groups: each sensor's gain/bias block,
+    // shared synaptic gains, and each complete action readout with its bias.
+    for(const [start,end] of [[0,Learning.CHANNELS],[Learning.CHANNELS,Learning.CHANNELS*2],[Learning.CHANNELS*2,policy.readoutOffset]]){
+      const source=pick();for(let i=start;i<end;i++)weights[i]=source[i];
+    }
+    const actionCount=policy.actionCount??2,featureCount=policy.featureCount??policy.nodes.length,stride=policy.readoutStride??2,biasOffset=policy.biasOffset??weights.length-actionCount;
+    for(let action=0;action<actionCount;action++){
+      const source=pick();
+      for(let feature=0;feature<featureCount;feature++){
+        const index=policy.readoutOffset+feature*stride+action;
+        weights[index]=source[index];
+      }
+      weights[biasOffset+action]=source[biasOffset+action];
+    }
+    return {...cloneGenome(a),policyWeights:weights};
   }
   function normalizeGenome(g,outputCount) {
     const encoder=Array(SENSOR_COUNT*2).fill(0);
@@ -408,7 +523,7 @@
     return written;
   }
   function neuralOutputsFromBrain(graph,brain,genome,launchBias=NEURAL_MOTOR_LAUNCH_BIAS){
-    if(genome.policyWeights){if(genome.adapterVersion!==ensureLearning(graph).version)throw Error('Versione della policy neurale incompatibile.');return Learning.commands(graph,brain,genome);}
+    if(genome.policyWeights){if(genome.adapterVersion!==ensureLearning(graph).version)throw Error('Versione della policy neurale incompatibile.');return Learning.commands(graph,brain,genome,true,true,launchBias);}
     const raw=[0,0,0];
     graph.outputs.forEach((index,k)=>{for(let o=0;o<3;o++)raw[o]+=brain.activity[index]*genome.readout[k*3+o];});
     // The throttle/brake channels are opposing motor logits. Scaling their
@@ -483,22 +598,38 @@
     }else{
       const injection=brain.injection;injection.fill(0);graph.inputs.forEach((index,k)=>{injection[index]=sensorDrive(graph,genome,sensors,k,physicsGain);});
       const iterations=graph.modelId==='v2'?V2_ITERATIONS_PER_CONTROL_TICK:V3_ITERATIONS_PER_CONTROL_TICK;
-      for(let iter=0;iter<iterations;iter++){brain.sum.set(injection);if(edgesEnabled)for(let e=0;e<graph.from.length;e++){const source=graph.from[e];brain.sum[graph.to[e]]+=.9*graph.weights[e]*brain.activity[source]*(gains?gains[graph.learning.groups[source]]:1);}for(let i=0;i<graph.n;i++)brain.next[i]=.45*brain.activity[i]+.55*Math.tanh(brain.sum[i]);[brain.activity,brain.next]=[brain.next,brain.activity];}
+      if(Dense&&brain.sum instanceof Float64Array&&brain.activity instanceof Float64Array&&brain.next instanceof Float64Array)Dense.step(graph,brain,iterations,edgesEnabled,gains);
+      else for(let iter=0;iter<iterations;iter++){brain.sum.set(injection);if(edgesEnabled)for(let e=0;e<graph.from.length;e++){const source=graph.from[e];brain.sum[graph.to[e]]+=.9*graph.weights[e]*brain.activity[source]*(gains?gains[graph.learning.groups[source]]:1);}for(let i=0;i<graph.n;i++)brain.next[i]=.45*brain.activity[i]+.55*Math.tanh(brain.sum[i]);[brain.activity,brain.next]=[brain.next,brain.activity];}
     }
     return !edgesEnabled&&genome.policyWeights?[0,0,0]:neuralOutputsFromBrain(graph,brain,genome,launchBias);
   }
+  function neuralLaunchBias(track,speedMps=0){
+    if(Number.isFinite(speedMps)&&Math.abs(speedMps)>NEURAL_MOTOR_LAUNCH_MAX_SPEED_MPS)return 0;
+    const mapCircuit=track.halfWidth<20;
+    return mapCircuit?MAP_NEURAL_MOTOR_LAUNCH_BIAS:NEURAL_MOTOR_LAUNCH_BIAS;
+  }
+  function neuralStepForTrack(track,graph,brain,genome,sensors,enabled=true,edgesEnabled=true,speedMps=0){
+    const mapCircuit=track.halfWidth<20;
+    return neuralStep(graph,brain,genome,sensors,enabled,edgesEnabled,
+      mapCircuit?MAP_PHYSICS_ADAPTER_GAIN:PHYSICS_ADAPTER_GAIN,
+      neuralLaunchBias(track,speedMps));
+  }
   class Simulation {
     constructor(data,options={}) {
-      this.graph=compileGraph(data);this.modelId=options.modelId||data.modelId||this.graph.modelId;this.modelLabel=options.modelLabel||data.modelLabel||this.graph.modelLabel;this.seed=options.seed??7717;
+      this.graph=compileGraph(data);this.modelId=options.modelId||data.modelId||this.graph.modelId;this.modelLabel=options.modelLabel||data.modelLabel||this.graph.modelLabel;this.seed=options.seed??7717;this.rewardRevision=Rewards.REVISION;
       this.learningEnabled=options.learningEnabled!==false;if(this.learningEnabled)ensureLearning(this.graph);
       this.brainFactory=typeof options.brainFactory==='function'?options.brainFactory:makeBrain;
       this.circuits=[{id:'lab',name:'Laboratorio',revision:1,description:'Circuito originale per confrontare i controller.',landmarks:[]},...(options.circuits?.circuits||[])];
       this.configureCircuit(options.circuitId||'lab');
       // Headless diagnostics may intentionally use one or two agents; the
       // desktop engine/UI enforce the practical minimum of four separately.
-      this.population=clamp(Math.round(options.population??18),1,MAX_POPULATION);this.mutation=clamp(Number(options.mutation??0.12),0,EVOLUTION_RULES.mutationCeiling);this.speedMultiplier=clamp(options.speedMultiplier??1,.5,30);
+      this.population=clamp(Math.round(options.population??18),1,MAX_POPULATION);this.mutation=clamp(Number(options.mutation??0.32),0,EVOLUTION_RULES.mutationCeiling);this.speedMultiplier=clamp(options.speedMultiplier??1,.5,30);
+      // Research-only V3 branch: unsafe near-frontier policies may seed
+      // mutated repair candidates, but are never retained or promoted as-is.
+      this.riskRepairEnabled=options.riskRepairEnabled===true;
+      this.riskRepairOffspringRate=clamp(Number(options.riskRepairOffspringRate??EVOLUTION_RULES.riskRepairOffspringRate),0,.25);
       this.mode='connectome';this.running=true;this.generation=1;this.elapsed=0;this.accumulator=0;
-      this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.hallOfFame=[];this.stagnation=0;this.ticks=0;
+      this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.ticks=0;this.lastFunctionalCrossoverCount=0;
       this.random=rng(this.seed);this.reset();
     }
     configureCircuit(id) {
@@ -509,12 +640,17 @@
       this.circuitId=id;this.circuit=definition;this.track=track;
     }
     setCircuit(id) {this.configureCircuit(id);this.reset();}
-    spawn(genomes,rebaseOptimizer=false) {
+     spawn(genomes,rebaseOptimizer=false,optimizerSampleIds=null) {
       if(!Array.isArray(genomes)||genomes.length<1||genomes.length>MAX_POPULATION)throw Error('Popolazione MaleCNS non valida.');
+      // Saves omit transient ES lineage. A null/empty set uses the safe
+      // compatibility ranking until breeding records fresh sample IDs.
+      this.optimizerSampleIds=Array.isArray(optimizerSampleIds)
+        ?new Set(optimizerSampleIds.filter(id=>Number.isInteger(id)&&id>=0&&id<genomes.length))
+        :null;
       const normalized=genomes.map(g=>normalizeGenome(g,this.graph.outputs.length));
       for(const g of normalized)if(g.policyWeights&&(g.adapterVersion!==ensureLearning(this.graph).version||!Learning.valid(this.graph,g.policyWeights)))throw Error('Dimensioni o versione della policy MaleCNS incompatibili: usare Reset.');
       if(rebaseOptimizer&&this.optimizer&&genomes[0]?.policyWeights)this.optimizer.adopt(genomes[0].policyWeights);
-      this.cars=normalized.map((g,i)=>{const car=makeCar(this.track,i,g);car.brain=this.brainFactory(this.graph);car.inputs=sense(this.track,car);car.physicsInputs=physicsSense(car,this.track);car.sensorVector=car.inputs.concat(car.physicsInputs);return car;});
+      this.cars=normalized.map((g,i)=>{const car=makeCar(this.track,i,g,this.rewardRevision);car.footprintSensorsEnabled=this.graph.modelId==='v3';car.brain=this.brainFactory(this.graph);car.inputs=sense(this.track,car);car.physicsInputs=physicsSense(car,this.track);car.sensorVector=car.inputs.concat(car.physicsInputs);return car;});
       for(const car of this.cars)car.previousGenerationLapTime=this.history.at(-1)?.bestLapTime??null;
       // Actions are decoded from the recurrent graph, never from sensors or
       // a separate wall-following controller. Physics remains at 60 Hz.
@@ -522,18 +658,24 @@
       this.elapsed=0; this.ticks=0;
     }
     reset() {
-      this.random=rng(this.seed);this.generation=1;this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.hallOfFame=[];this.stagnation=0;this.accumulator=0;
-      this.learningFrontier={progress:0,laps:0,lapTime:null};
+      this.rewardRevision=Rewards.REVISION;this.random=rng(this.seed);this.generation=1;this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.accumulator=0;
+      this.learningFrontier={progress:0,laps:0,lapTime:null};this.safeLearningFrontier={progress:0,laps:0,lapTime:null};
       this.optimizer=this.learningEnabled?new Learning.EvolutionStrategy(this.graph):null;
-      this.spawn(Array.from({length:this.population},()=>this.learningEnabled?makeLearningGenome(this.graph,this.random):makeGenome(this.random,this.graph.outputs.length)));
+      const genomes=Array.from({length:this.population},()=>this.learningEnabled?makeLearningGenome(this.graph,this.random):makeGenome(this.random,this.graph.outputs.length));
+      this.spawn(genomes,false,this.learningEnabled?genomes.map((_,index)=>index):[]);
     }
     adoptChampion(genome) {
       if(!genome) return;
       const candidate=normalizeGenome(genome,this.graph.outputs.length);
       if(candidate.policyWeights&&(candidate.adapterVersion!==ensureLearning(this.graph).version||!Learning.valid(this.graph,candidate.policyWeights)))throw Error('Campione di un modello neurale incompatibile.');
-      this.externalChampion=candidate;
+      // A saved migrant may not have been evaluated yet. Keep it for the
+      // next population and defer the latest shared champion one generation.
+      if(this.externalChampion){
+        this.pendingExternalChampion=JSON.stringify(candidate)===JSON.stringify(this.externalChampion)?null:candidate;
+      }else {this.externalChampion=candidate;this.pendingExternalChampion=null;}
     }
     evolve() {
+      this.practiceEvaluations=0;this.practiceResults=[];
       const previous=this.history.length?this.history.at(-1):null;
       const previousBestLapTime=previous?.bestLapTime??null;
       for(const car of this.cars){car.previousGenerationLapTime=previousBestLapTime;Rewards.finish(this.track,car);}
@@ -542,55 +684,163 @@
       // champions. If every episode was edited, restart without an update.
       if(!eligible.length){this.generation++;this.spawn(Array.from({length:this.population},()=>this.learningEnabled?makeLearningGenome(this.graph,this.random):makeGenome(this.random,this.graph.outputs.length)));return;}
       const ranked=eligible.slice().sort(compareAgents),winner=ranked[0],progressLeader=eligible.slice().sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0],fastestLapTime=ranked.reduce((bestLap,car)=>Math.min(bestLap,car.bestLapTime),Infinity),noLapCount=ranked.filter(car=>car.laps<1).length,slowerLapCount=ranked.filter(car=>car.lapRegressionPenalty>0).length;
-      if(this.mutation>0)this.optimizer?.update(ranked);
-      const records=eligible.map(car=>({car,...Rewards.recordStats(car)})).sort(compareAgents),recordWinner=records[0];
-      const improved=!this.championStats||compareAgents(recordWinner,this.championStats)<0;
-      // Improving points by dying earlier is not progress. Track the physical
-      // frontier separately and preserve it in shareable training files.
+      const safeEligible=eligible.filter(isSafeLearningOutcome),safeProgressLeader=safeEligible.length?safeEligible.slice().sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0]:null;
+      const safeMaxLaps=safeEligible.length?Math.max(...safeEligible.map(c=>c.laps)):0,safeFastestLapTime=safeEligible.reduce((bestLap,car)=>Math.min(bestLap,car.bestLapTime),Infinity);
+      const usesLearningOutcome=Boolean(this.optimizer&&winner.genome.policyWeights),noSafeLearningCandidate=usesLearningOutcome&&safeEligible.length===0;
+      const learningRanked=usesLearningOutcome?(safeEligible.length?safeEligible.slice().sort(compareLearningAgents):this.mutation===0?ranked:[]):ranked,selectionWinner=learningRanked[0]||null;
+      const optimizerSampleIds=this.optimizerSampleIds,hasOptimizerSamples=optimizerSampleIds instanceof Set&&optimizerSampleIds.size>0;
+      const optimizerRanked=usesLearningOutcome
+        ?hasOptimizerSamples?eligible.filter(agent=>optimizerSampleIds.has(agent.id)).sort(compareOptimizerAgents):learningRanked
+        :learningRanked;
+      const safeProgressTolerance=Math.max(.5*(this.track.pixelsPerMeter||1),this.track.total*.0001),riskRepairWindow=Math.max(12*(this.track.pixelsPerMeter||1),this.track.total*EVOLUTION_RULES.riskRepairWindowFraction);
+      const riskRepairCandidate=this.riskRepairEnabled&&this.modelId==='v3'&&usesLearningOutcome&&safeProgressLeader
+        ?eligible.filter(car=>!isSafeLearningOutcome(car)&&!car.censored&&!car.overlap&&car.genome?.policyWeights&&
+          (car.reason==='urto'||car.reason==='collision')&&!(Number(car.rewardBreakdown?.penalties?.offTrack)>0)&&!(Number(car.rewardBreakdown?.penalties?.invalid)>0)&&
+          car.bestProgress>safeProgressLeader.bestProgress+safeProgressTolerance&&car.bestProgress<=safeProgressLeader.bestProgress+riskRepairWindow)
+          .sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0]||null
+        :null;
+      // The live 90% gate records useful practice states before an episode ends.
+      // Keep those observations as the car advances toward the safe frontier.
+      // Episode completion parks vehicles; terminal poses are not practice states.
+      // Local practice uses observed state, never a route teacher.
+      const practiceEliteBudget=this.population<16?Math.max(1,Math.floor(this.population/8)):EVOLUTION_RULES.eliteCount;
+      if(usesLearningOutcome&&this.stagnation>=3&&!this.graph.full&&safeMaxLaps<Rewards.RULES.maxLapsPerGeneration){
+        for(const parent of learningRanked.slice(0,practiceEliteBudget))if(parent.alive&&!parent.practiceState)parent.practiceState=capturePracticeState(parent);
+      }
+      if(this.mutation>0&&!noSafeLearningCandidate)this.optimizer?.update(optimizerRanked,usesLearningOutcome?compareOptimizerAgents:undefined);
+      const records=eligible.map(car=>({car,...Rewards.recordStats(car)})).sort(compareAgents),safeRecords=records.filter(record=>isSafeLearningOutcome(record.car)).sort(compareAgents),recordWinner=safeRecords[0];
+      const evaluatedGenomeKeys=new Set(eligible.map(car=>JSON.stringify(car.genome))),currentSafeByGenome=new Map();
+      for(const {car} of safeRecords){const key=JSON.stringify(car.genome),existing=currentSafeByGenome.get(key);if(!existing||compareSafeFrontier(car,existing)<0||(compareSafeFrontier(car,existing)===0&&compareAgents(car,existing)<0))currentSafeByGenome.set(key,car);}
+      // Old saves can contain archive/champion scores from a different runtime
+      // even when the same genome is present in the current population. Rebase
+      // that lineage on its just-completed result before it can affect ranking
+      // or offspring selection; keep the separate historical high-water target.
+      const historicalArchiveRecords=[...this.hallOfFame,...(this.champion&&this.championStats?[{...this.championStats,genome:this.champion}]:[])];
+      const trustedArchiveRecords=historicalArchiveRecords.filter(entry=>!evaluatedGenomeKeys.has(JSON.stringify(entry.genome)));
+      const championKey=this.champion?JSON.stringify(this.champion):null;
+      if(championKey&&evaluatedGenomeKeys.has(championKey)){
+        const replayedChampion=currentSafeByGenome.get(championKey);
+        if(replayedChampion){this.champion=cloneGenome(replayedChampion.genome);this.championStats=Rewards.recordStats(replayedChampion);this.bestEver=this.championStats.fitness;}
+        else {this.champion=null;this.championStats=null;this.bestEver=-Infinity;}
+      }
+      const improved=Boolean(recordWinner&&(!this.championStats||compareAgents(recordWinner,this.championStats)<0));
+      // Keep raw motion for diagnostics. Only safe physical outcomes may clear
+      // stagnation or advance the learning frontier used by mutation logic.
       const frontier=this.learningFrontier,maxLaps=Math.max(...eligible.map(c=>c.laps));
-      const drivingImproved=progressLeader.bestProgress>frontier.progress+Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005)||maxLaps>frontier.laps||
+      const rawDrivingImproved=progressLeader.bestProgress>frontier.progress+Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005)||maxLaps>frontier.laps||
         (Number.isFinite(fastestLapTime)&&(frontier.lapTime===null||fastestLapTime<frontier.lapTime*.999));
-      if(drivingImproved)this.learningFrontier={progress:Math.max(frontier.progress,progressLeader.bestProgress),laps:Math.max(frontier.laps,maxLaps),lapTime:Number.isFinite(fastestLapTime)?Math.min(frontier.lapTime??Infinity,fastestLapTime):frontier.lapTime};
+      if(rawDrivingImproved)this.learningFrontier={progress:Math.max(frontier.progress,progressLeader.bestProgress),laps:Math.max(frontier.laps,maxLaps),lapTime:Number.isFinite(fastestLapTime)?Math.min(frontier.lapTime??Infinity,fastestLapTime):frontier.lapTime};
+      // Rebase stale saved highs only when the evaluated population no longer
+      // supports them. Preserve unevaluated safe archive lineages as evidence;
+      // with no safe result, retain the prior frontier so a crash-only batch
+      // cannot reset the learning clock.
+      const priorSafeFrontier=this.safeLearningFrontier||{progress:0,laps:0,lapTime:null};
+      const frontierEvidence=safeRecords.length?[...safeRecords,...trustedArchiveRecords]:null;
+      let safeFrontier={...priorSafeFrontier},frontierRebased=false;
+      if(frontierEvidence?.length&&historicalArchiveRecords.length){
+        const evidenceBestLapTime=frontierEvidence.reduce((best,record)=>Number.isFinite(record.bestLapTime)?Math.min(best,record.bestLapTime):best,Infinity);
+        const evidenceFrontier={progress:Math.max(0,...frontierEvidence.map(record=>Number(record.bestProgress)||0)),
+          laps:Math.max(0,...frontierEvidence.map(record=>Number(record.laps)||0)),lapTime:Number.isFinite(evidenceBestLapTime)?evidenceBestLapTime:null};
+        const progressTolerance=Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005);
+        if(priorSafeFrontier.progress>evidenceFrontier.progress+progressTolerance){safeFrontier.progress=evidenceFrontier.progress;frontierRebased=true;}
+        if(priorSafeFrontier.laps>evidenceFrontier.laps){safeFrontier.laps=evidenceFrontier.laps;frontierRebased=true;}
+        if(Number.isFinite(priorSafeFrontier.lapTime)&&(!Number.isFinite(evidenceFrontier.lapTime)||priorSafeFrontier.lapTime<evidenceFrontier.lapTime*.999)){
+          safeFrontier.lapTime=evidenceFrontier.lapTime;frontierRebased=true;
+        }
+      }
+      const safeDrivingImproved=Boolean(safeProgressLeader&&(safeProgressLeader.bestProgress>safeFrontier.progress+Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005)||safeMaxLaps>safeFrontier.laps||
+        (Number.isFinite(safeFastestLapTime)&&(safeFrontier.lapTime===null||safeFastestLapTime<safeFrontier.lapTime*.999))));
+      if(safeDrivingImproved)this.safeLearningFrontier={progress:Math.max(safeFrontier.progress,safeProgressLeader.bestProgress),laps:Math.max(safeFrontier.laps,safeMaxLaps),lapTime:Number.isFinite(safeFastestLapTime)?Math.min(safeFrontier.lapTime??Infinity,safeFastestLapTime):safeFrontier.lapTime};
+      else if(frontierRebased)this.safeLearningFrontier=safeFrontier;
+      const drivingImproved=safeDrivingImproved;
       this.stagnation=drivingImproved?0:this.stagnation+1;
       if(this.mutation>0)this.optimizer?.explore(this.stagnation);
       if(improved) {this.bestEver=recordWinner.fitness;this.champion=cloneGenome(recordWinner.car.genome);this.championStats=Rewards.recordStats(recordWinner.car);}
       const baseMutation=clamp(Number(this.mutation)||0,0,EVOLUTION_RULES.mutationCeiling);
-      const mutationSchedule=this.stagnation>=EVOLUTION_RULES.stagnationWindow?EVOLUTION_RULES.stagnationMutationMultiplier:1;
+      const mutationSchedule=this.stagnation>=EVOLUTION_RULES.prolongedStagnationWindow
+        ?EVOLUTION_RULES.prolongedStagnationMutationMultiplier
+        :this.stagnation>=EVOLUTION_RULES.stagnationWindow?EVOLUTION_RULES.stagnationMutationMultiplier:1;
       const mutationAmount=baseMutation===0?0:clamp(baseMutation*mutationSchedule,EVOLUTION_RULES.mutationFloor,EVOLUTION_RULES.mutationCeiling);
       const diversify=baseMutation>0&&this.stagnation>=1;
-      const archiveEntries=records.slice(0,EVOLUTION_RULES.hallOfFameCount).map(({car})=>({
-        genome:cloneGenome(car.genome),...Rewards.recordStats(car),progress:car.bestProgress
-      }));
-      const uniqueArchive=new Map();for(const candidate of [...this.hallOfFame,...archiveEntries].sort(compareAgents)){const key=JSON.stringify(candidate.genome);if(!uniqueArchive.has(key))uniqueArchive.set(key,candidate);}
-      this.hallOfFame=[...uniqueArchive.values()].slice(0,EVOLUTION_RULES.hallOfFameCount);
+       const parentFraction=diversify?EVOLUTION_RULES.parentPoolFraction:.35;
+       const parentCount=Math.max(2,Math.min(learningRanked.length,Math.ceil(learningRanked.length*parentFraction)));
+       const parentPool=learningRanked.slice(0,parentCount);
+      // Learned-policy offspring mutate only the fitness elite; a progress leader
+      // merely inside the broader sampling pool would otherwise never reproduce.
+      const eliteBudget=practiceEliteBudget;
+      const reproductionPool=usesLearningOutcome
+        ?learningRanked.slice(0,Math.min(learningRanked.length,Math.max(1,eliteBudget)))
+        :parentPool;
+      const progressExplorer=baseMutation>0&&safeProgressLeader&&safeProgressLeader.bestProgress>(selectionWinner?.bestProgress??-Infinity)+EVOLUTION_RULES.progressTieTolerance&&!reproductionPool.includes(safeProgressLeader)?safeProgressLeader:null;
+      // When a stagnant generation's physical leader is already the fitness
+      // winner, it still needs targeted variants: otherwise the frontier
+      // branch disappears exactly when the population has converged on it.
+      const stagnantFrontier=baseMutation>0&&safeProgressLeader&&this.stagnation>=EVOLUTION_RULES.stagnationWindow&&safeMaxLaps<Rewards.RULES.maxLapsPerGeneration;
+      const safeLeaderStopped=Boolean(safeProgressLeader&&['troppo lenta / senza progresso','ferma / senza progresso'].includes(safeProgressLeader.reason)&&
+        Math.abs(safeProgressLeader.vehicle?.speedMps??safeProgressLeader.speed??0)<Rewards.RULES.brakeLockSpeedFloorMps&&
+        (Number(safeProgressLeader.outputs?.[1])||0)<=.05);
+      // When a safe frontier stops with no throttle, preserve the already
+      // demonstrated steering response and explore only the signed
+      // longitudinal head (throttle/brake). This isolates the missing
+      // propulsion signal instead of changing cornering and acceleration at
+      // the same time.
+      const frontierMutationFocus=stagnantFrontier&&safeLeaderStopped?'longitudinal':null;
+      let frontierParent=progressExplorer||(stagnantFrontier?safeProgressLeader:null);
+      let frontierParentSource=progressExplorer?'live-progress-explorer':frontierParent?'live-safe-leader':null;
+      const archiveEntries=[...currentSafeByGenome.values()].map(car=>({genome:cloneGenome(car.genome),...Rewards.recordStats(car),progress:car.bestProgress}));
+      if(this.champion&&this.championStats&&!evaluatedGenomeKeys.has(JSON.stringify(this.champion)))archiveEntries.push({genome:cloneGenome(this.champion),...this.championStats,progress:this.championStats.bestProgress});
+      const uniqueArchive=new Map();
+      // Current replays take precedence over historical stats for the same
+      // genome. Keep unevaluated historical lineages as-is, but never preserve
+      // a stale score beside a fresh result for an identical policy.
+      for(const candidate of [...archiveEntries.sort(compareSafeFrontier),...trustedArchiveRecords.sort(compareAgents)]){
+        const key=JSON.stringify(candidate.genome);if(!uniqueArchive.has(key))uniqueArchive.set(key,candidate);
+      }
+      const archive=[...uniqueArchive.values()],retained=new Map();
+      const keep=(record)=>{if(record)retained.set(JSON.stringify(record.genome),record);};
+      keep(archive.slice().sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0]);
+      keep(archive.slice().sort((a,b)=>b.laps-a.laps||((Number.isFinite(a.bestLapTime)?a.bestLapTime:Infinity)-(Number.isFinite(b.bestLapTime)?b.bestLapTime:Infinity))||compareAgents(a,b))[0]);
+      keep(archive.filter(entry=>Number.isFinite(entry.bestLapTime)).sort((a,b)=>a.bestLapTime-b.bestLapTime||compareAgents(a,b))[0]);
+      for(const record of archive.sort(compareAgents)){if(retained.size>=EVOLUTION_RULES.hallOfFameCount)break;keep(record);}
+      this.hallOfFame=[...retained.values()].sort(compareAgents).slice(0,EVOLUTION_RULES.hallOfFameCount);
+      // A restored save can have a stronger safe genotype in its archive than
+      // any car that survived into this generation. Once stagnant, breed from
+      // that evaluated lineage instead of repeatedly mutating a regressed one.
+      if(stagnantFrontier){
+        const archivedFrontier=this.hallOfFame.slice().sort(compareSafeFrontier)[0];
+        if(archivedFrontier&&(!frontierParent||compareSafeFrontier(archivedFrontier,frontierParent)<0)){
+          frontierParent=archivedFrontier;frontierParentSource='hall-of-fame';
+        }
+      }
 
-      const immigrantCount=baseMutation>0?Math.max(1,Math.floor(this.population*(this.stagnation>=EVOLUTION_RULES.stagnationWindow?EVOLUTION_RULES.immigrantRate:.08))):0;
-      this.history.push({generation:this.generation,best:winner.fitness,mean:ranked.reduce((s,c)=>s+c.fitness,0)/ranked.length,reward:winner.reward,penalty:winner.penalty,laps:winner.laps,maxLaps,bestProgress:progressLeader.bestProgress,meanProgress:ranked.reduce((s,c)=>s+c.bestProgress,0)/ranked.length,bestLapTime:Number.isFinite(fastestLapTime)?fastestLapTime:null,noLapCount,slowerLapCount,stagnation:this.stagnation,mutationAmount,immigrantCount,hallOfFame:this.hallOfFame.length,learning:this.optimizer?.metrics()||null,rewardRevision:Rewards.REVISION,baseBest:records[0].fitness,previousBestLapTime,rewardBreakdown:JSON.parse(JSON.stringify(winner.rewardBreakdown))});
+      // Very small populations need room for a pair of independent ES
+      // rollouts; immigrants would otherwise consume the only sample slots.
+      const immigrantCount=baseMutation>0?Math.min(Math.max(1,Math.floor(this.population*(this.stagnation>=EVOLUTION_RULES.stagnationWindow?EVOLUTION_RULES.immigrantRate:.08))),Math.max(0,this.population-4)):0;
+      this.history.push({generation:this.generation,best:winner.fitness,mean:ranked.reduce((s,c)=>s+c.fitness,0)/ranked.length,reward:winner.reward,penalty:winner.penalty,laps:winner.laps,maxLaps,bestProgress:progressLeader.bestProgress,meanProgress:ranked.reduce((s,c)=>s+c.bestProgress,0)/ranked.length,bestSafeProgress:safeProgressLeader?.bestProgress??0,meanSafeProgress:safeEligible.length?safeEligible.reduce((sum,car)=>sum+car.bestProgress,0)/safeEligible.length:0,bestLapTime:Number.isFinite(fastestLapTime)?fastestLapTime:null,noLapCount,slowerLapCount,stagnation:this.stagnation,mutationAmount,immigrantCount,hallOfFame:this.hallOfFame.length,learning:this.optimizer?.metrics()||null,rewardRevision:this.rewardRevision,baseBest:records[0].fitness,previousBestLapTime,rewardBreakdown:JSON.parse(JSON.stringify(winner.rewardBreakdown))});
       if(this.history.length>100) this.history.shift();
 
-      const genomes=[cloneGenome(winner.genome)];
+      const genomes=[cloneGenome(selectionWinner?.genome||this.champion||(usesLearningOutcome&&baseMutation>0?makeLearningGenome(this.graph,this.random):winner.genome))];
       // Keep the champion imported from another desktop worker in a stable
       // slot. This is intentionally second so existing champion-import saves
       // remain deterministic and visible in the next population.
-      if(this.externalChampion&&genomes.length<this.population&&JSON.stringify(this.externalChampion)!==JSON.stringify(winner.genome)) genomes.push(cloneGenome(this.externalChampion));
+      if(this.externalChampion&&genomes.length<this.population&&JSON.stringify(this.externalChampion)!==JSON.stringify(genomes[0])) genomes.push(cloneGenome(this.externalChampion));
       // Reevaluate the historical best under current physics, never reuse its
       // stored score. It cannot disappear just because one generation regressed.
       if(baseMutation>0&&this.champion&&genomes.length<Math.min(3,this.population-2)&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(this.champion)))genomes.push(cloneGenome(this.champion));
-      const eliteCandidates=ranked;
+       // Keep the furthest real trajectory as a separate exploration lineage.
+       // It does not replace the penalized-fitness winner or become champion.
+       if(progressExplorer&&genomes.length<this.population-2&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(progressExplorer.genome)))genomes.push(cloneGenome(progressExplorer.genome));
+       if(frontierParentSource==='hall-of-fame'&&genomes.length<this.population-2&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(frontierParent.genome)))genomes.push(cloneGenome(frontierParent.genome));
+      const eliteCandidates=learningRanked;
       const eliteGenomes=new Set(genomes.map(g=>JSON.stringify(g)));
       // Small batches need new evaluated policies, not four copied elites.
-      const eliteBudget=this.population<16?Math.max(1,Math.floor(this.population/8)):EVOLUTION_RULES.eliteCount;
       const eliteLimit=baseMutation>0?Math.min(eliteBudget,Math.max(1,this.population-2)):this.population;
       for(const candidate of eliteCandidates) {
         const genome=candidate.genome;
         const key=JSON.stringify(genome);if(genomes.length<eliteLimit&&genome&&!eliteGenomes.has(key)) {genomes.push(cloneGenome(genome));eliteGenomes.add(key);}
       }
-      this.externalChampion=null;
+      this.externalChampion=this.pendingExternalChampion||null;this.pendingExternalChampion=null;
 
-      const parentFraction=diversify?EVOLUTION_RULES.parentPoolFraction:.35;
-      const parentCount=Math.max(2,Math.min(ranked.length,Math.ceil(ranked.length*parentFraction)));
-      const parents=ranked.slice(0,parentCount);
-      const parentPool=parents;
       const chooseParent=()=>parentPool[Math.min(parentPool.length-1,Math.floor(Math.pow(this.random(),1.6)*parentPool.length))];
       const childMutationAmount=()=>{
         if(baseMutation===0)return 0;
@@ -600,17 +850,85 @@
         else if(this.stagnation>=1&&roll<EVOLUTION_RULES.calmMutationRate+EVOLUTION_RULES.explorerRate) multiplier=1.35;
         return clamp(mutationAmount*multiplier,EVOLUTION_RULES.mutationFloor,EVOLUTION_RULES.mutationCeiling);
       };
-      let mirrored=null;
+       const frontierOffspringRate=stagnantFrontier
+        ?this.stagnation>=EVOLUTION_RULES.prolongedStagnationWindow
+          ?EVOLUTION_RULES.prolongedStagnantFrontierOffspringRate
+          :EVOLUTION_RULES.stagnantFrontierOffspringRate
+        :EVOLUTION_RULES.frontierOffspringRate;
+       let mirrored=null;const practiceBases=new Map();
+       const optimizerSampleTarget=usesLearningOutcome&&baseMutation>0&&!noSafeLearningCandidate
+         ?Math.min(Math.max(this.population<=8?2:1,Math.floor(this.population*.1)),Math.max(0,this.population-genomes.length-immigrantCount)):0;
+       const frontierOffspringTarget=frontierParent?Math.min(Math.ceil(this.population*frontierOffspringRate),Math.max(0,this.population-immigrantCount-genomes.length-optimizerSampleTarget)):0;
+       const riskRepairOffspringTarget=riskRepairCandidate&&baseMutation>0&&this.riskRepairOffspringRate>0
+         ?Math.min(Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)),Math.max(0,this.population-genomes.length-immigrantCount-frontierOffspringTarget-optimizerSampleTarget)):0;
+         let frontierOffspringCount=0,riskRepairOffspringCount=0,optimizerSampleCount=0,functionalCrossoverCount=0;
+        const optimizerSampleIdsForNext=[];
       while(genomes.length<this.population) {
+         if(noSafeLearningCandidate&&baseMutation>0){genomes.push(makeLearningGenome(this.graph,this.random));continue;}
+         if(frontierOffspringCount<frontierOffspringTarget&&genomes.length<this.population-immigrantCount) {
+           let child=cloneGenome(frontierParent.genome);
+           if(child.policyWeights)child.policyWeights=Learning.safeMotorMutation(this.graph,frontierParent.genome.policyWeights,this.random,childMutationAmount(),frontierParent.brain?.policyExperience,frontierMutationFocus);
+           else child=mutateGenome(child,this.random,childMutationAmount());
+           genomes.push(child);frontierOffspringCount++;continue;
+         }
+         if(riskRepairOffspringCount<riskRepairOffspringTarget&&genomes.length<this.population-immigrantCount) {
+           const child=cloneGenome(riskRepairCandidate.genome);
+           child.policyWeights=Learning.safeMotorMutation(this.graph,riskRepairCandidate.genome.policyWeights,this.random,childMutationAmount(),riskRepairCandidate.brain?.policyExperience,'combined');
+           genomes.push(child);riskRepairOffspringCount++;continue;
+         }
         if(immigrantCount>0&&genomes.length>=this.population-immigrantCount) {
           genomes.push(this.learningEnabled?makeLearningGenome(this.graph,this.random):makeGenome(this.random,this.graph.outputs.length));
           continue;
         }
+        if(optimizerSampleCount<optimizerSampleTarget&&this.optimizer&&winner.genome.policyWeights){
+          const child=cloneGenome(selectionWinner?.genome||winner.genome);
+          child.policyWeights=this.optimizer.sample(this.random,mutationAmount*.35,this.stagnation);
+           optimizerSampleIdsForNext.push(genomes.length);genomes.push(child);optimizerSampleCount++;continue;
+        }
         if(this.optimizer&&winner.genome.policyWeights){
-          const child=cloneGenome(winner.genome);
+          let child=cloneGenome(winner.genome),sampledByOptimizer=false;
           if(baseMutation===0)child.policyWeights=winner.genome.policyWeights.slice();
-          else if((genomes.length%8)===0)child.policyWeights=Learning.localMutation(this.graph,chooseParent().genome.policyWeights,this.random,mutationAmount*.65);
-          else {child.policyWeights=this.optimizer.sample(this.random,mutationAmount,this.stagnation,mirrored);mirrored=mirrored?null:child.policyWeights;}
+          else if(mirrored){child=cloneGenome(mirrored.genome);child.policyWeights=mirrored.weights;mirrored=null;}
+          else {
+            // A stagnant mean with large all-parameter noise killed useful
+            // straight-line control in most offspring before the first bend.
+            // Mostly explore one motor function around genuinely evaluated
+            // elites. Common neural contexts retain their current outputs;
+            // novel contexts may change in either direction, judged by reward.
+            const family=this.random(),eliteCount=Math.min(learningRanked.length,Math.max(1,eliteBudget));
+            const parent=learningRanked[Math.min(eliteCount-1,Math.floor(Math.pow(this.random(),1.6)*eliteCount))];
+            if(family<.7){
+              const donorCandidates=learningRanked.slice(0,eliteCount).filter(agent=>agent.id!==parent.id&&JSON.stringify(agent.genome.policyWeights)!==JSON.stringify(parent.genome.policyWeights));
+              const useFunctionalCrossover=this.modelId==='v3'&&donorCandidates.length>0&&this.random()<EVOLUTION_RULES.functionalCrossoverRate;
+              if(useFunctionalCrossover){
+                const donor=donorCandidates[Math.floor(this.random()*donorCandidates.length)],recombined=crossoverPolicyBlocks(this.graph,parent.genome,donor.genome,this.random);
+                child=cloneGenome(parent.genome);child.policyWeights=Learning.safeMotorMutation(this.graph,recombined.policyWeights,this.random,mutationAmount,parent.brain.policyExperience);
+                const opposite=Learning.mirroredMutation(recombined.policyWeights,child.policyWeights);
+                mirrored={genome:child,weights:Learning.scaleMutation(recombined.policyWeights,opposite,1)};functionalCrossoverCount++;
+              }else{
+                child=cloneGenome(parent.genome);
+                if(parent.encodingContext&&this.stagnation>=3&&this.random()<.4)child=mutateSensoryBlock(this.graph,parent.genome,this.random,mutationAmount,parent.encodingContext);
+                else child.policyWeights=Learning.safeMotorMutation(this.graph,parent.genome.policyWeights,this.random,mutationAmount,parent.brain.policyExperience);
+                mirrored={genome:parent.genome,weights:Learning.mirroredMutation(parent.genome.policyWeights,child.policyWeights)};
+              }
+              if(!useFunctionalCrossover&&this.stagnation>=3&&!this.graph.full&&parent.practiceState&&this.practiceEvaluations+5<=32){
+                let baseline=practiceBases.get(parent.id);
+                if(!baseline){baseline=evaluatePractice(this.track,this.graph,parent.genome,parent.practiceState);practiceBases.set(parent.id,baseline);this.practiceEvaluations++;}
+                let best=baseline,bestWeights=null;
+                for(const factor of [1,-1,3,-3]){
+                  const candidate=cloneGenome(parent.genome);candidate.policyWeights=Learning.scaleMutation(parent.genome.policyWeights,child.policyWeights,factor);
+                  const result=evaluatePractice(this.track,this.graph,candidate,parent.practiceState);this.practiceEvaluations++;
+                  // A short timeout must not select parking instead of
+                  // reaching beyond the incumbent's actual failure point.
+                  if(shouldPromotePracticeCandidate(result,baseline,best,this.track.pixelsPerMeter||1,this.rewardRevision)){best=result;bestWeights=candidate.policyWeights;}
+                }
+                this.practiceResults.push({parentId:parent.id,baseline,best,improved:Boolean(bestWeights)});
+                if(bestWeights){child.policyWeights=bestWeights;mirrored.weights=Learning.mirroredMutation(parent.genome.policyWeights,bestWeights);}
+              }
+            }else if(family<.9){child=cloneGenome(parent.genome);child.policyWeights=Learning.localMutation(this.graph,parent.genome.policyWeights,this.random,mutationAmount*.35);}
+            else {child.policyWeights=this.optimizer.sample(this.random,mutationAmount*.35,this.stagnation);sampledByOptimizer=true;}
+          }
+          if(sampledByOptimizer)optimizerSampleIdsForNext.push(genomes.length);
           genomes.push(child);continue;
         }
         const first=chooseParent();
@@ -618,7 +936,14 @@
         if(baseMutation>0&&parentPool.length>1&&this.random()<EVOLUTION_RULES.crossoverRate) child=crossoverGenome(first.genome,chooseParent().genome,this.random);
         genomes.push(mutateGenome(child,this.random,childMutationAmount()));
       }
-      this.generation++;this.spawn(genomes);
+       if(this.optimizer&&this.practiceEvaluations){this.optimizer.episodes+=this.practiceEvaluations;this.history.at(-1).learning=this.optimizer.metrics();}
+       this.lastOptimizerSampleCount=optimizerSampleCount;
+       this.lastFrontierOffspringCount=frontierOffspringCount;
+       this.lastRiskRepairOffspringCount=riskRepairOffspringCount;
+       this.lastRiskRepairParentProgress=riskRepairCandidate?.bestProgress??null;
+        this.lastFunctionalCrossoverCount=functionalCrossoverCount;
+       this.lastFrontierDiagnostics={frontierOffspringCount,frontierParentId:frontierParent?.id??null,frontierParentSource,frontierParentProgress:frontierParent?.bestProgress??null,frontierMutationFocus,progressExplorerId:progressExplorer?.id??null,riskRepairOffspringCount,riskRepairParentProgress:riskRepairCandidate?.bestProgress??null};
+        this.generation++;this.spawn(genomes,false,optimizerSampleIdsForNext);
     }
     tick(neuralOverrides=null,sensorsReady=false) {
       this.elapsed+=DT;
@@ -632,11 +957,18 @@
         }
         if(this.ticks%this.neuralInterval===0) {
           const override=neuralOverrides?.get?.(car.id) || neuralOverrides?.[car.id];
-          const mapCircuit=this.track.halfWidth<20;
-          car.slowOutputs=override?neuralStateStep(this.graph,car.brain,car.genome,override.active,override.values,mapCircuit?MAP_NEURAL_MOTOR_LAUNCH_BIAS:NEURAL_MOTOR_LAUNCH_BIAS):neuralStep(this.graph,car.brain,car.genome,car.sensorVector,this.mode!=='off',true,mapCircuit?MAP_PHYSICS_ADAPTER_GAIN:PHYSICS_ADAPTER_GAIN,mapCircuit?MAP_NEURAL_MOTOR_LAUNCH_BIAS:NEURAL_MOTOR_LAUNCH_BIAS);
+          const speedMps=car.vehicle?.speedMps??car.speed/(car.pixelsPerMeter||1),launchBias=neuralLaunchBias(this.track,speedMps);
+          car.slowOutputs=override?neuralStateStep(this.graph,car.brain,car.genome,override.active,override.values,launchBias):neuralStepForTrack(this.track,this.graph,car.brain,car.genome,car.sensorVector,this.mode!=='off',true,speedMps);
+          if(this.modelId==='v3'&&this.mode==='connectome'&&this.learningEnabled&&car.genome.policyWeights)Learning.rememberActivity(car.brain,car.vehicle?.speedMps??0);
+          if(this.mode==='connectome'&&this.learningEnabled&&!this.graph.full&&car.lifetime>=1&&!car.encodingContext){car.encodingContext={sensors:car.sensorVector.slice(),activity:car.brain.activity.slice()};}
         }
         car.outputs=this.mode==='straight'?[0,.7,0]:this.mode==='off'?[0,0,0]:car.slowOutputs;
         drive(this.track,car,car.outputs,DT);
+        if(CONSISTENT_PRACTICE_REVISIONS.includes(car.rewardRevision)&&this.learningEnabled&&this.mode==='connectome'&&!this.graph.full){
+          car.practiceNextControlPhase=(this.ticks+1)%this.neuralInterval;car.practiceControlInterval=this.neuralInterval;
+        }
+        if(car.alive&&this.learningEnabled&&this.mode==='connectome'&&!this.graph.full&&car.speed/(car.pixelsPerMeter||1)>2&&(!car.practiceState||car.bestProgress>(car.practiceState.bestProgress??-Infinity)+.02*(car.pixelsPerMeter||1))&&
+          this.stagnation>=3&&this.safeLearningFrontier.progress>=50*(this.track.pixelsPerMeter||1)&&car.bestProgress>=this.safeLearningFrontier.progress*.9){car.practiceState=capturePracticeState(car);car.practiceState.bestProgress=car.bestProgress;}
         if(this.ticks%6===0) {car.trail.push([car.x,car.y]);if(car.trail.length>160) car.trail.shift();}
       }
       this.ticks++;
@@ -680,6 +1012,41 @@
     const difference=(Number(b?.bestProgress??b?.progress)||0)-(Number(a?.bestProgress??a?.progress)||0);
     return Math.abs(difference)>1e-9?difference:0;
   }
-  const api={Rewards,Vehicle,Simulation,makeTrack,makeCar,drive,locate,trackWidthAt,onRoad,sense,sensorDistances,physicsSense,roadSense,raycast,collided,compileGraph,makeBrain,sensorDrive,synapticGains:Learning.synapticGains,applyNeuralState,neuralOutputsFromBrain,normalizeDriveCommands,neuralStateStep,neuralStep,fastNeuralStep,ensureLearning,compareAgents,makeGenome,crossoverGenome,mutateGenome,cloneGenome,normalizeGenome,rng,checkpointKey,validCheckpoint,DT,SENSOR_MAX,MAX_SPEED,MAX_POPULATION,ANGLES,VISUAL_SENSOR_COUNT,VEHICLE_PHYSICS_SENSOR_COUNT,ROAD_PHYSICS_SENSOR_COUNT,PHYSICS_SENSOR_COUNT,SENSOR_COUNT,PHYSICS_RELAY_COUNT,ROAD_RELAY_COUNT,PHYSICS_ADAPTER_GAIN,MAP_PHYSICS_ADAPTER_GAIN,NEURAL_MOTOR_GAIN,NEURAL_MOTOR_LAUNCH_BIAS,SCORE_RULES,EVOLUTION_RULES,PHYSICS,clamp};
+  const unsafeLearningReasons=new Set(['urto','fuori pista','progresso non valido','collision','off track','invalid progress']);
+  function isSafeLearningOutcome(agent){
+    const car=agent?.car||agent,reason=String(car?.reason||'').trim().toLowerCase(),penalties=car?.rewardBreakdown?.penalties||{};
+    return !car?.censored&&!car?.overlap&&!unsafeLearningReasons.has(reason)&&!(Number(penalties.collision)>0)&&!(Number(penalties.offTrack)>0)&&!(Number(penalties.invalid)>0);
+  }
+  function compareLearningAgents(a,b){
+    const aSafe=isSafeLearningOutcome(a),bSafe=isSafeLearningOutcome(b);if(aSafe!==bSafe)return aSafe?-1:1;
+    const aLaps=Number(a?.laps)||0,bLaps=Number(b?.laps)||0;if(aLaps!==bLaps)return bLaps-aLaps;
+    const aProgress=Number(a?.bestProgress??a?.progress)||0,bProgress=Number(b?.bestProgress??b?.progress)||0;
+    // Before the first lap, raw safe progress is the only demonstrated
+    // learning milestone. Fitness penalties can otherwise select a stalled
+    // near-start car over a much farther safe policy (especially after the
+    // brake-lock penalty is enabled). Once lap count is equal and nonzero,
+    // retain the actual reward/time objective for pace optimization.
+    if(aLaps===0&&Math.abs(aProgress-bProgress)>1e-9)return bProgress-aProgress;
+    const aFitness=Number.isFinite(a?.fitness)?a.fitness:-Infinity,bFitness=Number.isFinite(b?.fitness)?b.fitness:-Infinity;if(aFitness!==bFitness)return bFitness-aFitness;
+    if(aLaps>0){const aTime=Number.isFinite(a?.bestLapTime)?a.bestLapTime:Infinity,bTime=Number.isFinite(b?.bestLapTime)?b.bestLapTime:Infinity;if(aTime!==bTime)return aTime-bTime;}
+    if(Math.abs(aProgress-bProgress)>1e-9)return bProgress-aProgress;
+    return 0;
+  }
+  function compareOptimizerAgents(a,b){
+    const aSafe=isSafeLearningOutcome(a),bSafe=isSafeLearningOutcome(b);
+    if(aSafe!==bSafe)return aSafe?-1:1;
+    // Safe no-lap policies still optimize physical progress first. Among
+    // unsafe rollouts, use the real penalized score so collisions and invalid
+    // progress cannot be rewarded merely for reaching farther before failure.
+    return aSafe?compareLearningAgents(a,b):compareAgents(a,b);
+  }
+  function compareSafeFrontier(a,b){
+    const laps=(Number(b?.laps)||0)-(Number(a?.laps)||0);if(laps)return laps;
+    const progress=(Number(b?.bestProgress??b?.progress)||0)-(Number(a?.bestProgress??a?.progress)||0);
+    if(Math.abs(progress)>EVOLUTION_RULES.progressTieTolerance)return progress;
+    const aTime=Number.isFinite(a?.bestLapTime)?a.bestLapTime:Infinity,bTime=Number.isFinite(b?.bestLapTime)?b.bestLapTime:Infinity;
+    return aTime-bTime;
+  }
+  const api={Rewards,Vehicle,Simulation,makeTrack,makeCar,drive,capturePracticeState,mutateSensoryBlock,evaluatePractice,shouldPromotePracticeCandidate,locate,trackWidthAt,onRoad,sense,sensorDistances,physicsSense,roadSense,raycast,collided,compileGraph,makeBrain,sensorDrive,synapticGains:Learning.synapticGains,applyNeuralState,neuralOutputsFromBrain,normalizeDriveCommands,neuralStateStep,neuralStep,neuralStepForTrack,fastNeuralStep,ensureLearning,compareAgents,compareLearningAgents,compareOptimizerAgents,isSafeLearningOutcome,makeGenome,crossoverGenome,crossoverPolicyBlocks,mutateGenome,cloneGenome,normalizeGenome,rng,checkpointKey,validCheckpoint,DT,SENSOR_MAX,MAX_SPEED,MAX_POPULATION,ANGLES,VISUAL_SENSOR_COUNT,VEHICLE_PHYSICS_SENSOR_COUNT,ROAD_PHYSICS_SENSOR_COUNT,PHYSICS_SENSOR_COUNT,SENSOR_COUNT,PHYSICS_RELAY_COUNT,ROAD_RELAY_COUNT,PHYSICS_ADAPTER_GAIN,MAP_PHYSICS_ADAPTER_GAIN,NEURAL_MOTOR_GAIN,NEURAL_MOTOR_LAUNCH_BIAS,MAP_NEURAL_MOTOR_LAUNCH_BIAS,SCORE_RULES,EVOLUTION_RULES,PHYSICS,clamp};
   if(typeof module!=='undefined'&&module.exports) module.exports=api; else root.FlySim=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

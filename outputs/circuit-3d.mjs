@@ -3,9 +3,9 @@
  * Shared estimated terrain and edge markers, not surveyed heights.
  * No controller, physics tick, random generator or training command lives here. */
 import * as T from './vendor/three.module.js';
-import {CarFleet,CAR_VISUAL_REVISION} from './car-3d.mjs';
+import {CarFleet,CAR_VISUAL_REVISION,DRIVER_EYE} from './car-3d.mjs';
 import {createTrackScenery} from './track-scenery.mjs';
-import {Terrain,drape,refineRoad,terrainMesh} from './terrain-3d.mjs';
+import {Terrain,drape,refineRoad,terrainMesh,placeCar} from './terrain-3d.mjs';
 import {createVegetation} from './vegetation.mjs';
 import {EnvironmentAssets} from './environment-assets.mjs';
 import {createBuildings} from './buildings.mjs';
@@ -13,6 +13,27 @@ import {createTrackFacilities} from './track-facilities.mjs';
 import {loadLandscape,createWorldTerrain} from './world-terrain.mjs';
 import {createDistrictBuildings} from './district-buildings.mjs';
 export const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+export function createDriverPose(){return {body:new T.Object3D(),tilt:new T.Matrix4(),matrix:new T.Matrix4(),position:new T.Vector3(),forward:new T.Vector3(),up:new T.Vector3(),target:new T.Vector3()};}
+export function driverCameraFrame(car,origin,ground,lookYaw=0,lookPitch=0,pose=createDriverPose()){
+  // Same road frame and bounded body tilt as the exterior. Observation only.
+  placeCar(pose.body,car,origin,ground,.04);
+  const pitch=clamp(Number(car.vehicle?.pitch)||0,-.09,.09),roll=clamp(Number(car.vehicle?.roll)||0,-.10,.10);
+  pose.tilt.makeRotationFromEuler(new T.Euler(roll,0,-pitch));pose.matrix.multiplyMatrices(pose.body.matrix,pose.tilt);
+  pose.position.set(DRIVER_EYE.x,DRIVER_EYE.y,DRIVER_EYE.z).applyMatrix4(pose.matrix);
+  pose.forward.set(Math.cos(lookYaw)*Math.cos(lookPitch),Math.sin(lookPitch),Math.sin(lookYaw)*Math.cos(lookPitch)).transformDirection(pose.matrix);
+  pose.up.set(0,1,0).transformDirection(pose.matrix);pose.target.copy(pose.position).addScaledVector(pose.forward,30*(car.pixelsPerMeter||1));return pose;
+}
+function createCockpit(){
+  // Original schematic dashboard/wheel; the supplied GLB is exterior-only.
+  const group=new T.Group(),material=new T.MeshPhongMaterial({color:0x171e25,shininess:12}),trim=new T.MeshPhongMaterial({color:0x4a5560,shininess:24});
+  const box=(size,position,mat=material)=>{const mesh=new T.Mesh(new T.BoxGeometry(...size),mat);mesh.position.set(...position);group.add(mesh);return mesh;};
+  box([.32,.12,1.38],[.64,.64,0]);box([.20,.19,.26],[.60,.70,-.32],trim);
+  const wheel=new T.Group();wheel.position.set(.43,.70,-.32);group.add(wheel);
+  const rim=new T.Mesh(new T.TorusGeometry(.17,.021,8,24),material);rim.rotation.y=Math.PI/2;wheel.add(rim);
+  for(const angle of [0,Math.PI*2/3,Math.PI*4/3]){const spoke=new T.Mesh(new T.BoxGeometry(.035,.026,.17),trim);spoke.position.set(0,Math.sin(angle)*.075,Math.cos(angle)*.075);spoke.rotation.x=-angle;wheel.add(spoke);}
+  const hub=new T.Mesh(new T.BoxGeometry(.05,.07,.07),material);wheel.add(hub);
+  group.matrixAutoUpdate=false;group.visible=false;return {group,wheel};
+}
 export function overviewFit(bounds,aspect,yaw=2.3,pitch=.90,fov=48,points=null,target={x:0,z:0}){
   const tangent=Math.tan(fov*Math.PI/360),halfX=bounds.width/2,halfZ=bounds.height/2;
   const coordinates=points?points.map(p=>[p.x-bounds.x-halfX-target.x,p.y-bounds.y-halfZ-target.z,(p.height||0)-(target.y||0)]):[-halfX,halfX].flatMap(x=>[-halfZ,halfZ].map(z=>[x,z,0]));
@@ -65,6 +86,7 @@ export class Circuit3D{
     this.renderer.setPixelRatio(Math.min(1.5,globalThis.devicePixelRatio||1));this.renderer.outputColorSpace=T.SRGBColorSpace;
     this.scene=new T.Scene();this.scene.background=new T.Color('#101a20');
     this.camera=new T.PerspectiveCamera(48,1,.08,20000);this.camera.up.set(0,1,0);
+    this.lookYaw=0;this.lookPitch=0;this.firstPersonFov=70;this.driverPose=createDriverPose();this.cockpit=createCockpit();this.scene.add(this.cockpit.group);
     this.scene.add(new T.HemisphereLight(0xc7d8e8,0x40513c,2.1));const sunlight=new T.DirectionalLight(0xffedc8,2.3);sunlight.position.set(-70,160,80);this.scene.add(sunlight);
     this.staticGroup=new T.Group();this.scene.add(this.staticGroup);this.carGroup=new T.Group();this.scene.add(this.carGroup);this.fleet=new CarFleet(this.carGroup);
     this.rayGeometry=new T.BufferGeometry();this.rayGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(11*6),3));
@@ -94,13 +116,13 @@ export class Circuit3D{
       if(!pointers.has(e.pointerId)||!gesture)return;const previous=pointers.get(e.pointerId),dx=e.clientX-previous.x,dy=e.clientY-previous.y;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
       if(pointers.size===2){const p=[...pointers.values()],d=Math.max(1,Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y));this.zoom(d/Math.max(1,pinch));pinch=d;gesture.moved=true;return;}
       if(Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>4)gesture.moved=true;if(!gesture.moved)return;
-      if(gesture.pan)this.pan(dx,dy);else{this.yaw-=dx*.008;this.pitch=clamp(this.pitch+dy*.006,.10,1.48);this.dirty=true;this.onChange();}
+      if(this.mode==='first-person')this.look(dx,dy);else if(gesture.pan)this.pan(dx,dy);else{this.yaw-=dx*.008;this.pitch=clamp(this.pitch+dy*.006,.10,1.48);this.dirty=true;this.onChange();}
     });
     const end=e=>{if(!pointers.has(e.pointerId))return;const choose=gesture&&!gesture.moved&&pointers.size===1;pointers.delete(e.pointerId);if(this.canvas.hasPointerCapture(e.pointerId))this.canvas.releasePointerCapture(e.pointerId);if(choose)this.pick(e.clientX,e.clientY);if(!pointers.size)gesture=null;};
     this.listen('pointerup',end);this.listen('pointercancel',e=>{pointers.delete(e.pointerId);gesture=null;});
     this.listen('contextmenu',e=>e.preventDefault());
     this.listen('wheel',e=>{e.preventDefault();this.zoom(Math.exp(-e.deltaY*.001));},{passive:false});
-    this.listen('keydown',e=>{let handled=true;if(e.key==='+'||e.key==='=')this.zoom(1.3);else if(e.key==='-')this.zoom(1/1.3);else if(e.key==='Home'){if(this.onReset)this.onReset();else this.reset();}else if(e.key==='ArrowLeft')this.yaw+=.13;else if(e.key==='ArrowRight')this.yaw-=.13;else if(e.key==='ArrowUp')this.pitch=clamp(this.pitch+.10,.10,1.48);else if(e.key==='ArrowDown')this.pitch=clamp(this.pitch-.10,.10,1.48);else handled=false;if(handled){e.preventDefault();this.dirty=true;this.onChange();}});
+    this.listen('keydown',e=>{let handled=true;if(e.key==='+'||e.key==='=')this.zoom(1.3);else if(e.key==='-')this.zoom(1/1.3);else if(e.key==='Home'){if(this.onReset)this.onReset();else this.reset();}else if(this.mode==='first-person'&&e.key.startsWith('Arrow')){const delta={ArrowLeft:[-16,0],ArrowRight:[16,0],ArrowUp:[0,-16],ArrowDown:[0,16]}[e.key];if(delta)this.look(...delta);else handled=false;}else if(e.key==='ArrowLeft')this.yaw+=.13;else if(e.key==='ArrowRight')this.yaw-=.13;else if(e.key==='ArrowUp')this.pitch=clamp(this.pitch+.10,.10,1.48);else if(e.key==='ArrowDown')this.pitch=clamp(this.pitch-.10,.10,1.48);else handled=false;if(handled){e.preventDefault();this.dirty=true;this.onChange();}});
   }
   setTrack(track,model,onRoad){
     if(this.track===track&&this.model===model)return;
@@ -159,9 +181,10 @@ export class Circuit3D{
     if(this.track){this.overviewDistance=this.fitDistance();if(this.mode==='overview')this.distance=this.overviewDistance*ratio;}
     this.camera.updateProjectionMatrix();this.dirty=true;
   }}
-  setMode(mode){this.overviewScope='circuit';this.mode=mode==='follow'?'follow':'overview';if(this.mode==='overview'){this.pitch=.90;this.yaw=2.3;this.centreOverview();}else{this.pitch=.50;this.yaw=-1.05;}this.dirty=true;}
-  reset(){this.overviewScope='circuit';this.focus.set(0,0,0);this.followDistance=18;this.yaw=this.mode==='follow'?-1.05:2.3;this.pitch=this.mode==='follow'?.50:.90;this.centreOverview();this.dirty=true;this.onChange();}
-  zoom(factor){if(this.mode==='follow')this.followDistance=clamp(this.followDistance/factor,6,150);else this.distance=clamp(this.distance/factor,8,(this.overviewDistance||3000)*2);this.dirty=true;this.onChange();}
+  setMode(mode){this.overviewScope='circuit';this.mode=['follow','first-person'].includes(mode)?mode:'overview';this.camera.fov=this.mode==='first-person'?this.firstPersonFov:48;this.camera.updateProjectionMatrix();if(this.mode==='overview'){this.pitch=.90;this.yaw=2.3;this.centreOverview();}else if(this.mode==='follow'){this.pitch=.50;this.yaw=-1.05;}else{this.lookYaw=0;this.lookPitch=0;}this.dirty=true;}
+  reset(){this.overviewScope='circuit';this.focus.set(0,0,0);this.followDistance=18;if(this.mode==='first-person'){this.lookYaw=0;this.lookPitch=0;this.firstPersonFov=70;this.camera.fov=70;this.camera.updateProjectionMatrix();}else{this.yaw=this.mode==='follow'?-1.05:2.3;this.pitch=this.mode==='follow'?.50:.90;this.centreOverview();}this.dirty=true;this.onChange();}
+  zoom(factor){if(!Number.isFinite(factor)||factor<=0)return;if(this.mode==='first-person'){this.firstPersonFov=clamp(this.firstPersonFov/factor,40,95);this.camera.fov=this.firstPersonFov;this.camera.updateProjectionMatrix();}else if(this.mode==='follow')this.followDistance=clamp(this.followDistance/factor,6,150);else this.distance=clamp(this.distance/factor,8,(this.overviewDistance||3000)*2);this.dirty=true;this.onChange();}
+  look(dx,dy){this.lookYaw=clamp(this.lookYaw+dx*.006,-1.4,1.4);this.lookPitch=clamp(this.lookPitch-dy*.006,-.5,.5);this.dirty=true;this.onChange();}
   focusPoint(point){this.overviewScope='circuit';this.mode='overview';this.focus.set(point.x-this.origin.x,this.ground.sample(point.x,point.y).height*this.ground.ppm,point.y-this.origin.y);this.distance=95;this.pitch=.85;this.dirty=true;this.onChange();}
   focusFacility(point){this.focusPoint(point);const ppm=this.track.pixelsPerMeter||1;this.focus.y=point.groundY+point.height*.35;this.distance=Math.max(65,point.width*1.45,point.depth*3)*ppm;this.yaw=point.yaw+Math.PI;this.pitch=.42;this.dirty=true;}
   focusLandscape(){
@@ -180,7 +203,7 @@ export class Circuit3D{
     const point=candidates.reduce((a,p)=>!a||Math.hypot(p.x-start.x,p.y-start.y)<Math.hypot(a.x-start.x,a.y-start.y)?p:a,null);if(!point)return;
     this.focusPoint(point);this.focus.y=point.groundY+point.height*.4;this.distance=75*(this.track.pixelsPerMeter||1);this.pitch=.46;this.yaw=2.3;this.dirty=true;this.onChange();
   }
-  pan(dx,dy){if(this.mode==='follow'){this.mode='overview';this.distance=this.followDistance;}const unit=this.distance/Math.max(200,this.height);this.focus.x-=Math.cos(this.yaw)*dx*unit+Math.sin(this.yaw)*dy*unit;this.focus.z+=Math.sin(this.yaw)*dx*unit-Math.cos(this.yaw)*dy*unit;this.dirty=true;this.onChange();}
+  pan(dx,dy){if(this.mode==='first-person'){this.look(dx,dy);return;}if(this.mode==='follow'){this.mode='overview';this.distance=this.followDistance;}const unit=this.distance/Math.max(200,this.height);this.focus.x-=Math.cos(this.yaw)*dx*unit+Math.sin(this.yaw)*dy*unit;this.focus.z+=Math.sin(this.yaw)*dx*unit-Math.cos(this.yaw)*dy*unit;this.dirty=true;this.onChange();}
   project(car){const v=new T.Vector3(car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+.8)*(car.pixelsPerMeter||1),car.y-this.origin.y).project(this.camera);return {x:(v.x+1)*this.width/2,y:(1-v.y)*this.height/2,visible:v.z>-1&&v.z<1};}
   pick(clientX,clientY){if(!this.cars)return;const r=this.canvas.getBoundingClientRect(),x=clientX-r.left,y=clientY-r.top;let min=22,id=null;for(const car of this.cars){const p=this.project(car),d=Math.hypot(p.x-x,p.y-y);if(p.visible&&d<min){min=d;id=car.id;}}if(id!==null)this.onSelect(id);}
   render(sim,selected,palette,{sensors=true,boundaries=false,details=true,sensorDistances,angles}={}){
@@ -188,10 +211,13 @@ export class Circuit3D{
     const ppm=selected.pixelsPerMeter||1;
     const elevation=this.ground.sample(selected.x,selected.y).height*ppm;
     if(this.mode==='follow')this.focus.set(selected.x-this.origin.x,elevation+.55*ppm,selected.y-this.origin.y);
-    const yaw=this.yaw-(this.mode==='follow'?selected.heading:0),distance=this.mode==='follow'?this.followDistance*ppm:this.distance;
-    const near=Math.max(.05,distance*.003),far=Math.max(250,distance+Math.hypot(this.track.bounds.width,this.track.bounds.height)*2);
+    const firstPerson=this.mode==='first-person',yaw=this.yaw-(this.mode==='follow'?selected.heading:0),distance=firstPerson?5*ppm:this.mode==='follow'?this.followDistance*ppm:this.distance;
+    const near=firstPerson?.03*ppm:Math.max(.05,distance*.003),far=Math.max(250,distance+Math.hypot(this.track.bounds.width,this.track.bounds.height)*2);
     if(this.camera.near!==near||this.camera.far!==far){this.camera.near=near;this.camera.far=far;this.camera.updateProjectionMatrix();}
-    this.camera.position.set(this.focus.x+Math.sin(yaw)*Math.cos(this.pitch)*distance,this.focus.y+Math.sin(this.pitch)*distance,this.focus.z+Math.cos(yaw)*Math.cos(this.pitch)*distance);this.camera.lookAt(this.focus);this.camera.updateMatrixWorld();
+    this.cockpit.group.visible=firstPerson;
+    if(firstPerson){const pose=driverCameraFrame(selected,this.origin,this.ground,this.lookYaw,this.lookPitch,this.driverPose);this.camera.position.copy(pose.position);this.camera.up.copy(pose.up);this.camera.lookAt(pose.target);this.cockpit.group.matrix.copy(pose.matrix);this.cockpit.wheel.rotation.x=-(Number(selected.vehicle?.steeringAngle)||0)*10;this.driverAgentId=selected.id;}
+    else{this.camera.up.set(0,1,0);this.camera.position.set(this.focus.x+Math.sin(yaw)*Math.cos(this.pitch)*distance,this.focus.y+Math.sin(this.pitch)*distance,this.focus.z+Math.cos(yaw)*Math.cos(this.pitch)*distance);this.camera.lookAt(this.focus);}
+    this.camera.updateMatrixWorld();
     this.fleet.update(sim.cars,this.origin,palette,{selected,camera:this.camera,height:this.height,mode:this.mode,ground:this.ground});
     this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
     this.scenery?.setVisible(details,this.mode);
@@ -199,12 +225,12 @@ export class Circuit3D{
     this.buildings?.setVisible(details);this.districts?.setVisible(details);this.facilities?.setVisible(details);this.vegetation?.update(this.camera,this.mode);this.buildings?.update(this.camera,this.mode);this.districts?.update(this.camera,this.mode);this.facilities?.update(this.camera);
     this.road.material.color.set(this.mode==='overview'?0x62757b:this.model.theme.road);this.outline.material.color.set(this.mode==='overview'?0xb1c0c1:0x82999d);
     this.selection.position.set(selected.x-this.origin.x,elevation+.10*ppm,selected.y-this.origin.y);this.selection.scale.setScalar(ppm);
-    this.rays.visible=sensors;
-    if(sensors&&sensorDistances){const distances=sensorDistances(sim.track,selected),p=this.rayGeometry.attributes.position;for(let i=0;i<distances.length;i++){const a=selected.heading+angles[i],x=selected.x-this.origin.x,z=selected.y-this.origin.y,ex=selected.x+Math.cos(a)*distances[i],ez=selected.y+Math.sin(a)*distances[i];p.setXYZ(i*2,x,elevation+.52*ppm,z);p.setXYZ(i*2+1,ex-this.origin.x,(this.ground.sample(ex,ez).height+.52)*ppm,ez-this.origin.y);}p.needsUpdate=true;this.rayGeometry.setDrawRange(0,distances.length*2);}
-    const p=this.markers.geometry.attributes.position,c=this.markers.geometry.attributes.color,color=new T.Color();this.markers.visible=this.mode!=='follow'||distance>90*ppm;
+    this.selection.visible=!firstPerson;this.rays.visible=sensors&&!firstPerson;
+    if(this.rays.visible&&sensorDistances){const distances=sensorDistances(sim.track,selected),p=this.rayGeometry.attributes.position;for(let i=0;i<distances.length;i++){const a=selected.heading+angles[i],x=selected.x-this.origin.x,z=selected.y-this.origin.y,ex=selected.x+Math.cos(a)*distances[i],ez=selected.y+Math.sin(a)*distances[i];p.setXYZ(i*2,x,elevation+.52*ppm,z);p.setXYZ(i*2+1,ex-this.origin.x,(this.ground.sample(ex,ez).height+.52)*ppm,ez-this.origin.y);}p.needsUpdate=true;this.rayGeometry.setDrawRange(0,distances.length*2);}
+    const p=this.markers.geometry.attributes.position,c=this.markers.geometry.attributes.color,color=new T.Color();this.markers.visible=!firstPerson&&(this.mode!=='follow'||distance>90*ppm);
     for(let i=0;i<sim.cars.length;i++){const car=sim.cars[i];p.setXYZ(i,car.x-this.origin.x,(this.ground.sample(car.x,car.y).height+1.4)*ppm,car.y-this.origin.y);color.set(palette[car.id%palette.length]);if(!car.alive)color.multiplyScalar(.35);c.setXYZ(i,color.r,color.g,color.b);}p.needsUpdate=true;c.needsUpdate=true;this.markers.geometry.setDrawRange(0,sim.cars.length);
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
   info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,landscape:this.worldData?this.terrainObject.userData.info:null,districts:this.districts?.info(),vegetation:this.vegetation?.info(),buildings:this.buildings?.info(),facilities:this.facilities?.info(),environmentError:this.treeError||this.houseError||this.worldError||null,lost:this.lost};}
-  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();this.environmentAssets.dispose();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
+  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();this.environmentAssets.dispose();const materials=new Set();this.cockpit.group.traverse(o=>{if(o.isMesh){o.geometry.dispose();materials.add(o.material);}});for(const m of materials)m.dispose();this.cockpit.group.removeFromParent();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }

@@ -11,7 +11,7 @@ async function fixture(t){
   const io=new ProgressFiles({engine,dialog,window:null,version:VERSION});return {dir,sim,payload,engine,dialog,filename,calls,io};
 }
 test('Native file layer writes a real shared file and opens validated content',async t=>{
-  const x=await fixture(t),saved=await x.io.save();assert.equal(saved.canceled,false);assert.equal(saved.appVersion,VERSION);assert.equal(saved.workers,1);
+  const x=await fixture(t),saved=await x.io.save();assert.equal(saved.canceled,false);assert.equal(saved.appVersion,VERSION);assert.equal(saved.workers,1);assert.deepEqual(saved.rewardRevisions,[F.Rewards.REVISION]);
   const parsed=await P.decode(await fs.readFile(x.filename,'utf8'),VERSION);assert.deepEqual(parsed.payload,x.payload);
   const opened=await x.io.open();assert.deepEqual(opened.file,parsed);assert.equal(opened.name,'shared.malecns-save');assert.equal(x.calls[2][1].defaultId,1);assert.deepEqual(await fs.readdir(x.dir),['shared.malecns-save']);
 });

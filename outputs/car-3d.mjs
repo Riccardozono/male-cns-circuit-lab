@@ -6,6 +6,15 @@ import {placeCar} from './terrain-3d.mjs';
 
 export const CAR_VISUAL_REVISION='992-procedural-3d-1';
 export const DIMENSIONS=Object.freeze({length:4.619,width:2.050,wheelbase:2.507});
+// Author-chosen visual seat point, not a measured Porsche cockpit/CAD datum.
+export const DRIVER_EYE=Object.freeze({x:.10,y:1.05,z:-.32});
+export function obscuresDriverEye(car,selected){
+  if(!selected)return false;if(car.id===selected.id)return true;
+  const ppm=selected.pixelsPerMeter||1,cs=Math.cos(selected.heading),ss=Math.sin(selected.heading);
+  const dx=selected.x+(cs*DRIVER_EYE.x-ss*DRIVER_EYE.z)*ppm-car.x,dy=selected.y+(ss*DRIVER_EYE.x+cs*DRIVER_EYE.z)*ppm-car.y;
+  const c=Math.cos(car.heading),s=Math.sin(car.heading),scale=car.pixelsPerMeter||1;
+  return Math.abs(dx*c+dy*s)<(DIMENSIONS.length/2+.15)*scale&&Math.abs(-dx*s+dy*c)<(DIMENSIONS.width/2+.10)*scale;
+}
 
 export function loft(sections,bottom=.22){
   const vertices=[],indices=[];
@@ -54,11 +63,13 @@ export class CarFleet{
     this.parts.push({mesh,...options});this.group.add(mesh);return mesh;
   }
   box(size,material,position,tint=false,state=null){const g=new T.BoxGeometry(...size);g.translate(...position);return this.part(g,material,{tint,state});}
-  update(cars,origin,palette,{ground}={}){
-    const object=this.scratch,count=Math.min(cars.length,this.capacity);
+  update(cars,origin,palette,{ground,selected,mode}={}){
+    this.carCount=Math.min(cars.length,this.capacity);
+    const visible=mode==='first-person'?cars.slice(0,this.capacity).filter(car=>!obscuresDriverEye(car,selected)):cars;
+    const object=this.scratch,count=Math.min(visible.length,this.capacity);this.renderedCars=count;
     for(const part of this.parts)part.mesh.count=count;for(const mesh of this.wheels)mesh.count=count*4;
     for(let i=0;i<count;i++){
-      const car=cars[i],ppm=car.pixelsPerMeter||1;
+      const car=visible[i],ppm=car.pixelsPerMeter||1;
       placeCar(object,car,origin,ground);this.base.copy(object.matrix);
       const pitch=Math.max(-.09,Math.min(.09,car.vehicle?.pitch||0)),roll=Math.max(-.10,Math.min(.10,car.vehicle?.roll||0));
       object.position.set(0,0,0);object.rotation.set(roll,0,-pitch);object.scale.setScalar(1);object.updateMatrix();this.local.multiplyMatrices(this.base,object.matrix);

@@ -1,0 +1,5 @@
+'use strict';
+const Base=require('./neural-direct-nonlinear-layout.cjs'),Scaler=require('../.impeccable/review/neural-sacl/direct-neuronal-scaler.json');
+if(Scaler.dimension!==77||Scaler.center.length!==77||Scaler.scale.length!==77||Scaler.center.some(v=>!Number.isFinite(v))||Scaler.scale.some(v=>!Number.isFinite(v)||v<.02)||Scaler.clip!==5)throw Error('Qualified fixed neuronal scaler required');
+function mean(x,w){const d=x.length;Base.validate(w,d);if(d!==77||x.some(v=>!Number.isFinite(v)||Math.abs(v)>1))throw Error('Actual neuronal inputs required');const y=[0,0],z=x.map((v,j)=>Math.max(-Scaler.clip,Math.min(Scaler.clip,(v-Scaler.center[j])/Scaler.scale[j])));for(let j=0;j<d;j++)for(let a=0;a<2;a++)y[a]+=x[j]*w[2*j+a];const h=[],start=2*d,bias=start+Base.HIDDEN*d,out=bias+Base.HIDDEN;for(let i=0;i<Base.HIDDEN;i++){let s=0;for(let j=0;j<d;j++)s+=z[j]*w[start+i*d+j];h.push(Math.tanh(s+w[bias+i]));}for(let a=0;a<2;a++){let s=0;for(let i=0;i<Base.HIDDEN;i++)s+=h[i]*w[out+a*Base.HIDDEN+i];y[a]+=s+w[out+2*Base.HIDDEN+a];}return y;}
+module.exports={...Base,mean};

@@ -39,18 +39,54 @@ test('Identical sensory history yields identical actions regardless of circuit c
   b.cars[0].x=900000;b.cars[0].y=-600000;b.cars[0].progress=5000;
   for(let n=0;n<16;n++)assert.deepEqual(F.neuralStep(a.graph,a.cars[0].brain,a.cars[0].genome,sensors),F.neuralStep(b.graph,b.cars[0].brain,b.cars[0].genome,sensors));
 });
-test('A badly scored lap cannot bypass the real reward objective during evolution',()=>{
+test('Learning can select lap progress while the historical score champion stays score-ranked',()=>{
   const sim=new F.Simulation(compact(),{population:4}),completed=sim.cars[0],crashed=sim.cars[1];
-  for(const c of sim.cars){c.alive=false;c.reward=100;c.penalty=400;c.fitness=-300;c.bestProgress=100;}
+  for(const c of sim.cars){c.alive=false;c.reason='ferma / senza progresso';c.rewardState.finalized=true;c.reward=100;c.penalty=400;c.fitness=-300;c.bestProgress=100;}
   completed.laps=1;completed.bestLapTime=300;completed.reward=200;completed.penalty=30000;completed.fitness=-29800;completed.bestProgress=sim.track.total;crashed.bestProgress=500;
   for(const c of sim.cars)c.rewardBreakdown.penalties.slip=c.penalty;
-  sim.evolve();assert.equal(sim.history[0].laps,0);assert.notDeepEqual(sim.cars[0].genome,completed.genome);assert.equal(sim.championStats.laps,0);
+  sim.evolve();assert.equal(sim.history[0].laps,0);assert.deepEqual(sim.cars[0].genome,completed.genome);assert.equal(sim.championStats.laps,0);
+});
+test('Safe learning selection advances physical progress before the first lap and optimizes reward afterward',()=>{
+  const oneLap={fitness:12000,laps:1,bestLapTime:240,bestProgress:6000};
+  const twoSlowLaps={fitness:1000,laps:2,bestLapTime:320,bestProgress:12000};
+  const crashedTwoLaps={fitness:50000,laps:2,bestLapTime:180,bestProgress:12000,reason:'urto',rewardBreakdown:{penalties:{collision:900}}};
+  assert.ok(F.compareLearningAgents(twoSlowLaps,oneLap)<0,'safe lap completion count must lead when policies completed different numbers of laps');
+  assert.ok(F.compareLearningAgents(oneLap,crashedTwoLaps)<0,'unsafe laps must not outrank a safe policy');
+  assert.ok(F.compareLearningAgents({...twoSlowLaps,fitness:12000},oneLap)<0,'lap count remains ahead of fitness');
+  assert.ok(F.compareLearningAgents({fitness:-5000,laps:0,bestProgress:700},{fitness:0,laps:0,bestProgress:20})<0,'before a lap, farther safe progress must not lose to a near-start rollout on score alone');
+  assert.ok(F.compareLearningAgents({fitness:500,laps:1,bestLapTime:230,bestProgress:6000},{fitness:100,laps:1,bestLapTime:240,bestProgress:6000})<0,'after equal lap counts, reward and lap pace remain authoritative');
+  assert.ok(F.compareAgents(oneLap,twoSlowLaps)<0,'historical best-score ordering remains unchanged');
+});
+test('Unsafe optimizer feedback ranks actual collision/invalid penalties after the safe frontier',()=>{
+  const safe={fitness:-5000,laps:0,bestProgress:700,reason:'troppo lenta / senza progresso'},
+    invalid={fitness:-3372,laps:0,bestProgress:794,reason:'progresso non valido',rewardBreakdown:{penalties:{invalid:1200}}},
+    impact={fitness:-3153,laps:0,bestProgress:792,reason:'urto',rewardBreakdown:{penalties:{collision:900}}};
+  assert.ok(F.compareLearningAgents(invalid,impact)<0,'the safe-learning progress ranking still compares near-miss distance first');
+  assert.ok(F.compareOptimizerAgents(safe,invalid)<0,'unsafe candidates cannot outrank a safe rollout');
+  assert.ok(F.compareOptimizerAgents(impact,invalid)<0,'the more heavily penalized invalid result is the negative optimizer sample');
 });
 test('Optimizer is updated by ranked rollout rewards and changes trainable neural parameters',()=>{
   const sim=new F.Simulation(compact(),{population:8,mutation:.16}),before=sim.optimizer.mean.slice();
-  for(const c of sim.cars){c.alive=false;c.bestProgress=(8-c.id)*30;c.reward=c.bestProgress;c.penalty=400;}
+  for(const c of sim.cars){c.alive=false;c.reason='ferma / senza progresso';c.rewardState.finalized=true;c.bestProgress=(8-c.id)*30;c.reward=c.bestProgress;c.penalty=400;}
   sim.evolve();assert.equal(sim.optimizer.updates,1);assert.equal(sim.optimizer.episodes,8);assert.notDeepEqual(sim.optimizer.mean,before);assert.equal(sim.history[0].learning.warmStart,false);
   assert.ok(new Set(sim.cars.map(c=>JSON.stringify(c.genome.policyWeights))).size>=6);
+});
+test('ES updates use direct samples and legacy restore falls back until provenance is reestablished',()=>{
+  const sim=new F.Simulation(compact(),{population:40,mutation:.16});
+  assert.equal(sim.optimizerSampleIds.size,40,'cold-start policies are draws from the optimizer initial distribution');
+  const finishGeneration=()=>{
+    for(const c of sim.cars){c.alive=false;c.reason='ferma / senza progresso';c.rewardState.finalized=true;
+      c.bestProgress=(sim.population-c.id)*30;c.reward=c.bestProgress;c.penalty=400;c.fitness=c.reward-c.penalty;}
+  };
+  finishGeneration();sim.evolve();
+  const sampledCount=sim.optimizerSampleIds.size,episodesBefore=sim.optimizer.episodes,updatesBefore=sim.optimizer.updates;
+  assert.ok(sampledCount>=4,'the next population contains the dedicated ES samples');
+  assert.ok(sim.cars.every(car=>!Object.hasOwn(car.genome,'__esSample')),'provenance stays outside the serialized genome schema');
+  finishGeneration();sim.evolve();
+  assert.equal(sim.optimizer.episodes,episodesBefore+sampledCount,'mutants, crossovers and immigrants do not enter the ES episode count');
+  assert.equal(sim.optimizer.updates,updatesBefore+1,'the sampled policies still update the distribution');
+  sim.spawn(sim.cars.map(car=>F.cloneGenome(car.genome)));
+  assert.equal(sim.optimizerSampleIds,null,'a restored population without serialized provenance uses the compatibility fallback');
 });
 test('RL checkpoints retain policy tensors; assisted 4.3 policies are explicitly rejected',()=>{
   const sim=new F.Simulation(compact(),{population:4}),g=sim.cars[0].genome,copy=F.cloneGenome(g);
@@ -71,5 +107,6 @@ test('RL checkpoints retain policy tensors; assisted 4.3 policies are explicitly
 });
 test('Zero mutation disables optimizer updates and does not invent learned parameters',()=>{
   const sim=new F.Simulation(compact(),{population:4,mutation:0}),before=sim.cars.map(c=>JSON.stringify(c.genome.policyWeights)).sort();
+  for(const c of sim.cars){c.alive=false;c.reason='ferma / senza progresso';c.rewardState.finalized=true;}
   sim.evolve();assert.equal(sim.optimizer.updates,0);assert.deepEqual(sim.cars.map(c=>JSON.stringify(c.genome.policyWeights)).sort(),before);
 });

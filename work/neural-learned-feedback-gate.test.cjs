@@ -1,0 +1,4 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),Gate=require('./neural-learned-feedback-gate.cjs');
+test('Zero mixture is exactly current gate; learned retention can preserve real prior activation',()=>{const g=Gate.create();assert.equal(g.value(1),0);g.observe([0,1,.2]);g.observe([.31,.1,0]);assert.equal(g.value(0),.31);assert.equal(g.value(1),1);assert.equal(g.value(-8),.31);assert.equal(g.value(8),1);const s=g.capture();g.reset();assert.equal(g.value(1),0);g.restore(s);assert.equal(g.value(1),1);assert.throws(()=>Gate.create().restore(s));});
+test('Numerical correction bound changes without prescribing a motor action',()=>{const g=Gate.create();g.observe([1]);g.observe([.31009353314687177]);const prior=-.9857517564316705;assert(prior+2*g.value(0)<0);assert(prior+2*g.value(1)>0);assert.throws(()=>g.observe([NaN]));assert.throws(()=>g.value(Infinity));});

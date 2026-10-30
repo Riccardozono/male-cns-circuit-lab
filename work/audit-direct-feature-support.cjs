@@ -1,0 +1,9 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),G=require('./guard-memory-runtime.cjs'),H=require('./causal-checkpoint.cjs'),N=require('./neural-causal-memory.cjs'),D=require('./exact-dense.cjs'),R=require('./neural-local-rbf.cjs');
+const source=path.join(G.root,'.impeccable/review/neural-local-rbf/causal-single-axis-guard4/checkpoint.json'),{saved,sim}=H.load(source),runtime=D.wrap(G.F,require('./exact-coo.cjs').pass);
+const episode=N.replay(sim.track,sim.graph,saved.baseGenome,saved.centres,saved.explorerWeights,{decay:saved.decay,runtime,trace:true}),grown=N.grow(episode.observations,[],[],8),centres=grown.centres;
+const distance=(a,b)=>Math.hypot(R.rms(a.values,b.values)/.15,R.rms(a.memory,b.memory)/.5),support=centres.map((c,k)=>{
+  const values=episode.observations.map(row=>N.feature(row.raw,row.memoryBefore,c)),hits=threshold=>values.flatMap((v,j)=>v>threshold?[j]:[]),nonzero=hits(0),strong=hits(.5),peak=values.indexOf(Math.max(...values)),nearest=Math.min(...centres.filter((_,j)=>j!==k).map(other=>distance(c,other)));
+  return {kernel:k,rawRadius:c.radius,memoryRadius:c.memoryRadius,jointWidth:c.radius/.15,nearestOtherCentre:nearest,firstSeconds:nonzero[0]*.1,lastSeconds:nonzero.at(-1)*.1,strongFirstSeconds:strong[0]*.1,strongLastSeconds:strong.at(-1)*.1,peakSeconds:peak*.1,peakProgress:episode.observations[peak].progress,nonzeroControls:nonzero.length};
+});
+const output=path.join(G.root,'.impeccable/review/neural-local-rbf/direct-support-audit');fs.mkdirSync(output,{recursive:true});fs.writeFileSync(path.join(output,'report.json'),JSON.stringify({result:episode.result,support,boundary:'Actual temporal support diagnostic only; timestamps and progress are not passed to the decoder.'},null,2));console.log(JSON.stringify({result:episode.result,support},null,2));

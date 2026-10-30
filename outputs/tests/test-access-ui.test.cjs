@@ -6,7 +6,8 @@ function navigation(busy=false,disabled=false){
   const calls=[],node=id=>({disabled,focus:options=>calls.push(['focus',id,options])});
   const summary=node('summary'),panel={open:false,scrollIntoView:options=>calls.push(['scroll',options]),querySelector:selector=>(assert.equal(selector,'summary'),summary)};
   const elements={'model-test-panel':panel,'open-model-test':{setAttribute:(...args)=>calls.push(['aria',...args])},'model-test-start':node('start'),'model-test-stop':node('stop')};
-  vm.runInNewContext(body('revealModelTest')+'\nrevealModelTest();',{$:id=>elements[id],modelTestBusy:busy});return{calls,panel};
+  const sessionUI={syncTest:()=>{panel.hidden=!panel.open;}};
+  vm.runInNewContext(body('revealModelTest')+'\nrevealModelTest();',{$:id=>elements[id],modelTestBusy:busy,sessionUI});return{calls,panel};
 }
 test('The model-test entry is visible in the top bar, labeled, controlled and disabled until ready',()=>{
   const topbar=html.slice(html.indexOf('<header'),html.indexOf('</header>'));
@@ -16,6 +17,7 @@ test('The model-test entry is visible in the top bar, labeled, controlled and di
 });
 test('Opening the test reveals and scrolls to Start without advancing or resetting any simulation',()=>{
   const {calls,panel}=navigation();assert.equal(panel.open,true);assert.equal(calls[0].join('|'),'aria|aria-expanded|true');
+  assert.equal(panel.hidden,false);
   assert.equal(calls[1][1].block,'start');assert.equal(calls[1][1].behavior,'auto');assert.equal(calls[2][1],'start');assert.equal(calls[2][2].preventScroll,true);
   assert.doesNotMatch(body('revealModelTest'),/runModelTest|desktopCompute|desktopTest|\bsim\b|reset\(|evolve\(/);
 });

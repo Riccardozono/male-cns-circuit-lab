@@ -30,5 +30,5 @@ for(const id of ['monza','monaco','le-mans']){
 }
 test('Local scenery never calls training, remote elevation services or a policy; current app/save version is retained',()=>{
   for(const file of ['world-terrain.mjs','district-buildings.mjs']){const src=fs.readFileSync(path.join(__dirname,'..',file),'utf8');assert.doesNotMatch(src,/import .*simulation|engine\.command|Math\.random\(/);}
-  const pkg=require('../../package.json');assert.equal(pkg.version,'5.6.0');for(const file of ['outputs/world-terrain.mjs','outputs/district-buildings.mjs','outputs/data/landscape/**/*'])assert.ok(pkg.build.files.includes(file));
+  const pkg=require('../../package.json');assert.equal(pkg.version,'5.7.0');for(const file of ['outputs/world-terrain.mjs','outputs/district-buildings.mjs','outputs/data/landscape/**/*'])assert.ok(pkg.build.files.includes(file));
 });

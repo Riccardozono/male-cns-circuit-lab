@@ -1,0 +1,14 @@
+'use strict';
+// Actual full native execution of a completed trained policy, including all
+// pre-gate policy memory. Never substitute practice-prefix metrics for it.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict'),Native=require('./neural-ppo-normalized-cuda-native.cjs'),Identity=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),study=path.join(base,'neuronal-ppo-normalized520-first'),out=path.join(base,'ppo-normalized64-native-transfer-first');fs.mkdirSync(out,{recursive:false});
+const policyFile=path.join(study,'latest-policy.json'),policy=JSON.parse(fs.readFileSync(policyFile,'utf8')),report=JSON.parse(fs.readFileSync(path.join(study,'report.json'),'utf8')),practice=report.events.at(-1).practiceEvaluation;
+assert.equal(policy.update,64);assert.equal(report.actualTransitions,16384);
+try{
+ const env=Native.create({modelFile:policy.identity.originFile,preparedFile:policy.identity.preparedFile,normalizationFile:policy.identity.normalizationFile,weights:policy.weights}),hash=crypto.createHash('sha256'),start=Date.now();let state=env.state(),controls=0;
+ while(!state.complete){if(Date.now()-start>180000)throw Error('Native audit wall bound');state=env.step();controls++;assert.equal(Math.min(state.car.outputs[1],state.car.outputs[2]),0);hash.update(JSON.stringify([state.bestProgress,state.totalSimulationSeconds,state.car.outputs])+'\n');}
+ const result=Object.fromEntries(['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'].map(k=>[k,state[k]])),trace=hash.digest('hex'),cuda=env.cudaStats();assert.equal(cuda.cpuFallbacks,0);assert.equal(cuda.gpuCalls,controls);
+ const record={passed:true,policyFile,policySha256:Identity.sha(fs.readFileSync(policyFile)),originalReportSha256:Identity.sha(fs.readFileSync(path.join(study,'report.json'))),controls,fullNative:{result,actionTraceSha256:trace},recordedPractice:practice,fullEqualsPracticeTrace:trace===practice.actionTraceSha256,cuda,sources:Identity.collect(['work/audit-ppo-normalized-practice-transfer.cjs','work/neural-ppo-normalized-cuda-native.cjs']),wallSeconds:(Date.now()-start)/1000,boundary:'One complete native trained-policy audit versus a recorded actual reached-prefix evaluation. A difference alone does not prove it caused failed learning; no clean promotion.'};
+ fs.writeFileSync(path.join(out,'verification.json'),JSON.stringify(record,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,fullEqualsPracticeTrace:record.fullEqualsPracticeTrace,full:result,practice:practice.result}));
+}catch(error){fs.writeFileSync(path.join(out,'failed.json'),JSON.stringify({passed:false,error:error.stack},null,2),{flag:'wx'});console.error(error.stack);process.exitCode=1;}finally{Native.close();}

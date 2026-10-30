@@ -1,0 +1,4 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),R6=require('./neural-direct-training-objective.cjs'),R7=require('./neural-direct-training-objective-r7.cjs');
+test('Observed near-corner stall no longer beats moving crash without lowering crash cost',()=>{const moving={complete:true,reason:'urto',fitness:-5389.358099343075},idle={complete:true,reason:'ferma / senza progresso',fitness:-3576.656321299386};assert(R6.fitness(idle)>R6.fitness(moving));assert(R7.fitness(idle)<R7.fitness(moving));assert.equal(R7.fitness(moving),moving.fitness);assert.equal(R7.PENALTY,2300);});
+test('No cost on unfinished rollout or completed laps',()=>{assert.equal(R7.penalty({complete:false,reason:'ferma / senza progresso'}),0);assert.equal(R7.penalty({complete:true,reason:'limite 2 giri'}),0);});

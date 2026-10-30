@@ -10,11 +10,48 @@ const seeds=arg('seeds','7717,1847,9021').split(',').map(Number),generations=Num
 if(!Number.isInteger(generations)||generations<5||generations>1000||!Number.isInteger(population)||population<4||population>100||seeds.some(s=>!Number.isInteger(s)||s<0||s>0xffffffff)||models.some(m=>!['v2','v3','v4','v5'].includes(m)))throw Error('Invalid evaluation configuration');
 let F;const eliteCount=Number(arg('elite-count','4'));
 if(!Number.isInteger(eliteCount)||eliteCount<1||eliteCount>4)throw Error('Invalid experimental elite count');
-if(eliteCount!==4){
+const unsafeLearningFeedback=process.argv.includes('--unsafe-learning-feedback');
+const fitnessRankedLearning=process.argv.includes('--fitness-ranked-learning-feedback');
+const unsafeFrontierBranch=process.argv.includes('--unsafe-frontier-branch');
+const strictBrakeLock=process.argv.includes('--strict-brake-lock');
+const unsafeFrontierMinMeters=Number(arg('unsafe-frontier-min-meters','12'));
+if([unsafeLearningFeedback,fitnessRankedLearning,unsafeFrontierBranch,strictBrakeLock].filter(Boolean).length>1)throw Error('Select one experimental learning-feedback mode');
+if(!Number.isFinite(unsafeFrontierMinMeters)||unsafeFrontierMinMeters<0)throw Error('Invalid unsafe frontier threshold');
+if(eliteCount!==4||unsafeLearningFeedback||fitnessRankedLearning||unsafeFrontierBranch||strictBrakeLock){
   const Module=require('node:module'),filename=path.join(source,'simulation.js'),experiment=new Module(filename,module);
   experiment.filename=filename;experiment.paths=module.paths;
-  const text=fs.readFileSync(filename,'utf8');if(!text.includes('eliteCount:4'))throw Error('Experiment source contract changed');
-  experiment._compile(text.replace('eliteCount:4','eliteCount:'+eliteCount),filename);F=experiment.exports;
+  let text=fs.readFileSync(filename,'utf8');
+  if(eliteCount!==4){if(!text.includes('eliteCount:4'))throw Error('Experiment source contract changed');text=text.replace('eliteCount:4','eliteCount:'+eliteCount);}
+  if(unsafeLearningFeedback||fitnessRankedLearning){
+    const learningLine='const learningRanked=usesLearningOutcome?(safeEligible.length?safeEligible.slice().sort(compareLearningAgents):this.mutation===0?ranked:[]):ranked,selectionWinner=learningRanked[0]||null;';
+    const comparator=fitnessRankedLearning?'compareAgents':'compareLearningAgents';
+    const experimentLine=`const learningRanked=usesLearningOutcome?eligible.filter(agent=>!agent.censored&&!agent.overlap&&!(Number(agent.rewardBreakdown?.penalties?.invalid)>0)&&!['progresso non valido','invalid progress'].includes(String(agent.reason||'').trim().toLowerCase())).sort(${comparator}):ranked,selectionWinner=learningRanked[0]||null;`;
+    if(text.split(learningLine).length!==2||!text.includes('noSafeLearningCandidate=usesLearningOutcome&&safeEligible.length===0;'))throw Error('Unsafe-feedback experiment source contract changed');
+    text=text.replace(learningLine,experimentLine).replace('noSafeLearningCandidate=usesLearningOutcome&&safeEligible.length===0;','noSafeLearningCandidate=false;');
+    text=text.replace('if(this.mutation>0&&!noSafeLearningCandidate)this.optimizer?.update(learningRanked,usesLearningOutcome?compareLearningAgents:undefined);','if(this.mutation>0&&learningRanked.length>1)this.optimizer?.update(learningRanked,usesLearningOutcome?compareLearningAgents:undefined);');
+  }
+  if(unsafeFrontierBranch){
+    const safetyFn="  function isSafeLearningOutcome(agent){\n    const car=agent?.car||agent,reason=String(car?.reason||'').trim().toLowerCase(),penalties=car?.rewardBreakdown?.penalties||{};\n    return !car?.censored&&!car?.overlap&&!unsafeLearningReasons.has(reason)&&!(Number(penalties.collision)>0)&&!(Number(penalties.offTrack)>0)&&!(Number(penalties.invalid)>0);\n  }";
+    const failureFn="  function isSafeLearningOutcome(agent){\n    const car=agent?.car||agent,reason=String(car?.reason||'').trim().toLowerCase(),penalties=car?.rewardBreakdown?.penalties||{};\n    return !car?.censored&&!car?.overlap&&!unsafeLearningReasons.has(reason)&&!(Number(penalties.collision)>0)&&!(Number(penalties.offTrack)>0)&&!(Number(penalties.invalid)>0);\n  }\n  function isExploratoryFailure(agent){\n    const car=agent?.car||agent,reason=String(car?.reason||'').trim().toLowerCase(),penalties=car?.rewardBreakdown?.penalties||{};\n    return !car?.censored&&!car?.overlap&&!(Number(penalties.invalid)>0)&&!['progresso non valido','invalid progress'].includes(reason)&&(Number(penalties.collision)>0||Number(penalties.offTrack)>0||['urto','fuori pista','collision','off track'].includes(reason));\n  }";
+    const safeLeaderLine='const safeEligible=eligible.filter(isSafeLearningOutcome),safeProgressLeader=safeEligible.length?safeEligible.slice().sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0]:null;';
+    const safeLeaderWithRisk=safeLeaderLine+'const unsafeProgressLeader=eligible.filter(isExploratoryFailure).sort((a,b)=>b.bestProgress-a.bestProgress||compareAgents(a,b))[0]||null;';
+    const frontierLine='const frontierParent=progressExplorer||(stagnantFrontier?safeProgressLeader:null);';
+    const frontierWithRisk=frontierLine+`\n      const riskThreshold=Math.max(${unsafeFrontierMinMeters}*(this.track.pixelsPerMeter||1),this.track.total*.002),knownSafeProgress=Math.max(Number(this.safeLearningFrontier?.progress)||0,Number(safeProgressLeader?.bestProgress)||0);\n      const unsafeFrontierParent=baseMutation>0&&unsafeProgressLeader&&unsafeProgressLeader.bestProgress>knownSafeProgress+riskThreshold?unsafeProgressLeader:null;\n      if(unsafeFrontierParent)this.benchmarkUnsafeFrontierPicks=(this.benchmarkUnsafeFrontierPicks||0)+1;`;
+    const offspringLine='       let frontierOffspringCount=0;';
+    const offspringWithRisk=offspringLine+'\n       let unsafeFrontierOffspringCount=0;\n       const unsafeFrontierOffspringTarget=unsafeFrontierParent?Math.min(1,Math.max(0,this.population-immigrantCount-genomes.length)):0;';
+    const loopLine='      while(genomes.length<this.population) {\n         if(noSafeLearningCandidate&&baseMutation>0)';
+    const loopWithRisk='      while(genomes.length<this.population) {\n         if(unsafeFrontierOffspringCount<unsafeFrontierOffspringTarget&&genomes.length<this.population-immigrantCount){\n           const child=cloneGenome(unsafeFrontierParent.genome);\n           child.policyWeights=Learning.safeMotorMutation(this.graph,unsafeFrontierParent.genome.policyWeights,this.random,childMutationAmount(),unsafeFrontierParent.brain.policyExperience);\n           genomes.push(child);unsafeFrontierOffspringCount++;continue;\n         }\n         if(noSafeLearningCandidate&&baseMutation>0)';
+    if(text.split(safetyFn).length!==2||text.split(safeLeaderLine).length!==2||text.split(frontierLine).length!==2||text.split(offspringLine).length!==2||text.split(loopLine).length!==2)throw Error('Unsafe-frontier experiment source contract changed');
+    text=text.replace(safetyFn,failureFn).replace(safeLeaderLine,safeLeaderWithRisk).replace(frontierLine,frontierWithRisk).replace(offspringLine,offspringWithRisk).replace(loopLine,loopWithRisk);
+  }
+  if(strictBrakeLock){
+    const rewardFile=path.join(source,'rewards.js'),originalRewards=fs.readFileSync(rewardFile,'utf8'),baseline='brakeLockGraceSeconds:2,brakeLockPenaltyPerSecond:350';
+    if(originalRewards.split(baseline).length!==2)throw Error('Brake-lock ablation source contract changed');
+    const rewardModule=new Module(rewardFile,module);rewardModule.filename=rewardFile;rewardModule.paths=Module._nodeModulePaths(path.dirname(rewardFile));
+    rewardModule._compile(originalRewards.replace(baseline,'brakeLockGraceSeconds:.5,brakeLockPenaltyPerSecond:700'),rewardFile);
+    const nativeRequire=Module.createRequire(filename);experiment.require=request=>request==='./rewards.js'?rewardModule.exports:nativeRequire(request);
+    experiment._compile(text,filename);F=experiment.exports;
+  }else{experiment._compile(text,filename);F=experiment.exports;}
 }else F=require(path.join(source,'simulation.js'));
 const Legacy=require(path.join(source,'legacy-models.js')),Profiles=require(path.join(source,'model-profiles.js'));
 // A bounded optimizer-only ablation. Applied in memory to this diagnostic,
@@ -47,7 +84,9 @@ function modelData(id){
 const target=path.resolve(root,arg('out','.impeccable/review/learning-ml/'+arg('tag','candidate')+'.json'));
 if(fs.existsSync(target))throw Error('Refusing to overwrite previous evaluation: '+target);
 fs.mkdirSync(path.dirname(target),{recursive:true});
-const report={created:new Date().toISOString(),version:require(path.join(source,'../package.json')).version,source,sourceSha256,settings:{models,circuits,seeds,generations,population,mutation:.16,eliteBlend,eliteCount,pairedInitial},cases:[],boundary:'Headless CPU, natural cold-start generations, no progress imports. Matched seeds/settings are required for comparisons. No GPU/FPS or convergence claim.'};
+const report={created:new Date().toISOString(),version:require(path.join(source,'../package.json')).version,source,sourceSha256,settings:{models,circuits,seeds,generations,population,mutation:.16,eliteBlend,eliteCount,pairedInitial,unsafeLearningFeedback,fitnessRankedLearning,unsafeFrontierBranch,unsafeFrontierMinMeters},cases:[],boundary:unsafeFrontierBranch?`Diagnostic-only progress frontier: one mutated offspring may branch from a completed collision/off-track-penalized episode only when it beats the prior safe frontier by max(${unsafeFrontierMinMeters} m, 0.2% of track length). It never updates safe champion/archive/frontier; reward penalties remain unchanged. Headless CPU, natural cold-start, no imports. Matched seeds/settings required. No GPU/FPS or convergence claim.`:fitnessRankedLearning?'Diagnostic-only ablation: all complete, valid episodes rank by actual penalized fitness for neural feedback and exploratory parents. Crashes/off-track remain penalized and excluded from safe champion/archive/frontier. Headless CPU, natural cold-start, no imports. Matched seeds/settings are required. No GPU/FPS or convergence claim.':unsafeLearningFeedback?'Diagnostic-only ablation: crash/off-track outcomes remain penalized and excluded from safe champion/archive/frontier, but can guide exploratory parent ranking after safe-first ordering. Headless CPU, natural cold-start generations, no progress imports. Matched seeds/settings are required. No GPU/FPS or convergence claim.':'Headless CPU, natural cold-start generations, no progress imports. Matched seeds/settings are required for comparisons. No GPU/FPS or convergence claim.'};
+report.settings.strictBrakeLock=strictBrakeLock;
+if(strictBrakeLock)report.boundary='Diagnostic-only in-memory reward ablation: brake-lock grace 0.5 s and cost 700 pt/s; physics, sensors, networks and selection are unchanged. Headless CPU, natural cold-start, no imports. Matched seeds/settings required. No GPU/FPS or convergence claim.';
 for(const modelId of models)for(const circuitId of circuits)for(const seed of seeds){
   const sim=new F.Simulation(modelData(modelId),{population,mutation:.16,seed,circuits:catalog,circuitId});
   if(pairedInitial)for(let i=1;i<sim.cars.length;i+=2)sim.cars[i].genome.policyWeights=sim.graph.learning.mean.map((v,j)=>F.clamp(2*v-sim.cars[i-1].genome.policyWeights[j],-8,8));
@@ -64,6 +103,7 @@ for(const modelId of models)for(const circuitId of circuits)for(const seed of se
     firstMedianMeters:median(distances.slice(0,5)),lastMedianMeters:median(distances.slice(-5)),maxMeters:Math.max(...distances),
     maxLaps:Math.max(...history.map(h=>h.maxLaps??h.laps)),firstTwoLapsGeneration:history.find(h=>(h.maxLaps??h.laps)>=2)?.generation??null,
     meanDeltaRms:Math.sqrt(sim.optimizer.mean.reduce((s,v,i)=>s+(v-initialMean[i])**2,0)/initialMean.length),
+    unsafeFrontierPicks:sim.benchmarkUnsafeFrontierPicks||0,
     topologyUnchanged:topology===hash(Buffer.from(sim.graph.targets.buffer,sim.graph.targets.byteOffset,sim.graph.targets.byteLength)),history};
   report.cases.push(result);fs.writeFileSync(target,JSON.stringify(report,null,2)+'\n');
   console.log('LEARNING_CASE '+JSON.stringify({...result,history:undefined}));

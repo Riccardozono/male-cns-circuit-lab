@@ -1,0 +1,11 @@
+'use strict';
+const path=require('node:path'),fs=require('node:fs'),{spawn}=require('node:child_process');
+const root=path.resolve(__dirname,'..'),stage=Number(process.argv.find(a=>a.startsWith('--stage='))?.slice(8)||3),env={...process.env};delete env.ELECTRON_RUN_AS_NODE;
+const profile=path.join(root,'.impeccable/context-native-smoke-profile-'+Date.now());fs.mkdirSync(profile,{recursive:true});
+const args=[path.join(__dirname,'context-preview-main.cjs'),'--stage='+stage,process.argv.includes('--probe-atlas')?'--probe-atlas':'--smoke','--user-data-dir='+profile];
+if(process.argv.includes('--functional-only'))args.push('--functional-only');
+if(process.argv.includes('--frontier'))args.push('--frontier');
+if(process.argv.includes('--diversity'))args.push('--diversity');
+const child=spawn(path.join(root,'node_modules/electron/dist/electron.exe'),args,{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+child.stdout.on('data',b=>process.stdout.write(b));child.stderr.on('data',b=>process.stderr.write(b));
+child.on('error',error=>{console.error(error);process.exitCode=1;});child.on('exit',code=>{console.log('CONTEXT_NATIVE_EXIT '+code);process.exitCode=code===0?0:1;});

@@ -577,7 +577,7 @@
       ];
       this._population = Math.max(4,Math.min(F.MAX_POPULATION,Math.round(options.population??16)));
       this._pendingPopulation=null;this._inspectedAgentId=0;
-      this._mutation = options.mutation ?? .16;
+      this._mutation = options.mutation ?? .32;
       this._pendingMutation = null;
       this._speedMultiplier = F.clamp(options.speedMultiplier ?? 1, .5, 30);
       this._pendingSpeedMultiplier = null;

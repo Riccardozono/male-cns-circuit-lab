@@ -10,6 +10,9 @@ const options={population:4,mutation:.16,speedMultiplier:30,limitSeconds:0};
 test('Every profile starts from the same explicit settings and seed',()=>{
   assert.deepEqual(T.MODELS,['v2','v3','v4','v5']);const s=T.settings(options);assert.equal(s.seed,7717);assert.equal(s.workerCount,1);assert.ok(Object.isFrozen(s));
 });
+test('Model comparison without overrides uses the fresh-session mutation default',()=>{
+  assert.equal(T.settings().mutation,.32);
+});
 test('Invalid settings cannot silently change the comparison',()=>{
   for(const extra of [{population:3},{population:101},{population:4.5},{mutation:NaN},{mutation:.36},{speedMultiplier:31},{limitSeconds:-1},{limitSeconds:Infinity}])assert.throws(()=>T.settings({...options,...extra}));
 });

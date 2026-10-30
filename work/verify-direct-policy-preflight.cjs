@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),Env=require('./neural-direct-policy-env.cjs'),Native=require('./neural-direct-policy-native.cjs'),Core=require('./neural-direct-policy-core.cjs'),I=require('./neural-research-source-identity.cjs');
+const dir=path.resolve('.impeccable/review/neural-sacl/direct-neuronal-policy-preflight-r2');fs.mkdirSync(dir);
+try{
+ const env=Env.create({seed:171026}),native=Native.create(),metadata=env.metadata(),weights=metadata.initialWeights;
+ assert.equal(metadata.graph.nodes,7721);assert.equal(weights.length,154);
+ const baseline=env.evaluate(weights),hash=crypto.createHash('sha256');assert(baseline.complete&&!baseline.censored&&!baseline.overlap);let s=native.state();
+ while(!s.complete){s=native.step(weights);hash.update(JSON.stringify([s.bestProgress,s.totalSimulationSeconds,s.car.outputs])+'\n');}
+ assert.equal(hash.digest('hex'),baseline.actionTraceSha256);for(const k of ['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'])assert.deepEqual(s[k],baseline.result[k]);
+ env.reset();native.reset();const rollout=env.rollout(weights,[.08,.2],64);let terminals=0;
+ for(const row of rollout.rows){s=native.state();assert.deepEqual(s.x,row.x);assert.equal(s.active,row.active);assert.deepEqual(Core.mean(row.x,weights),row.mean);const before=s.fitness;s=native.step(weights,row.action);assert.equal((s.fitness-before)/100,row.reward);assert.equal(s.complete,row.done);assert.deepEqual(row.next,s.complete?Array(77).fill(0):s.x);assert.equal(Math.min(s.car.outputs[1],s.car.outputs[2]),0);if(s.complete){terminals++;native.reset();}}
+ assert.equal(terminals,rollout.episodes.length);assert.deepEqual(Core.commands([100,-100],false),[0,0,0]);assert(Core.stats().gpuCalls>0&&Core.stats().cpuFallbacks===0);
+ const proof={passed:true,metadata,baseline,actualTransitionReplayComparisons:64,actualTerminalsCompared:terminals,cuda:Core.stats(),sourceHashes:I.collect(['work/verify-direct-policy-preflight.cjs','work/neural-direct-policy-env.cjs','work/neural-direct-policy-native.cjs','outputs/data/connectome.json','outputs/data/circuits.json','.impeccable/runtime-node24/node.exe']),boundary:'Actual direct-readout from-line mean evaluation plus independent native64transition replay of genuinely sampled actions. No trajectory/teacher actions for learning; replay only validates recorded physical transitions. Not two laps or all-model validation.'};fs.writeFileSync(path.join(dir,'verification.json'),JSON.stringify(proof,null,2),{flag:'wx'});fs.writeFileSync(path.join(dir,'actual-rollout64.json'),JSON.stringify(rollout,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,baseline:baseline.result,controls:baseline.controls,transitionsCompared:64,parameters:weights.length}));
+}finally{Native.close();}

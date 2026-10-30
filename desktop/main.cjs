@@ -36,6 +36,7 @@ const modelBenchmark=process.argv.includes('--model-benchmark');
 const modelTestSmoke=process.argv.includes('--model-test-smoke');
 const learningSmoke = process.argv.includes('--learning-test');
 const uiSmoke = process.argv.includes('--ui-smoke');
+const trainingCopySmoke=process.argv.includes('--training-copy-smoke');
 const trackSmoke = process.argv.includes('--track-smoke');
 const performanceSmoke=process.argv.includes('--performance-test');
 const physicsSmoke=process.argv.includes('--physics-smoke');
@@ -89,8 +90,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1540,
     height: 980,
-    minWidth: (modelTestSmoke||uiSmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 1080,
-    minHeight: (modelTestSmoke||uiSmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 720,
+    minWidth: (modelTestSmoke||uiSmoke||trainingCopySmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 1080,
+    minHeight: (modelTestSmoke||uiSmoke||trainingCopySmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 720,
     backgroundColor: '#0b1118',
     autoHideMenuBar: true,
     show: false,
@@ -102,9 +103,10 @@ function createWindow() {
       backgroundThrottling: false
     }
   });
-  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!process.argv.includes('--smoke-test')) mainWindow.show();});
+  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trainingCopySmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!process.argv.includes('--smoke-test')) mainWindow.show();});
   mainWindow.on('closed', () => {mainWindow = null;});
-  mainWindow.loadURL('male-cns://app/index.html');
+  if(uiSmoke||trainingCopySmoke)mainWindow.webContents.on('console-message',details=>{if(details.level==='error'||details.level===3)console.error('UI_BOOT '+details.message);});
+  mainWindow.loadURL(process.argv.includes('--male-cns-training-copy-v3')?'male-cns://app/index.html?training-copy=verified-v3':'male-cns://app/index.html');
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));
     const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
@@ -170,8 +172,17 @@ function createWindow() {
     mainWindow.webContents.once('did-finish-load', () => {
       const outputArg=process.argv.find(argument=>argument.startsWith('--ui-output-dir='));
       const output=outputArg?path.resolve(outputArg.slice('--ui-output-dir='.length)):path.join(app.getPath('temp'),'male-cns-ui-'+app.getVersion());
-      const harness=process.argv.includes('--circuit-3d-smoke')?'./circuit-3d-smoke.cjs':'./ui-smoke.cjs';
+      const harness=process.argv.includes('--ui-redesign-smoke')?'./ui-redesign-smoke.cjs':process.argv.includes('--circuit-3d-smoke')?'./circuit-3d-smoke.cjs':'./ui-smoke.cjs';
       require(harness).run(mainWindow,{output,engine,version:app.getVersion(),forceCpuFallback,capture:process.argv.includes('--capture')}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'ui-error.json'),JSON.stringify({error:error.stack||String(error)},null,2));app.exit(1);});
+    });
+  }
+  if(trainingCopySmoke){
+    mainWindow.webContents.once('did-finish-load',()=>{
+      const outputArg=process.argv.find(argument=>argument.startsWith('--training-copy-output-dir='));
+      const output=outputArg?path.resolve(outputArg.slice('--training-copy-output-dir='.length)):path.join(app.getPath('temp'),'male-cns-training-copy-'+app.getVersion());
+      require('./training-copy-smoke.cjs').run(mainWindow,{output,version:app.getVersion()}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
+        console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'training-copy-error.json'),JSON.stringify({error:error.stack||String(error),version:app.getVersion()},null,2));app.exit(1);
+      });
     });
   }
   if (allBenchmark) {

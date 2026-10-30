@@ -4,6 +4,7 @@
 import * as T from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {placeCar} from './terrain-3d.mjs';
+import {obscuresDriverEye} from './car-3d.mjs';
 export const SUPPLIED_CAR_REVISION='992-user-glb-lod-3';
 export class SuppliedCarFleet{
   static async load(group){
@@ -31,6 +32,7 @@ export class SuppliedCarFleet{
     const count=Math.min(100,cars.length),chosen=selected||cars[0],ppm=chosen?.pixelsPerMeter||1;
     this.carCount=count;const lists=[[],[],[]],near=[];
     for(let i=0;i<count;i++){
+      if(mode==='first-person'&&obscuresDriverEye(cars[i],chosen))continue;
       const car=cars[i],distance=camera.position.distanceTo(new T.Vector3(car.x-origin.x,((ground?.sample(car.x,car.y).height||0)+.6)*ppm,car.y-origin.y)),pixels=height*4.619*ppm/(Math.max(.1,distance)*2*Math.tan(camera.fov*Math.PI/360));
       if(car===chosen&&pixels>55){lists[0].push(car);continue;}
       // Cars are independent overlapping trials. At the same starting point,

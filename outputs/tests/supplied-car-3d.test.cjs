@@ -30,5 +30,7 @@ test('Actual imported mesh instancing and wheel animation observe 100 independen
   fleet.update(sim.cars,{x:0,y:0},['#ff7658'],{selected:sim.cars[0],camera,height:450,mode:'follow'});
   assert.equal(JSON.stringify(sim.cars),before);assert.equal(fleet.carCount,100);assert.equal(fleet.renderedCars,100);assert.equal(fleet.counts[0],1);assert.ok(fleet.counts[1]<=12);assert.ok(fleet.parts.every(p=>p.mesh.count<=p.capacity));
   const body=fleet.lods[0].find(p=>!p.wheel),wheel=fleet.lods[0].find(p=>p.wheel==='LF'),a=new T.Matrix4(),b=new T.Matrix4();body.mesh.getMatrixAt(0,a);wheel.mesh.getMatrixAt(0,b);assert.notDeepEqual(a.elements,b.elements);
+  fleet.update(sim.cars,{x:0,y:0},['#ff7658'],{selected:sim.cars[0],camera,height:450,mode:'first-person'});
+  assert.equal(fleet.carCount,100);assert.equal(fleet.renderedCars,99);assert.equal(fleet.counts[0],0);assert.equal(JSON.stringify(sim.cars),before);
   fleet.dispose();assert.equal(group.children.length,0);
 });

@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),Stack=require('./neural-context-stack.cjs'),Head=require('./neural-json-head.cjs');
+const root=path.resolve(__dirname,'..'),dir=path.join(root,'.impeccable/review/neural-sacl');
+const reportFile=path.join(dir,'observed-context-first/report.json'),report=JSON.parse(fs.readFileSync(reportFile,'utf8'));
+if(!report.passed)throw Error('Verified full reward champion required');
+const preparedFile=path.join(dir,'context-growth-first/prepared.json'),prepared=JSON.parse(fs.readFileSync(preparedFile,'utf8'));
+const headFile=path.join(dir,'native-neural-head/learned-head.malecns-neural-exp.json');
+if(Head.sha(fs.readFileSync(headFile,'utf8'))!==report.environment.sourceHeadSha256||Head.sha(fs.readFileSync(preparedFile,'utf8'))!==report.environment.basisSha256)throw Error('Changed training sources');
+const initial=Stack.parse(Stack.encode({format:'male-cns-private-context-model',schema:1,appVersion:'5.6.0',decoderRevision:'observed-neural-context-stack-v1',baseHeadEnvelope:JSON.parse(fs.readFileSync(headFile,'utf8')),stages:[]}));
+const model=Stack.append(initial,prepared.basis,report.champion.weights,{reportSha256:Head.sha(fs.readFileSync(reportFile,'utf8')),verifiedFullResult:report.fullChampion.result});
+const out=path.join(dir,'context-stack-1');fs.mkdirSync(out,{recursive:true});const file=path.join(out,'model.malecns-neural-context.json');
+if(fs.existsSync(file))throw Error('Preserve existing model');fs.writeFileSync(file,Stack.encode(model.data));
+console.log('CONTEXT_STACK_EXPORTED '+JSON.stringify({stages:model.data.stages.length,fullReference:report.fullChampion.result,modelSha256:Head.sha(fs.readFileSync(file,'utf8'))}));

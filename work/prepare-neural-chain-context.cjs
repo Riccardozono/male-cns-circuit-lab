@@ -1,0 +1,24 @@
+'use strict';
+// Actual late neuronal samples only. Episode order is preparation metadata,
+// never a controller input, motor target or driving tape.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),Model=require('./neural-frontier-chain.cjs'),Context=require('./neural-context-readout.cjs'),R=require('./neural-projected-residual.cjs'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+function prepare(reportFile,out,{tailControls=96}={}){
+  if(process.versions.node!=='24.19.0'||!Number.isInteger(tailControls)||tailControls<48||tailControls>256)throw Error('Pinned runtime and bounded actual late window required');
+  const report=JSON.parse(fs.readFileSync(reportFile,'utf8')),proof=report.proofs?.[0];
+  if(!report.passed||report.phase!=='finished'||report.proofs.length!==2||report.proofs.some(p=>!p.passed||!p.complete||p.censored||p.overlap)||report.proofs[0].actionTraceSha256!==report.proofs[1].actionTraceSha256||sha(report.modelFile)!==report.modelSha256||sha(proof.trajectoryFile)!==report.trajectorySha256)throw Error('Two complete actual native branch proofs and exact raw data required');
+  const loaded=Model.load(report.modelFile,{allowExploration:true}),bytes=fs.readFileSync(proof.trajectoryFile),data=new Float64Array(bytes.buffer,bytes.byteOffset,bytes.byteLength/8),n=proof.actualActorControls;
+  if(n<1000||data.length!==n*530)throw Error('Exact actual full trajectory shape required');
+  const observations=Array.from({length:n},(_,i)=>Array.from(data.subarray(i*530,i*530+516))),mean=Array.from({length:516},(_,j)=>observations.reduce((s,row)=>s+row[j],0)/n),scales=mean.map((m,j)=>Math.max(.02,Math.sqrt(observations.reduce((s,row)=>s+(row[j]-m)**2,0)/n))),protectedCount=n-tailControls;
+  const centreIndices=[.75,.5,.25].map(f=>n-Math.round(tailControls*f)),centres=centreIndices.map(index=>{const values=observations[index].slice();let nearest=Infinity;for(let i=0;i<protectedCount;i++)nearest=Math.min(nearest,Context.distance(observations[i],values,scales));if(nearest<1e-8)throw Error('No distinct actual late neuronal context');return {values,radius:nearest*.75};}),basis={scales,centres,protectedCount,sourceObservationCount:n};
+  const gate=R.createGate(basis),fullTrace=crypto.createHash('sha256'),tailTrace=crypto.createHash('sha256');let firstActivated=-1;
+  for(let i=0;i<n;i++){const g=gate.observe(observations[i]);if(i<protectedCount&&g!==0)throw Error('All actually observed protected states need zero support');if(firstActivated<0&&g>0)firstActivated=i;const o=i*530,line=JSON.stringify([data[o+526],data[o+527],Array.from(data.subarray(o+523,o+526))])+'\n';fullTrace.update(line);if(firstActivated>=0)tailTrace.update(line);}
+  if(firstActivated<protectedCount||firstActivated>=n-12||fullTrace.digest('hex')!==proof.actionTraceSha256)throw Error('Trace or real activation boundary differs');
+  fs.mkdirSync(out,{recursive:false});const modelFile=path.join(out,'base.malecns-frontier-chain.json'),model={...loaded.data,stages:loaded.data.stages.concat({basis,genes:[0,0]}),expectedResult:proof.result,fullTraceSha256:proof.actionTraceSha256,provenance:{...loaded.data.provenance,previousNativeReportSha256:sha(reportFile),previousModelSha256:loaded.sha256}};
+  fs.writeFileSync(modelFile,Model.encode(model));
+  const result={format:'male-cns-actual-neuronal-chain-context-v1',schema:1,appVersion:'5.6.0',numericRuntime:'24.19.0',sourceNativeReportFile:reportFile,sourceNativeReportSha256:sha(reportFile),modelFile,modelSha256:sha(modelFile),stageCount:model.stages.length,sourceControls:n,protectedCount,firstActivatedControl:firstActivated,sourceFullResult:proof.result,sourceFullTraceSha256:proof.actionTraceSha256,sourceCachedPracticeTraceSha256:tailTrace.digest('hex'),tailControls,centreIndices,
+    sourceHashes:Object.fromEntries(['prepare-neural-chain-context.cjs','neural-frontier-chain.cjs','neural-context-readout.cjs','neural-projected-residual.cjs'].map(f=>[f,sha(path.join(__dirname,f))])),
+    boundary:'Append a zero-initialized neuronal-only context to an independently replayed actual branch. Earlier observations have exactly zero support. Time/progress/order select training samples only, never drive the car. The source remains exploration-only unless separately proved clean.'};
+  fs.writeFileSync(path.join(out,'prepared.json'),JSON.stringify(result));console.log(JSON.stringify({passed:true,file:path.join(out,'prepared.json'),stageCount:result.stageCount,sourceControls:n,firstActivatedControl:firstActivated,sourceFullResult:proof.result}));return result;
+}
+if(require.main===module){if(process.argv.length<4||process.argv.length>5)throw Error('Native report, NEW output folder and optional actual tail length required');prepare(path.resolve(process.argv[2]),path.resolve(process.argv[3]),{tailControls:process.argv[4]?Number(process.argv[4]):96});}
+module.exports={prepare};

@@ -1,0 +1,4 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),O=require('./neural-direct-training-objective.cjs');
+test('Actual observed idle-vs-moving inversion is removed without reducing crash cost',()=>{const moving={complete:true,reason:'urto',fitness:-5389.358099343075},idle={complete:true,reason:'troppo lenta / senza progresso',fitness:-4346.300351555829};assert(idle.fitness>moving.fitness);assert.equal(O.fitness(moving),moving.fitness);assert(O.fitness(idle)<O.fitness(moving));assert.equal(O.PENALTY,1800);});
+test('No unfinished rollout receives fabricated terminal penalty',()=>{assert.equal(O.penalty({complete:false,reason:'ferma / senza progresso'}),0);assert.equal(O.penalty({complete:true,reason:'2 giri completati'}),0);assert.equal(O.penalty({complete:true,reason:'urto'}),0);});

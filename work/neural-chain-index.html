@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#fcfefe">
+    <meta name="description" content="Prototipo Windows privato di allenamento nativo V3 su Monza, da un campione già allenato. Grafo MaleCNS di 7.721 neuroni, fisica libera e atlante neurale interattivo.">
+    <title>Circuit Lab 5.6.0 · campione 1 giro DEV · V3 / Monza</title>
+    <script src="ui-theme.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <p class="brand-name">MAL-E CNS</p>
+            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.6.0</span> · DEV · V3 / Monza</p>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <button class="button button--secondary theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Modalità scura" title="Attiva la modalità scura."><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Scuro</span></button>
+          <button class="button button--secondary" id="open-model-test" type="button" aria-controls="model-test-panel" aria-expanded="false" disabled>Apri test modelli</button>
+          <span class="status-chip status-chip--live"><span class="status-dot"></span> Locale · offline</span>
+          <span class="topbar-date" id="model-badge">MaleCNS V4 · 166.700 neuroni</span>
+        </div>
+      </header>
+
+      <main class="workspace" inert aria-busy="true">
+        <section class="simulation-panel panel" aria-labelledby="simulation-title">
+          <div class="panel-heading panel-heading--simulation">
+            <div>
+              <h1 id="simulation-title">Laboratorio di guida</h1>
+            </div>
+            <div class="run-actions"><button class="button button--primary" id="toggle-run" type="button">Pausa</button><button class="button button--secondary" id="reset-sim" type="button">Reset</button><button class="button button--secondary" id="next-generation" type="button">Evolvi ora</button></div>
+            <div class="field-readout" aria-live="polite">
+              <span class="readout-label">STATO</span>
+              <strong id="run-state">AVVIO</strong>
+            </div>
+          </div>
+          <div class="workspace-switcher" role="group" aria-label="Area di lavoro">
+            <button type="button" id="view-circuit" aria-pressed="true" aria-controls="circuit-view">Circuito</button>
+            <button type="button" id="view-brain" aria-pressed="false" aria-controls="brain-view">Cervello 3D</button>
+            <button type="button" id="view-split" aria-pressed="false" aria-controls="circuit-view brain-view">Affiancati</button>
+          </div>
+          <div class="circuit-controls">
+            <div class="circuit-field"><label class="control-label" for="circuit-select">Circuito</label><select id="circuit-select" aria-describedby="circuit-change-note"></select></div>
+            <div class="circuit-field"><label class="control-label" for="camera-select">Camera del circuito</label><select id="camera-select" aria-describedby="first-person-note"><option value="overview">Panoramica</option><option value="follow">Segui auto</option><option value="first-person">Prima persona · auto selezionata</option></select><p class="hint" id="first-person-note" hidden>Posto guida e abitacolo schematici, non inclusi nel modello Porsche esterno. Trascina o usa le frecce per guardare, rotella per il campo visivo, Centra per guardare avanti.</p></div>
+            <p id="circuit-change-note" class="hint">Nuova pista: riparte dalla generazione 1.</p>
+          </div>
+          <details class="model-test" id="model-test-panel">
+            <summary>Test modelli · obiettivo 2 giri</summary>
+            <div class="model-test-body">
+              <p id="model-test-settings" class="hint">V2 → V3 → V4 → V5, da zero sul circuito selezionato. Stesse impostazioni, un worker ciascuno.</p>
+              <div class="model-test-actions">
+                <label for="model-test-limit">Minuti reali per modello<input type="number" id="model-test-limit" min="0" max="1440" step="1" value="10" aria-describedby="model-test-limit-note"></label>
+                <button class="button button--primary" id="model-test-start" type="button">Avvia V2 · V3 · V4 · V5</button>
+                <button class="button button--secondary" id="model-test-stop" type="button" disabled>Interrompi test</button>
+                <button class="button button--secondary" id="model-test-export" type="button" disabled>Esporta JSON…</button>
+              </div>
+              <p class="hint" id="model-test-limit-note">0 = senza limite. Il limite reale interrompe solo il test; non cambia le regole della simulazione.</p>
+              <p class="model-test-status" id="model-test-status" role="status" aria-live="polite" aria-atomic="true">Pronto. L’addestramento corrente sarà messo in pausa e conservato; nessun risultato del test sovrascrive i progressi.</p>
+              <p class="hint" id="model-test-caption">Risultati ancora non disponibili.</p>
+              <div class="model-test-table" tabindex="0" role="region" aria-label="Risultati del test, tabella scorrevole" aria-describedby="model-test-caption model-test-timing">
+                <table>
+                  <caption>Due giri della stessa auto, poi fine naturale della generazione</caption>
+                  <thead><tr><th scope="col">Modello</th><th scope="col">Esito</th><th scope="col">Reale<br>test</th><th scope="col">Simulato<br>test</th><th scope="col">Generazioni<br>concluse</th><th scope="col">Giri<br>max</th><th scope="col">2 giri<br>simulati</th></tr></thead>
+                  <tbody id="model-test-results"></tbody>
+                </table>
+              </div>
+              <p class="hint" id="model-test-timing">Reale = tempo sul PC, escluso il caricamento. Simulato = tutti i tentativi, anche falliti. 2 giri = somma dei tempi dell’auto riuscita. Una generazione finita per urti o stallo non è un successo.</p>
+              <p class="hint">Durante il test puoi esplorare la mappa e il cervello del modello in prova. Un solo seed misura questa prova, non garantisce la convergenza generale.</p>
+            </div>
+          </details>
+          <div class="visual-stage" id="visual-stage" data-view="circuit">
+          <section class="circuit-view" id="circuit-view" aria-label="Mappa interattiva del circuito">
+          <div class="pane-heading"><h2>Circuito</h2><div class="circuit-render-switch" role="group" aria-label="Visualizzazione del circuito"><button type="button" id="track-mode-2d" aria-pressed="true" aria-controls="simulation-canvas">Mappa 2D</button><button type="button" id="track-mode-3d" aria-pressed="false" aria-controls="track-3d-canvas">Vista 3D</button></div><span class="measure" id="track-view-label">Mappa · 1.0×</span></div>
+          <div class="track-toolbar">
+            <label for="track-landmark">Inquadra<select id="track-landmark"><option value="">Intero circuito</option></select></label>
+            <div class="track-tools" role="group" aria-label="Inquadratura del circuito">
+              <button type="button" id="track-zoom-out" aria-label="Riduci il circuito"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12"/></svg></button>
+              <button type="button" id="track-zoom-in" aria-label="Ingrandisci il circuito"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M10 4v12"/></svg></button>
+              <button type="button" id="track-reset">Centra</button>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="simulation-canvas" tabindex="0" role="img" aria-describedby="track-navigation-note track-model-note" aria-label="Mappa interattiva del circuito"></canvas>
+            <canvas id="track-3d-canvas" hidden tabindex="0" role="img" aria-describedby="track-navigation-note track-3d-status" aria-label="Circuito 3D interattivo con barriere e vie di fuga schematiche, auto in scala e sensori sui bordi fisici"></canvas>
+            <div id="track-3d-hud" class="track-3d-hud" hidden></div>
+            <div class="canvas-legend" id="track-2d-legend" aria-label="Legenda del circuito">
+              <span><i class="legend-line legend-line--coral"></i> sensori dell’auto selezionata</span>
+              <span><i class="legend-line legend-line--amber"></i> punti = auto troppo piccole da mostrare</span>
+              <span><i class="legend-dot"></i> partenza / arrivo</span>
+            </div>
+          </div>
+          <div class="track-measures"><p id="track-dimensions">Dimensioni in caricamento…</p><p id="track-local-width">Larghezza del tratto in caricamento…</p></div>
+          <p id="track-elevation-note" class="track-model-note">Profilo altimetrico stimato · influenza la fisica; vegetazione solo visiva.</p>
+          <p id="landscape-source-note" class="track-model-note" hidden>Paesaggio: <a href="https://doi.org/10.5067/MEaSUREs/SRTM/SRTMGL1.003" target="_blank" rel="noreferrer">NASA SRTM (2000)</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors · ODbL</a> · raccordo stimato. <a href="PAESAGGIO-SRTM.md" target="_blank">Fonti e limiti</a>.</p>
+          <p class="track-navigation" id="track-navigation-note">Trascina per spostare · rotella o pizzico per zoom · clic su un’auto o una curva</p>
+          <p class="track-model-note" id="track-3d-status" role="status"></p>
+          <details class="track-asset-credit"><summary>Modelli 3D e crediti</summary><p>“porsche_992_gt3_r” di <a href="https://sketchfab.com/MattDoesBlender" target="_blank" rel="noreferrer">MattDoesBlender</a>, fornito nello ZIP. Modifiche: livelli di dettaglio, unione dei materiali, esterni adattati alle dimensioni della simulazione. <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noreferrer">CC BY-NC-SA 4.0</a>. Le auto sovrapposte alla partenza sono rappresentate dal corpo dell’auto selezionata; gli agenti restano selezionabili.</p><p>Alberi: <a href="https://sketchfab.com/3d-models/tree-low-poly-lowpoly-73201f05280d48dcb10ed4ca362d69f8" target="_blank" rel="noreferrer">Tree low poly lowpoly · 00amza</a>, i due modelli e la texture dello ZIP. Monaco: <a href="https://sketchfab.com/3d-models/modular-modernist-eclectic-building-7003371cd8ba430c819ebd78eb0594cf" target="_blank" rel="noreferrer">Modular modernist eclectic building · ChristosRami.studio</a>. Le Mans: <a href="https://sketchfab.com/3d-models/european-house-3-ebdc29841f4d4b1fbc3d63c841a0a48a" target="_blank" rel="noreferrer">European House #3 · Satik64</a>. Tutti e tre: <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a>. Texture incorporate, scala uniforme e dettaglio adattivo; posizioni illustrative, non un rilievo delle case reali. <a href="assets/ENVIRONMENT-CREDITS.md" target="_blank">Modifiche e provenienza</a>.</p><p>Tribune, box, cabine, portale e cartelli: geometrie native schematiche. Le zone delle tribune fanno riferimento alle mappe ufficiali <a href="https://www.monzanet.it/wp-content/uploads/2026/03/GP_F1_2026_LISTINO_PREZZI_3_2.pdf" target="_blank" rel="noreferrer">Monza 2026</a>, <a href="https://acm.mc/wp-content/uploads/2025/05/Hospitalites_ACM_F12026_F-3.pdf" target="_blank" rel="noreferrer">ACM Monaco 2026</a> e <a href="https://assets.lemans.org/explorer/pdf/aco/2026/2026-plan-aco-tribunes-24h.pdf" target="_blank" rel="noreferrer">ACO Le Mans 2026</a>. Dimensioni, raccordo con il tracciato e architettura sono stimati, non CAD ufficiali. Gli altri dettagli sono illustrativi; non aggiungono collisioni o ingressi all’IA. In 3D scegli «Tribune e box» nel menu Inquadra. <a href="TRIBUNE-v550.md" target="_blank">Guida e limiti</a>.</p><p>Boschi aggiuntivi: <a href="https://sketchfab.com/3d-models/tree-pack-ea51b3ac209e4f70ab9c618e34000b84" target="_blank" rel="noreferrer">Tree Pack · Fabio Rinaldo Roloff</a> e <a href="https://sketchfab.com/3d-models/oak-tree-lowpoly-6ccd872db7f0429b8dad40c6f00ec75c" target="_blank" rel="noreferrer">Oak Tree · riskris Design</a>, CC BY 4.0. Posizioni illustrative nelle aree OSM; <a href="assets/WOODLAND-CREDITS.md" target="_blank">crediti e adattamenti</a>. Inquadra «Bosco» per vederli da vicino.</p></details>
+          <div class="track-display-tools" role="group" aria-label="Dettagli visivi, non influenzano l’IA">
+            <button class="text-button" id="toggle-sensors" type="button" aria-pressed="true">Nascondi sensori</button>
+            <button class="text-button" id="track-details" type="button" aria-pressed="true">Dettagli: sì</button>
+            <button class="text-button" id="track-boundaries" type="button" aria-pressed="false">Mostra bordi fisici</button>
+          </div>
+          <p class="track-model-note" id="track-model-note">Dettagli schematici; i bordi fisici non cambiano.</p>
+          <p class="track-model-note" id="track-curb-reference" hidden><a id="track-curb-source" target="_blank" rel="noreferrer">Riferimento cordoli</a></p>
+          </section>
+          <section class="brain-map-section" id="brain-view" aria-labelledby="brain-map-title">
+            <div class="brain-map-heading">
+              <div>
+                <h2 id="brain-map-title">Atlante del cervello</h2>
+                <p class="hint">Coordinate somatiche MaleCNS · non morfologie cellulari</p>
+              </div>
+              <span class="renderer-label" id="brain-renderer">Avvio 3D…</span>
+            </div>
+            <div class="atlas-toolbar">
+              <label>Vista<select id="brain-preset"><option value="orbit">Prospettiva 3D</option><option value="xy">Piano XY</option><option value="yz">Piano YZ</option><option value="xz">Piano XZ</option></select></label>
+              <label>Neuroni<select id="brain-filter"><option value="all">Intero atlante</option><option value="active">Attività non nulla</option><option value="inputs">Ingressi sensoriali</option><option value="readout">Lettura motoria appresa</option><option value="descending">Discendenti annotati</option></select></label>
+              <div class="atlas-action-row"><button class="button button--secondary" id="brain-map-reset" type="button">Centra vista</button><button class="button button--secondary" id="brain-live" type="button" aria-pressed="false">Congela attività</button></div>
+            </div>
+            <div class="brain-map-meta"><span id="brain-agent">Agente in caricamento…</span><span id="brain-view-label">Prospettiva 3D · 1.0×</span></div>
+            <div class="brain-map-wrap">
+              <canvas id="brain-canvas" tabindex="0" role="img" aria-describedby="brain-navigation-note" aria-label="Atlante 3D interattivo dei neuroni MaleCNS. Frecce per ruotare, più e meno per lo zoom, Home per centrare, Escape per deselezionare."></canvas>
+              <p class="atlas-empty" id="brain-empty" hidden>Nessun neurone con coordinate per questo filtro.</p>
+              <div class="atlas-zoom" role="group" aria-label="Zoom dell’atlante"><button type="button" id="brain-zoom-in" aria-label="Ingrandisci il cervello">+</button><button type="button" id="brain-zoom-out" aria-label="Riduci il cervello">−</button></div>
+              <svg class="atlas-axes" viewBox="0 0 82 82" aria-label="Assi delle coordinate del dataset" role="img"><line id="axis-x" x1="40" y1="42" x2="69" y2="42"/><text id="axis-x-label" x="71" y="42">X</text><line id="axis-y" x1="40" y1="42" x2="40" y2="68"/><text id="axis-y-label" x="40" y="77">Y</text><line id="axis-z" x1="40" y1="42" x2="18" y2="18"/><text id="axis-z-label" x="10" y="14">Z</text></svg>
+            </div>
+            <p class="atlas-navigation" id="brain-navigation-note">Trascina per ruotare · rotella per zoom · Maiusc + trascina per spostare · clic per selezionare</p>
+            <div class="brain-map-legend" aria-label="Colori dell’atlante">
+              <span><i class="legend-dot legend-dot--amber"></i> ingressi</span><span><i class="legend-dot legend-dot--coral"></i> discendenti / lettura</span><span><i class="legend-dot legend-dot--lavender"></i> ascendenti</span><span><i class="legend-line legend-line--teal"></i> contributo +</span><span><i class="legend-line legend-line--danger"></i> contributo −</span>
+            </div>
+            <p class="atlas-navigation" id="brain-activity-legend" hidden>Attività |a|: grigio tenue → verde intenso · selezione ambra · linee: verde + / rosa −</p>
+            <div class="atlas-selection" aria-live="polite">
+              <div><span class="stat-label">Neurone selezionato</span><strong id="brain-selection-title">Nessuna selezione</strong><p id="brain-selection-detail" class="hint">Clicca un punto o cerca un body ID.</p></div>
+              <button class="text-button" type="button" id="brain-focus" disabled>Inquadra</button>
+            </div>
+            <details class="atlas-options"><summary>Ricerca e qualità della vista</summary><div class="atlas-options-body">
+              <form class="atlas-search" id="brain-search-form"><label for="brain-search">Body ID del neurone</label><div><input id="brain-search" type="text" inputmode="numeric" placeholder="Es. 10360" autocomplete="off" aria-describedby="brain-search-status"><button class="button button--secondary" id="brain-search-button" type="submit">Trova</button></div><p class="hint" id="brain-search-status" role="status"></p></form>
+              <label>Colori<select id="brain-color"><option value="class">Classe annotata</option><option value="activity">Intensità dell’attività</option></select></label>
+              <label>Dettaglio visivo<select id="brain-quality"><option value="6000">Leggero · 6.000 punti</option><option value="18000" selected>Bilanciato · 18.000 punti</option><option value="24000">Dettagliato · 24.000 punti</option></select></label>
+              <label class="range-control" for="brain-density"><span><span>Connessioni mostrate</span><output id="brain-density-output">220</output></span><input id="brain-density" type="range" min="0" max="600" step="20" value="220"></label>
+              <p class="hint">Questi controlli cambiano solo il disegno, non i neuroni o l’apprendimento. “Congela” ferma la lettura dell’atlante, non le auto.</p>
+            </div></details>
+            <div class="atlas-data-note"><span id="brain-map-count">Coordinate ufficiali in caricamento…</span><span id="brain-map-active">Attività in caricamento…</span><p id="brain-map-note" class="hint">Solo coordinate somaLocation reali. Connessioni: campione dei contributi del modello a tassi, non segnali biologici misurati.</p></div>
+          </section>
+          </div>
+          <div class="simulation-footer"><strong id="dataset-status">Caricamento dati MaleCNS…</strong></div>
+          <details class="experiment-details"><summary>Dettagli dell’esperimento e del circuito</summary>
+            <div class="circuit-provenance"><p class="hint" id="circuit-description"></p><p class="hint" id="circuit-notice"></p><a id="circuit-source" target="_blank" rel="noreferrer"></a><a id="track-dimension-source" target="_blank" rel="noreferrer" hidden></a></div>
+            <p class="mode-note" id="mode-note" role="status"></p>
+            <div class="brain-evidence"><div><h2>Attività delle uscite neurali</h2><p>Valori del modello a tassi, non misure biologiche. Le auto non collidono tra loro.</p></div><pre id="neuron-readout" aria-label="Attività dei neuroni discendenti"></pre></div>
+          </details>
+        </section>
+
+        <aside class="inspector-column" aria-label="Telemetria e apprendimento">
+          <section class="panel ledger-panel" aria-labelledby="evolution-title">
+            <div class="panel-heading">
+              <div>
+                <h2 id="evolution-title">Generazioni</h2>
+              </div>
+              <span class="status-chip status-chip--ready" id="alive-count">Caricamento…</span>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-cell">
+                <span class="stat-label">GENERAZIONE</span>
+                <strong class="stat-value" id="generation-value">01</strong>
+              </div>
+              <div class="stat-cell">
+                <span class="stat-label">Punteggio netto migliore</span>
+                <strong class="stat-value" id="fitness-value">000</strong>
+              </div>
+              <div class="stat-cell stat-cell--wide">
+                <div class="stat-row"><span class="stat-label">TEMPO SIMULATO</span><span class="measure" id="trial-time">00:00</span></div>
+                <details class="generation-details"><summary>Regole della generazione</summary><p class="generation-note" id="generation-note">Massimo 2 giri per auto.</p></details>
+              </div>
+            </div>
+            <div class="history-wrap">
+              <dl class="learning-summary"><div><dt>Distanza ultima gen.</dt><dd id="learning-distance">—</dd></div><div><dt>Media popolazione</dt><dd id="learning-mean">—</dd></div><div><dt>Giri validi max</dt><dd id="learning-laps">0 / 2</dd></div><div><dt>Miglior giro</dt><dd id="learning-lap-time">—</dd></div></dl>
+              <label class="history-mode" for="history-mode">Andamento<select id="history-mode"><option value="progress">Distanza percorsa (m)</option><option value="fitness">Punteggio netto (pt)</option></select></label>
+              <canvas id="history-canvas" role="img" aria-label="Distanza percorsa per generazione"></canvas>
+              <div class="history-legend"><span><i class="legend-line"></i>Migliore</span><span><i class="legend-line history-mean"></i>Media</span></div>
+              <p id="learning-trend" class="learning-trend">Servono 10 generazioni per confrontare due gruppi di 5.</p>
+              <p class="hint" id="history-caption">Nessuna generazione conclusa.</p>
+            </div>
+          </section>
+
+          <section class="panel controls-panel" aria-labelledby="controls-title">
+            <div class="panel-heading">
+              <div>
+                <h2 id="controls-title">Controlli</h2>
+              </div>
+            </div>
+            <div class="control-stack">
+              <label class="range-control" for="population-range">
+                <span><span class="control-label">POPOLAZIONE</span><output id="population-output">16 AGENTI</output></span>
+                <input id="population-range" type="range" min="4" max="100" step="1" value="16" aria-describedby="population-note">
+                <p class="hint" id="population-note">Fino a 100 auto per generazione e worker. Più auto aumentano il carico; la velocità effettiva dipende dal calcolo disponibile.</p>
+              </label>
+              <label class="range-control" for="mutation-range">
+                <span><span class="control-label">MUTAZIONE</span><output id="mutation-output">16%</output></span>
+                <input id="mutation-range" type="range" min="0" max="35" step="1" value="16">
+              </label>
+              <label class="range-control" for="speed-range">
+                <span><span class="control-label">VELOCITÀ SIMULAZIONE</span><output id="speed-output">1.0×</output></span>
+                <input id="speed-range" type="range" min="0.5" max="30" step="0.5" value="1">
+              </label>
+            </div>
+            <div class="select-control">
+              <label class="control-label" for="controller-select">Modello / prove di verifica</label>
+              <select id="controller-select" aria-describedby="model-capacity-note">
+                <optgroup label="Modelli MaleCNS">
+                  <option value="v5">MaleCNS V5 esteso · 32.768 slot neurali</option>
+                  <option value="v4">MaleCNS V4 completo · 166.700 neuroni</option>
+                  <option value="v3">MaleCNS V3 storico · 7.721 neuroni</option>
+                  <option value="v2">MaleCNS V2 compatto ricostruito · 1.121 neuroni</option>
+                </optgroup>
+                <optgroup label="Prove di verifica">
+                  <option value="off">Test: cervello spento → auto ferma</option>
+                  <option value="straight">Test: sterzo zero → dritta fino all’urto</option>
+                </optgroup>
+              </select>
+              <p class="hint" id="model-capacity-note">V5: elaborazione estesa dello stesso grafo reale da 166.700 neuroni. Più capacità e più calcolo; non garantisce un apprendimento più rapido.</p>
+              <details class="model-comparison" id="model-comparison-details">
+                <summary id="model-comparison-toggle">Differenze V2 · V3 · V4 · V5</summary>
+                <div class="model-comparison-body">
+                  <p class="hint model-comparison-selection" data-comparison="selection" role="status" aria-live="polite" aria-atomic="true"></p>
+                  <div class="model-comparison-table">
+                    <table aria-describedby="model-slots-note">
+                      <caption>Anatomia e capacità</caption>
+                      <thead><tr><th scope="col">Modello</th><th scope="col">Neuroni</th><th scope="col">Connessioni</th><th scope="col">Slot max<br>per passo</th></tr></thead>
+                      <tbody data-comparison="anatomy"></tbody>
+                    </table>
+                  </div>
+                  <p class="hint" id="model-slots-note">V2 e V3 aggiornano tutti i loro neuroni. Gli slot di V4 e V5 limitano l’elaborazione sparsa per agente e passo: non sono neuroni aggiunti né tutti necessariamente attivi.</p>
+                  <div class="model-comparison-table">
+                    <table aria-describedby="model-learning-note">
+                      <caption>Elaborazione e apprendimento</caption>
+                      <thead><tr><th scope="col">Modello</th><th scope="col">Passaggi</th><th scope="col">Decoder</th><th scope="col">Pesi<br>appresi</th></tr></thead>
+                      <tbody data-comparison="learning"></tbody>
+                    </table>
+                  </div>
+                  <p class="hint" id="model-learning-note">Passaggi ricorrenti per comando neurale; decoder = neuroni discendenti letti. I pesi sono i parametri apprendibili, non tutte le connessioni anatomiche. Gruppi sinaptici appresi: 16 in V2–V4, 32 in V5.</p>
+                  <p class="hint">In comune: 28 sensori, comandi neurali a 10 Hz, fino a 100 auto per generazione e worker. Nell’app Windows, V4 e V5 supportano GPU + CPU, con fallback CPU; V2 e V3 usano la CPU.</p>
+                  <p class="hint model-comparison-boundary">Confronto delle configurazioni, non un benchmark: più capacità non garantisce un apprendimento più rapido.</p>
+                </div>
+              </details>
+            </div>
+            <section class="progress-files" aria-labelledby="progress-title">
+              <h3 id="progress-title">Progressi di questa prova</h3>
+              <div class="progress-actions">
+                <button class="button button--secondary" id="save-progress" type="button" aria-describedby="progress-file-note">Salva file…</button>
+                <button class="button button--secondary" id="load-progress" type="button" aria-describedby="progress-file-note">Carica file…</button>
+              </div>
+              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.6.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file precedenti richiedono la loro versione dell’app: i progressi 5.5.0 restano utilizzabili con l’app 5.5.0.</p>
+              <p class="progress-status hint" id="progress-status" role="status" aria-live="polite" aria-atomic="true">Nessun file salvato in questa sessione.</p>
+              <input id="progress-file-input" type="file" accept=".malecns-save" hidden>
+            </section>
+          </section>
+
+          <section class="panel agent-panel" aria-labelledby="agent-title">
+            <div class="panel-heading panel-heading--compact">
+              <div>
+                <h2 id="agent-title">Auto <span id="selected-agent-id">A-01</span></h2>
+              </div>
+              <span class="agent-color-dot" id="selected-color-dot"></span>
+            </div>
+            <div class="agent-picker"><label for="agent-select" class="control-label">Ispeziona auto</label><select id="agent-select" aria-describedby="agent-selection-note"></select><button class="text-button" type="button" id="follow-best" aria-label="Selezione automatica della migliore auto attiva" aria-pressed="true" aria-describedby="agent-selection-note">Auto: migliore</button><p class="hint" id="agent-selection-note">Selezione automatica della migliore auto attiva. Scegli un’auto per passare alla selezione manuale.</p></div>
+            <div class="agent-summary">
+              <div><span class="stat-label">GIRI</span><strong id="agent-lap">0</strong></div>
+              <div><span class="stat-label">VELOCITÀ</span><strong id="agent-speed">0.0</strong></div>
+              <div><span class="stat-label">STATO</span><strong id="agent-lateral">ATTIVA</strong></div>
+              <div><span class="stat-label">G TOTALE</span><strong id="agent-g-force">0.00 G</strong></div>
+            </div>
+            <div class="vehicle-cockpit" aria-label="Porsche 911 GT3 R, telemetria reale della simulazione">
+              <p class="vehicle-name">Porsche 911 GT3 R <span>(992)</span></p>
+              <figure class="vehicle-visual">
+                <canvas id="car-preview" role="img" aria-label="Porsche 911 GT3 R dall’alto, caricamento modello visivo"></canvas>
+                <figcaption><span id="car-visual-status">Caricamento modello visivo…</span><button id="car-closeup" type="button" class="button button--secondary" aria-controls="circuit-view">Vedi da vicino</button></figcaption>
+              </figure>
+              <div class="powertrain-readings">
+                <div><span class="stat-label">MARCIA</span><strong id="vehicle-gear">1</strong></div>
+                <div><span class="stat-label">GIRI MOTORE</span><strong id="vehicle-rpm">1.200 rpm</strong></div>
+              </div>
+              <p id="vehicle-aids" class="vehicle-note">ABS e TC attivi · cambio automatico</p>
+              <details class="vehicle-details"><summary>Gomme, freni e trasmissione</summary>
+                <dl class="vehicle-readings">
+                  <div><dt>Potenza erogata</dt><dd id="vehicle-power">0 kW</dd></div>
+                  <div><dt>Carburante</dt><dd id="vehicle-fuel">30,0 L</dd></div>
+                  <div><dt>Gomme / usura</dt><dd id="vehicle-tyres">80 °C / 0%</dd></div>
+                  <div><dt>Pressione media</dt><dd id="vehicle-pressure">1,90 bar</dd></div>
+                  <div><dt>Temperatura freni</dt><dd id="vehicle-brakes">25 °C</dd></div>
+                  <div><dt>Carico aerodinamico</dt><dd id="vehicle-aero">0 N</dd></div>
+                </dl>
+                <p id="vehicle-wheel-loads" class="vehicle-note">Carichi ruote in attesa.</p>
+                <p id="vehicle-road-surface" class="vehicle-note">Quota e pendenza in attesa.</p>
+                <label class="control-label" for="vehicle-gearbox">Cambio dell’auto selezionata</label>
+                <div class="gearbox-controls"><select id="vehicle-gearbox"><option value="auto">Sequenziale automatico</option><option value="manual">Sequenziale manuale</option></select><button type="button" id="gear-down" class="button button--secondary" aria-label="Scala una marcia" disabled>−</button><button type="button" id="gear-up" class="button button--secondary" aria-label="Inserisci la marcia successiva" disabled>+</button></div>
+                <div class="vehicle-assists"><label><input id="vehicle-abs" type="checkbox" checked> ABS</label><label><input id="vehicle-tc" type="checkbox" checked> Controllo trazione</label></div>
+                <p class="vehicle-note">Interventi diagnostici su quest’auto: questo episodio viene escluso dall’apprendimento e dai campioni. Ogni nuovo episodio riparte con le assistenze standard. La cambiata termina quando riprendi la simulazione.</p>
+                <p class="vehicle-note">Modello fisico ridotto su piano: gomme, aero e rapporti stimati. Non è una fisica Porsche/WEC omologata. <a href="https://racing.porsche.com/en-US/cars/911-gt3-r-2026" target="_blank" rel="noreferrer">Specifiche Porsche</a>. Grafica: sprite illustrativa generata, non un modello 3D ufficiale. <a href="assets/car-visual-provenance-v1.json" target="_blank">Provenienza grafica</a>.</p>
+              </details>
+            </div>
+            <div class="signal-group signal-group--outputs">
+              <div class="signal-heading"><span class="signal-title">Comandi alle ruote</span><span class="signal-note">dalla rete</span></div>
+              <div class="signal-row"><span>Sterzo</span><span class="signal-track signal-track--coral"><i id="output-steer"></i></span><output id="output-steer-value">0.00</output></div>
+              <div class="signal-row"><span>Gas</span><span class="signal-track signal-track--teal"><i id="output-throttle"></i></span><output id="output-throttle-value">0.00</output></div>
+              <div class="signal-row"><span>Freno</span><span class="signal-track signal-track--danger"><i id="output-brake"></i></span><output id="output-brake-value">0.00</output></div>
+            </div>
+            <details class="telemetry-details" id="score-details"><summary>Tempi, ricompense e sensori</summary>
+            <div class="agent-score" aria-label="Ricompense, penalità e tempi sul giro dell’agente selezionato">
+              <div><span class="stat-label">RICOMPENSE</span><strong id="agent-reward" class="score-positive">+0 pt</strong></div>
+              <div><span class="stat-label">PENALITÀ</span><strong id="agent-penalty" class="score-negative">−0 pt</strong></div>
+              <div><span class="stat-label">PUNTEGGIO DI SELEZIONE</span><strong id="agent-score" class="score-net">0 pt</strong></div>
+              <div><span class="stat-label">ULTIMO GIRO</span><strong id="agent-last-lap">—</strong></div>
+              <div><span class="stat-label">GIRO MIGLIORE</span><strong id="agent-best-lap">—</strong></div>
+            </div>
+            <div class="reward-context">
+              <p id="reward-context">Dettaglio in attesa del campione dell’auto.</p>
+              <p id="reward-reference">Il riferimento di ritmo è una taratura del simulatore, non un record reale.</p>
+              <details id="reward-details"><summary>Voci del punteggio</summary><dl id="reward-breakdown" class="reward-ledger" aria-label="Dettaglio ricompense e penalità"></dl></details>
+              <details><summary>Come viene scelta la generazione</summary><p>Conta il totale delle ricompense meno tutte le penalità, anche quelle per 0 giri e regressione. Si premia solo strada nuova, con 32 checkpoint ordinati per giro. Nessun premio per la sola velocità o sopravvivenza. Il record storico esclude soltanto il confronto con la generazione precedente, perché quel riferimento cambia; gli agenti vengono sempre rivalutati.</p><p>Taratura: +5.000 pt di progresso e +500 pt di checkpoint per giro; +8.000 pt per giro valido. Bonus ritmo fino a +2.000 pt; giro lento fino a −8.000 pt. Il tempo costa 120 pt per durata di riferimento. Nessun giro: da −2.000 a −3.000 pt. La regressione costa 4.000 × ritardo relativo, massimo −3.000 pt per giro. Urto: −900 pt; uscita: −1.400 pt, più fino a −180 pt per la velocità d’impatto. Dopo 16 s di avvio, ogni finestra di 8 s deve mostrare progresso nuovo ad almeno il 5% del ritmo di riferimento. L’esplorazione aumenta quando la distanza raggiunta o i tempi sul giro restano fermi; vengono introdotti anche nuovi agenti da zero.</p></details>
+            </div>
+            <div class="agent-forces" aria-label="Forze sulla vettura selezionata">
+              <div><span class="stat-label">G LONGITUDINALE</span><strong id="agent-longitudinal-g">0.00 G</strong></div>
+              <div><span class="stat-label">G LATERALE</span><strong id="agent-lateral-g">0.00 G</strong></div>
+              <div><span class="stat-label">ANGOLO SLIP</span><strong id="agent-slip-angle">0.0°</strong></div>
+            </div>
+            <div class="signal-group signal-group--physics">
+              <div class="signal-heading"><span class="signal-title">SENSORI FISICI / INGRESSI RETE</span><span class="signal-note">17 canali · fisica, barriere e trasmissione</span></div>
+              <div class="signal-row"><span>SPEED</span><span class="signal-track signal-track--teal"><i id="physics-speed"></i></span><output id="physics-speed-value">0.00</output></div>
+              <div class="signal-row"><span>G LONG</span><span class="signal-track signal-track--physics"><i id="physics-long-g"></i></span><output id="physics-long-g-value">0.00</output></div>
+              <div class="signal-row"><span>G LAT</span><span class="signal-track signal-track--physics"><i id="physics-lateral-g"></i></span><output id="physics-lateral-g-value">0.00</output></div>
+              <div class="signal-row"><span>G TOTAL</span><span class="signal-track signal-track--amber"><i id="physics-total-g"></i></span><output id="physics-total-g-value">0.00</output></div>
+              <div class="signal-row"><span>SLIP</span><span class="signal-track signal-track--physics"><i id="physics-slip"></i></span><output id="physics-slip-value">0.00</output></div>
+              <div class="signal-row"><span>YAW</span><span class="signal-track signal-track--physics"><i id="physics-yaw"></i></span><output id="physics-yaw-value">0.00</output></div>
+              <div class="signal-row"><span>LOAD</span><span class="signal-track signal-track--physics"><i id="physics-load"></i></span><output id="physics-load-value">0.00</output></div>
+              <div class="signal-row"><span>ROAD BAL</span><span class="signal-track signal-track--physics"><i id="road-balance"></i></span><output id="road-balance-value">0.00</output></div>
+              <div class="signal-row"><span>ROAD TURN</span><span class="signal-track signal-track--physics"><i id="road-preview"></i></span><output id="road-preview-value">0.00</output></div>
+              <div class="signal-row"><span>FRONT CLEAR</span><span class="signal-track signal-track--teal"><i id="road-clearance"></i></span><output id="road-clearance-value">0.00</output></div>
+              <div class="signal-row"><span>ROAD WIDTH</span><span class="signal-track signal-track--teal"><i id="road-width"></i></span><output id="road-width-value">0.00</output></div>
+              <div class="signal-row"><span>RPM</span><span class="signal-track signal-track--teal"><i id="sensor-rpm"></i></span><output id="sensor-rpm-value">0.00</output></div>
+              <div class="signal-row"><span>GEAR</span><span class="signal-track"><i id="sensor-gear"></i></span><output id="sensor-gear-value">0.00</output></div>
+              <div class="signal-row"><span>SLIP R</span><span class="signal-track"><i id="sensor-rear-slip"></i></span><output id="sensor-rear-slip-value">0.00</output></div>
+              <div class="signal-row"><span>SLIP F</span><span class="signal-track"><i id="sensor-front-slip"></i></span><output id="sensor-front-slip-value">0.00</output></div>
+              <div class="signal-row"><span>TYRE °C</span><span class="signal-track"><i id="sensor-tyre-temp"></i></span><output id="sensor-tyre-temp-value">0.00</output></div>
+              <div class="signal-row"><span>BRAKE °C</span><span class="signal-track"><i id="sensor-brake-temp"></i></span><output id="sensor-brake-temp-value">0.00</output></div>
+            </div>
+            <div class="signal-group">
+              <div class="signal-heading"><span class="signal-title">SENSORI / RETE</span><span class="signal-note">11 raggi reali ai bordi</span></div>
+              <div class="signal-row"><span>VISUAL L</span><span class="signal-track"><i id="input-left"></i></span><output id="input-left-value">0.00</output></div>
+              <div class="signal-row"><span>VISUAL C</span><span class="signal-track"><i id="input-center"></i></span><output id="input-center-value">0.00</output></div>
+              <div class="signal-row"><span>VISUAL R</span><span class="signal-track"><i id="input-right"></i></span><output id="input-right-value">0.00</output></div>
+              <div class="signal-row"><span>ATTIVITÀ</span><span class="signal-track signal-track--amber"><i id="input-curve"></i></span><output id="input-curve-value">0.00</output></div>
+            </div>
+            </details>
+          </section>
+
+          <details class="panel provenance-panel"><summary id="source-title">Dati e limiti del modello</summary>
+            <p class="provenance-copy" id="data-counts"></p>
+            <p class="provenance-copy">Dati ufficiali <code>male-cns:v1.0</code>, inclusi offline. Non è un’emulazione biologica: dinamica a tassi, ingressi e comandi sono artificiali. Non sono simulati neurotrasmettitori o fisiologia di membrana. In questa copia si apprendono soltanto i coefficienti dell’ultimo strato di contesto del decoder. Encoder, guadagni sinaptici, strati precedenti e topologia anatomica restano congelati. La memoria causale dell’ultimo strato cambia durante ogni prova e si azzera alla partenza: è uno stato del controller, non un peso appreso.</p>
+            <a class="source-link" href="data/connectome-full.json" target="_blank">PROVENIENZA, HASH E FORMATO DEL GRAFO COMPLETO ↗</a>
+            <a class="source-link" href="data/source-verification.json" target="_blank">VERIFICA INDIPENDENTE DEL NUCLEO V3 ↗</a>
+            <a class="source-link" href="https://male-cns.janelia.org/download/" target="_blank" rel="noreferrer">DATI UFFICIALI · MALECNS CONSORTIUM · CC-BY 4.0 ↗</a>
+          </details>
+        </aside>
+      </main>
+
+      <footer class="app-footer">
+        <span>MAL-E CNS / MODELLO SPERIMENTALE · LOCALE</span>
+        <span><a href="https://store.steampowered.com/app/3312030/AI_Learns_To_Drive/" target="_blank" rel="noreferrer">inspired by an evolutionary driving sandbox</a> · <a href="https://github.com/natverse/malecns/blob/master/LICENSE.md" target="_blank" rel="noreferrer">malecns GPL-3 notice</a></span>
+      </footer>
+    </div>
+    <script src="full-connectome-loader.js"></script>
+    <script src="model-profiles.js"></script>
+    <script src="legacy-models.js"></script>
+    <script src="data/circuits.js"></script>
+    <script src="neural-learning.js"></script>
+    <script src="dense-neural.js"></script>
+    <script src="data/terrain.js"></script>
+    <script src="terrain.js"></script>
+    <script src="vehicle-992.js"></script>
+    <script src="rewards.js"></script>
+    <script src="simulation.js"></script>
+    <script src="agent-selection.js"></script>
+    <script src="progress-save.js"></script>
+    <script src="desktop-state.js"></script>
+    <script src="desktop-runtime.js"></script>
+    <script src="brain-atlas.js"></script>
+    <script src="data/curbs.js"></script>
+    <script src="track-renderer.js"></script>
+    <script src="car-renderer.js"></script>
+    <script src="model-comparison.js"></script>
+    <script src="model-test.js"></script>
+    <script src="learning-metrics.js"></script>
+    <script src="session-ui.js"></script>
+  <script src="app.js"></script>
+  <script src="neural-chain-ui.js"></script>
+  </body>
+</html>

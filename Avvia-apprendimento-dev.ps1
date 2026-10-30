@@ -1,8 +1,8 @@
 $ErrorActionPreference = 'Stop'
-$appProject = [IO.Path]::GetFullPath($PSScriptRoot)
-$appExecutable = Join-Path $appProject 'dist-learning-dev-560\win-unpacked\MAL-E CNS Circuit Lab.exe'
-$appProfile = Join-Path $appProject '.impeccable\development-learning-profile'
-if (-not (Test-Path -LiteralPath $appExecutable -PathType Leaf)) {
-    throw 'Copia di sviluppo non compilata: eseguire electron-builder --dir --win --x64 --publish never --config.directories.output=dist-learning-dev-560.'
+$learningProject = [IO.Path]::GetFullPath($PSScriptRoot)
+$learningExecutable = Join-Path $learningProject 'dist-learning-actuators-dev-560\win-unpacked\MAL-E CNS Circuit Lab.exe'
+$learningProfile = Join-Path $learningProject '.impeccable\development-learning-profile'
+if (-not (Test-Path -LiteralPath $learningExecutable -PathType Leaf)) {
+    throw 'Copia di prova non compilata: electron-builder --dir --win --x64 --publish never --config.directories.output=dist-learning-actuators-dev-560.'
 }
-Start-Process -FilePath $appExecutable -ArgumentList ('--user-data-dir="' + $appProfile + '"') -WindowStyle Hidden
+Start-Process -FilePath $learningExecutable -ArgumentList ('--user-data-dir="' + $learningProfile + '"') -WindowStyle Hidden

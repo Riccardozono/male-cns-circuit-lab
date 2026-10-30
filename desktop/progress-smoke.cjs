@@ -48,6 +48,8 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
     check(modelId+': UI creates a valid portable file for every worker',p.modelId===modelId&&p.circuitId===circuitId&&p.workers.length===workerCount&&hash(p)===hash(before),{bytes:Buffer.byteLength(text),workers:p.workers.length});
     check(modelId+': learned optimizer and real histories are present',p.workers.every(w=>w.state.optimizer.updates>=2&&w.state.history.length>=2&&w.state.genomes.length===4),p.workers.map(w=>({generation:w.state.generation,updates:w.state.optimizer.updates,episodes:w.state.optimizer.episodes})));
     const status=await js("document.getElementById('progress-status').textContent");check(modelId+': saved file name and version are visible',status.includes(path.basename(filePath))&&status.includes(version),status);
+    if(version==='5.7.0'&&p.workers.some(worker=>worker.state.rewardRevision!==F.Rewards.REVISION))
+      check(modelId+': incompatible reward revision displays its compatibility warning',status.includes('release 5.7.0 distribuita non lo apre'),status);
     await change('controller-select',modelId==='v2'?'v3':'v2');await until(`circuitLab.sim.modelId==='${modelId==='v2'?'v3':'v2'}'&&!document.getElementById('controller-select').disabled`);
     await js('circuitLab.sim.running=false');await until('!circuitLab.sim.running');
     queue('open',{canceled:false,filePaths:[filePath]});queue('confirm',{response:0});await click('load-progress');
@@ -99,6 +101,36 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
   }
   // A clear saved status in the single wide/narrow finish-review batch.
   queue('save',{canceled:false,filePath:path.join(output,'progress-v5-100-current.malecns-save')});await click('save-progress');
+  const movingCopyPath=process.argv.find(a=>a.startsWith('--moving-copy-fixture='))?.slice('--moving-copy-fixture='.length);
+  let movingCopy=null;
+  if(movingCopyPath){
+    const text=await fs.readFile(path.resolve(movingCopyPath),'utf8'),file=await Progress.decode(text,version),p=file.payload;
+    queue('open',{canceled:false,filePaths:[path.resolve(movingCopyPath)]});queue('confirm',{response:0});await click('load-progress');
+    check('Experimental V3 copy loads in the actual UI in pause with its 5 workers',
+      await js("circuitLab.sim.modelId==='v3'&&circuitLab.sim.circuitId==='monza'&&!circuitLab.sim.running&&circuitLab.sim.cars.length===40&&circuitLab.sim.engine.workerCount===5"));
+    check('Experimental copy keeps its validated full worker state',hash(normalized(await stable()))===hash(normalized(p)));
+    check('Imported-session description is truthful',await js("document.getElementById('mode-note').textContent.includes('salvataggio importato')&&!document.getElementById('mode-note').textContent.includes('nessun salvataggio importato')"));
+    check('The visible import status warns about 5.7.0 release compatibility',await js("document.getElementById('progress-status').textContent.includes('release 5.7.0 distribuita non lo apre')"));
+    check('Historical progress-3 scoring shows a compatibility warning',await js("progressCompatibility(['progress-3']).includes('release 5.7.0 distribuita non lo apre')") );
+    check('Save controls explain strict version and reward compatibility',await js("document.getElementById('progress-file-note').textContent.includes('non si aprono nella release 5.7.0 distribuita')"));
+    movingCopy={workers:p.workers.length,population:p.workers[0].state.population,rewardRevision:p.workers[0].state.rewardRevision,
+      sha256:crypto.createHash('sha256').update(text).digest('hex')};
+    if(capture){
+      movingCopy.views={};
+      for(const [name,width,height,dark]of [['import-light-desktop',1540,980,false],['import-dark-desktop',1540,980,true],['import-light-compact',1080,800,false],['import-dark-compact',1080,800,true]]){
+        window.setContentSize(width,height);
+        await js(`(()=>{if((document.documentElement.dataset.theme==='dark')!==${dark})document.getElementById('theme-toggle').click();const note=document.getElementById('progress-file-note');note.scrollIntoView({block:'center',behavior:'instant'});const rect=note.getBoundingClientRect();window.scrollBy(0,Math.max(0,rect.bottom-innerHeight+24));})()`);
+        await wait(200);
+        const metrics=await js(`(()=>{const e=document.getElementById('progress-file-note'),s=getComputedStyle(e),r=e.getBoundingClientRect();let n=e,bg='';while(n){const c=getComputedStyle(n).backgroundColor;if(c!=='rgba(0, 0, 0, 0)'&&c!=='transparent'){bg=c;break;}n=n.parentElement;}return {theme:document.documentElement.dataset.theme,width:innerWidth,documentWidth:document.documentElement.scrollWidth,textColor:s.color,background:bg,fontSize:s.fontSize,rect:{top:r.top,bottom:r.bottom,left:r.left,right:r.right,width:r.width},visible:r.width>0&&r.height>0&&r.top>=0&&r.bottom<=innerHeight+1&&r.right<=innerWidth+1};})()`);
+        check(name+': compatibility note is visible without horizontal overflow',metrics.visible&&metrics.documentWidth<=metrics.width,metrics);
+        const img=await wc.capturePage(undefined,{stayHidden:true,stayAwake:true});await fs.writeFile(path.join(output,name+'.png'),img.toPNG());movingCopy.views[name]={...metrics,file:name+'.png'};
+      }
+      window.setContentSize(1540,980);await js("if(document.documentElement.dataset.theme==='dark')document.getElementById('theme-toggle').click()");
+    }
+    await click('reset-sim');await until('circuitLab.sim.generation===1');
+    check('Reset distinguishes the new session without modifying the imported file',await js("document.getElementById('mode-note').textContent.includes('sessione nuova, nessun salvataggio importato')&&document.getElementById('progress-status').textContent.includes('file caricato resta invariato')"));
+    check('Experimental copy bytes remain unchanged',crypto.createHash('sha256').update(await fs.readFile(path.resolve(movingCopyPath))).digest('hex')===movingCopy.sha256);
+  }
   const ids=await js("Array.from(document.querySelectorAll('[id]')).map(e=>e.id)");check('No duplicate DOM IDs',ids.length===new Set(ids).size);
   const views={};
   if(capture){
@@ -109,12 +141,12 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
       ['narrow-map',390,844,"document.getElementById('view-circuit').click();window.scrollTo(0,0)"]
     ]){
       window.setContentSize(width,height);await js(script);await wait(200);
-      const metrics=await js(`(()=>{const controls=Array.from(document.querySelectorAll('button,select,input,summary')).filter(e=>e.getBoundingClientRect().width),status=document.getElementById('progress-status'),main=document.querySelector('main');return {width:innerWidth,height:innerHeight,documentWidth:document.documentElement.scrollWidth,overflow:controls.filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>e.id||e.tagName),status:status.textContent,statusLive:status.getAttribute('aria-live'),busy:main.getAttribute('aria-busy'),save:document.getElementById('save-progress').getBoundingClientRect().height,load:document.getElementById('load-progress').getBoundingClientRect().height,map:document.getElementById('simulation-canvas').getBoundingClientRect().width};})()`);
+      const metrics=await js(`(()=>{const controls=Array.from(document.querySelectorAll('button,select,input,summary')).filter(e=>e.getBoundingClientRect().width),status=document.getElementById('progress-status'),main=document.querySelector('main');return {width:innerWidth,height:innerHeight,documentWidth:document.documentElement.scrollWidth,overflow:controls.filter(e=>e.getBoundingClientRect().right>innerWidth+1).map(e=>e.id||e.tagName),status:status.textContent,statusLive:status.getAttribute('aria-live'),busy:main.getAttribute('aria-busy'),save:document.getElementById('save-progress').getBoundingClientRect().height,load:document.getElementById('load-progress').getBoundingClientRect().height,map:Math.max(document.getElementById('simulation-canvas').getBoundingClientRect().width,document.getElementById('track-3d-canvas').getBoundingClientRect().width)};})()`);
       const img=await wc.capturePage(undefined,{stayHidden:true,stayAwake:true});await fs.writeFile(path.join(output,name+'.png'),img.toPNG());views[name]={...metrics,file:name+'.png'};
     }
   }
   check('All expected native picker/confirmation calls completed',queues.get(output).length===0);
-  const result={version,runtimeVersion:await js('circuitLab.version'),generatedAt:new Date().toISOString(),forceCpuFallback,checks,cases,priorImports,views,consoleErrors:errors,boundary:'Training-state round trips, forced early generations and short native runtime checks. Not exact mid-lap/GPU continuation, cryptographic authentication or learning-convergence evidence.'};
+  const result={version,runtimeVersion:await js('circuitLab.version'),generatedAt:new Date().toISOString(),forceCpuFallback,checks,cases,priorImports,movingCopy,views,consoleErrors:errors,boundary:'Training-state round trips, forced early generations and short native runtime checks. Not exact mid-lap/GPU continuation, cryptographic authentication or learning-convergence evidence.'};
   result.passed=checks.every(c=>c.passed)&&errors.length===0&&Object.values(views).every(v=>v.documentWidth<=v.width&&!v.overflow.length&&v.statusLive==='polite'&&v.busy==='false'&&v.save>=36&&v.load>=36&&v.map>0);
   await fs.writeFile(path.join(output,'progress-smoke.json'),JSON.stringify(result,null,2));console.log('PROGRESS_SMOKE '+JSON.stringify({passed:result.passed,checks:checks.length,version,output,errors}));return result;
 }

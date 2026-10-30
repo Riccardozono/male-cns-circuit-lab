@@ -25,7 +25,16 @@
     if(v.bestLapTime!==null)finite(v.bestLapTime,label+' tempo',.001);
     if(withGenome){finite(v.progress,label+' progresso archivio',0);genome(v.genome,graph);}
   }
-  const HISTORY_KEYS=['generation','best','mean','reward','penalty','laps','maxLaps','bestProgress','meanProgress','bestLapTime','noLapCount','slowerLapCount','stagnation','mutationAmount','immigrantCount','hallOfFame','learning','rewardRevision','baseBest','previousBestLapTime','rewardBreakdown'];
+  function deriveSafeLearningFrontier(state){
+    // 5.6.0 saves predate a dedicated frontier field. The champion and hall
+    // of fame contain only collision-free records, unlike learningFrontier,
+    // which may include a faster but crashed rollout.
+    const records=[...(state.hallOfFame||[]),...(state.championStats?[state.championStats]:[])];
+    const lapTimes=records.map(record=>record.bestLapTime).filter(value=>Number.isFinite(value)&&value>0);
+    return {progress:records.reduce((best,record)=>Math.max(best,record.bestProgress||0),0),
+      laps:records.reduce((best,record)=>Math.max(best,record.laps||0),0),lapTime:lapTimes.length?Math.min(...lapTimes):null};
+  }
+  const HISTORY_KEYS=['generation','best','mean','reward','penalty','laps','maxLaps','bestProgress','meanProgress','bestSafeProgress','meanSafeProgress','bestLapTime','noLapCount','slowerLapCount','stagnation','mutationAmount','immigrantCount','hallOfFame','learning','rewardRevision','baseBest','previousBestLapTime','rewardBreakdown'];
   function breakdown(v){
     keys(v,['rewards','penalties'],'Dettaglio punteggio');
     for(const [name,list]of [['rewards',F.Rewards.rewardKeys],['penalties',F.Rewards.penaltyKeys]]){
@@ -34,7 +43,7 @@
   }
   function validateTraining(s,graph,circuits){
     keys(s,['circuitId','circuitRevision','population','mutation','speedMultiplier','generation','elapsedAtSave','seed','rngState','stagnation','learningFrontier','history','bestEver','champion','championStats','hallOfFame','externalChampion','optimizer','genomes','rewardRevision'],'Stato di apprendimento');
-    if(s.rewardRevision!==F.Rewards.REVISION)fail('Sistema di ricompense incompatibile.');
+    if(!F.Rewards.SUPPORTED_REVISIONS.includes(s.rewardRevision))fail('Sistema di ricompense incompatibile.');
     const circuit=circuits.find(c=>c.id===s.circuitId);if(!circuit||s.circuitRevision!==(circuit.revision||1))fail('Circuito o revisione del circuito incompatibile.');
     integer(s.population,'Popolazione',4,F.MAX_POPULATION);finite(s.mutation,'Mutazione',0,.35);finite(s.speedMultiplier,'Velocità',.5,30);
     integer(s.generation,'Generazione',1);finite(s.elapsedAtSave,'Tempo della prova',0);integer(s.seed,'Seed',0,0xffffffff);
@@ -55,7 +64,10 @@
       keys(h,HISTORY_KEYS,'Voce storico');integer(h.generation,'Generazione storico',1,s.generation-1);if(h.generation<=previous)fail('Ordine dello storico non valido.');previous=h.generation;
       for(const k of ['best','mean'])finite(h[k],'Storico '+k);
       for(const k of ['reward','penalty','bestProgress','meanProgress'])finite(h[k],'Storico '+k,0);
-      if(h.rewardRevision!==F.Rewards.REVISION)fail('Ricompense dello storico incompatibili.');finite(h.baseBest,'Record stabile storico');
+      const hasBestSafe=Object.hasOwn(h,'bestSafeProgress'),hasMeanSafe=Object.hasOwn(h,'meanSafeProgress');
+      if(hasBestSafe!==hasMeanSafe)fail('Progresso sicuro dello storico incompleto.');
+      if(hasBestSafe){finite(h.bestSafeProgress,'Miglior progresso sicuro',0);finite(h.meanSafeProgress,'Progresso medio sicuro',0);if(h.bestSafeProgress>h.bestProgress+1e-8)fail('Progresso sicuro superiore al massimo fisico.');}
+      if(h.rewardRevision!==s.rewardRevision)fail('Ricompense dello storico incompatibili.');finite(h.baseBest,'Record stabile storico');
       if(h.previousBestLapTime!==null)finite(h.previousBestLapTime,'Riferimento generazione precedente',.001);
       breakdown(h.rewardBreakdown);
       const sum=v=>Object.values(v).reduce((a,b)=>a+b,0),close=(a,b)=>Math.abs(a-b)<1e-7*Math.max(1,Math.abs(a),Math.abs(b));
@@ -72,7 +84,7 @@
   }
   function capture(sim){
     if(sim.mode!=='connectome'||!sim.optimizer)fail('Salva i progressi nella modalità di apprendimento, non durante un test motore.');
-    const state={rewardRevision:F.Rewards.REVISION,circuitId:sim.circuitId,circuitRevision:sim.circuit.revision||1,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,
+    const state={rewardRevision:sim.rewardRevision,circuitId:sim.circuitId,circuitRevision:sim.circuit.revision||1,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,
       generation:sim.generation,elapsedAtSave:sim.elapsed,seed:sim.seed,rngState:sim.random.getState(),stagnation:sim.stagnation,learningFrontier:copy(sim.learningFrontier),history:copy(sim.history),
       bestEver:Number.isFinite(sim.bestEver)?sim.bestEver:null,champion:sim.champion?F.cloneGenome(sim.champion):null,championStats:sim.championStats?copy(sim.championStats):null,
       hallOfFame:copy(sim.hallOfFame),externalChampion:sim.externalChampion?F.cloneGenome(sim.externalChampion):null,
@@ -81,14 +93,22 @@
   }
   function restore(sim,state){
     validateTraining(state,sim.graph,sim.circuits);const s=copy(state);
-    sim.configureCircuit(s.circuitId);sim.population=s.population;sim.mutation=s.mutation;sim.speedMultiplier=s.speedMultiplier;sim.mode='connectome';sim.running=false;
+    sim.configureCircuit(s.circuitId);sim.rewardRevision=s.rewardRevision;sim.population=s.population;sim.mutation=s.mutation;sim.speedMultiplier=s.speedMultiplier;sim.mode='connectome';sim.running=false;
     sim.seed=s.seed;sim.random=F.rng(s.rngState);sim.generation=s.generation;sim.stagnation=s.stagnation;sim.history=s.history;
     sim.learningFrontier=s.learningFrontier;
+    // Keep the exact current-version file schema. Older/newer-version files rebuild
+    // the safe frontier from safe-only archive statistics, never raw progress.
+    sim.safeLearningFrontier=deriveSafeLearningFrontier(s);
     sim.bestEver=s.bestEver===null?-Infinity:s.bestEver;sim.champion=s.champion;sim.championStats=s.championStats;
     if(sim.championStats&&sim.championStats.bestLapTime===null)sim.championStats.bestLapTime=Infinity;
     sim.hallOfFame=s.hallOfFame;for(const entry of sim.hallOfFame)if(entry.bestLapTime===null)entry.bestLapTime=Infinity;
-    sim.externalChampion=s.externalChampion;sim.optimizer=new Learning.EvolutionStrategy(sim.graph);
-    Object.assign(sim.optimizer,s.optimizer);sim.spawn(s.genomes,false);sim.accumulator=0;return sim;
+    // Any pending shared champion is reconstructed from the desktop-level
+    // global champion when the restored session resumes, not serialized here.
+    sim.externalChampion=s.externalChampion;sim.pendingExternalChampion=null;sim.optimizer=new Learning.EvolutionStrategy(sim.graph);
+    // A save omits transient ES sample IDs. An empty lineage uses the safe
+    // compatibility ranking for this resumed generation; offspring then get
+    // fresh sample IDs on the next natural spawn.
+    Object.assign(sim.optimizer,s.optimizer);sim.spawn(s.genomes,false,[]);sim.accumulator=0;return sim;
   }
   function validatePayload(p,{graph,circuits,maxWorkers=MAX_WORKERS}){
     keys(p,['modelId','circuitId','graph','vehicleRevision','workers','globalChampion'],'Contenuto del file');

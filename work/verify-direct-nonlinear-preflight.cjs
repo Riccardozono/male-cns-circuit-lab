@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),Env=require('./neural-direct-nonlinear-env.cjs'),Native=require('./neural-direct-nonlinear-native.cjs'),Core=require('./neural-direct-nonlinear-core.cjs'),Objective=require('./neural-direct-training-objective-r7.cjs'),I=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),dir=path.join(base,'direct-neuronal-nonlinear-preflight');fs.mkdirSync(dir);
+try{
+ const old=JSON.parse(fs.readFileSync(path.join(base,'direct-neuronal-policy-preflight-r7/verification.json'),'utf8'));assert(old.passed);for(const [file,digest]of Object.entries(old.sourceHashes))assert.equal(I.sha(fs.readFileSync(file)),digest);
+ const env=Env.create({seed:171026}),native=Native.create(),metadata=env.metadata(),weights=metadata.initialWeights;
+ assert.equal(metadata.artificialHiddenUnits,64);assert.equal(weights.length,5276);
+ const baseline=env.evaluate(weights);assert.equal(baseline.actionTraceSha256,old.baseline.actionTraceSha256);assert.deepEqual(baseline.result,old.baseline.result);assert.equal(baseline.trainingFitness,old.baseline.trainingFitness);
+ let s=native.state(),hash=crypto.createHash('sha256');while(!s.complete){s=native.step(weights);hash.update(JSON.stringify([s.bestProgress,s.totalSimulationSeconds,s.car.outputs])+'\n');}assert.equal(hash.digest('hex'),baseline.actionTraceSha256);for(const k of ['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'])assert.deepEqual(s[k],baseline.result[k]);
+ env.reset();native.reset();const batch=env.rollout(weights,[.02,.02],64);
+ for(const row of batch.rows){let q=native.state();assert.deepEqual(q.x,row.x);const before=q.fitness;q=native.step(weights,row.action);assert.equal((q.fitness-before)/100,row.rawReward);assert.equal(row.trainingPenalty,Objective.penalty(q));assert(Math.abs(row.reward-(row.rawReward-row.trainingPenalty/100))<1e-12);assert.equal(q.complete,row.done);assert.deepEqual(row.next,q.complete?Array(77).fill(0):q.x);if(q.complete)native.reset();}
+ const cuda=Core.stats();assert(cuda.gpuCalls>0&&cuda.cpuFallbacks===0);
+ const proof={passed:true,metadata,baseline,actualTransitionComparisons:64,initialMeanPhysicalTraceUnchanged:true,cuda,sourceHashes:I.collect(['work/verify-direct-nonlinear-preflight.cjs','work/neural-direct-nonlinear-env.cjs','work/neural-direct-nonlinear-native.cjs','outputs/data/connectome.json','outputs/data/circuits.json','.impeccable/runtime-node24/node.exe']),boundary:'Actual initial-policy full from-line environment/native replay and64actual sampled transitions. New nonlinear head starts at zero; all5276parameters trainable. Same neuronal inputs and physics, no teacher actions; not evidence of better driving.'};
+ fs.writeFileSync(path.join(dir,'verification.json'),JSON.stringify(proof,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,parameters:weights.length,baseline:baseline.result,actualTransitionComparisons:64}));
+}finally{Native.close();}

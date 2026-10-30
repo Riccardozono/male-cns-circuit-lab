@@ -17,7 +17,7 @@ class ProgressFiles{
       const temporary=path.join(path.dirname(target),'.'+path.basename(target)+'.'+randomUUID()+'.tmp');
       try{await fs.writeFile(temporary,text,{encoding:'utf8',flag:'wx',mode:0o600});await fs.rename(temporary,target);}
       catch(error){await fs.unlink(temporary).catch(()=>{});throw Error('Salvataggio non scritto: '+error.message);}
-      return {canceled:false,name:path.basename(target),appVersion:this.version,modelId:payload.modelId,circuitId:payload.circuitId,generation:payload.workers[0].state.generation,workers:payload.workers.length};
+      return {canceled:false,name:path.basename(target),appVersion:this.version,modelId:payload.modelId,circuitId:payload.circuitId,generation:payload.workers[0].state.generation,workers:payload.workers.length,rewardRevisions:[...new Set(payload.workers.map(worker=>worker.state.rewardRevision))]};
     }finally{this.busy=false;}
   }
   async open(){

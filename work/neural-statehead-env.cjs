@@ -1,0 +1,22 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{performance}=require('node:perf_hooks'),Model=require('./neural-statehead-model.cjs'),Parent=require('./neural-frontier-chain.cjs'),State=require('./neural-statehead.cjs'),Bridge=require('./neural-command-state.cjs');
+function create({preparedFile,modelFile}={}){
+  if(process.versions.node!=='24.19.0')throw Error('Pinned numerical runtime required');const prepared=JSON.parse(fs.readFileSync(preparedFile,'utf8')),loaded=Model.load(modelFile,{allowResearch:true});
+  if(prepared.format!=='male-cns-actual-neuronal-state-head-preparation-v1'||loaded.data.parentSha256!==prepared.parentSha256||JSON.stringify(loaded.data.basis)!==JSON.stringify(prepared.basis)||JSON.stringify(loaded.data.projection)!==JSON.stringify(prepared.projection))throw Error('Actual prepared state-head source mismatch');
+  const env=Bridge.create(),brain=Parent.controller(loaded.parent),head=State.create(loaded.data),zero=Array(18).fill(0);
+  function observe(raw){brain.observe(raw);head.observe(raw);}
+  function full(){brain.reset();head.reset();const s=env.reset('full');observe(s.observation);return s;}
+  function step(genes){State.weights(genes);const prior=brain.compose(env.priorCommands(brain.snapshot().old)),s=env.stepMotor(head.compose(prior,genes));if(!s.terminated)observe(s.observation);return {...s,truncated:false,info:{...s.info,legacyDiagnosticThresholdReached:!!s.truncated,neuronalLateGate:head.value()}};}
+  full();let protectedControls=0;const started=performance.now();while(head.value()===0){if(performance.now()-started>180000)throw Error('Actual prefix diagnostic wall limit, not a physical termination');const s=step(zero);protectedControls++;if(s.terminated)throw Error('No actually reached live neuronal context');}
+  if(protectedControls!==prepared.firstActivatedControl)throw Error('Actual state-head activation differs');const prefix={physics:env.capture(),brain:brain.capture(),head:head.capture()};
+  function reset(mode='practice'){if(mode==='full')return full();if(mode!=='practice')throw Error('Actual full or own reached practice state required');const s=env.restore(prefix.physics);brain.restore(prefix.brain);head.restore(prefix.head);return s;}
+  function evaluate(genes,{mode='full',watchdogMs=180000}={}){
+    State.weights(genes);if(!Number.isFinite(watchdogMs)||watchdogMs<1000||watchdogMs>180000)throw Error('Bounded diagnostic limit required');const start=performance.now(),trace=crypto.createHash('sha256');let s=reset(mode),controls=0,overlap=0;
+    while(!s.terminated&&performance.now()-start<watchdogMs){s=step(genes);controls++;const commands=env.inspect().lastCommands;overlap+=Number(Math.min(commands[1],commands[2])!==0);trace.update(JSON.stringify([s.info.bestProgress,s.info.totalSimulationSeconds,commands])+'\n');}
+    return {result:s.info,validationMode:mode,complete:s.terminated===true,censored:s.terminated!==true,actualActorControls:controls,gasBrakeOverlapSteps:overlap,actionTraceSha256:trace.digest('hex'),wallSeconds:(performance.now()-start)/1000};
+  }
+  const metadata=()=>({...env.metadata(),format:'male-cns-neuronal-state-head-env-v1',preparedSha256:crypto.createHash('sha256').update(fs.readFileSync(preparedFile)).digest('hex'),modelSha256:loaded.sha256,protectedControls,plasticParameters:18,projectionAxes:8,boundary:'Complete actually reached physics and parent/head neuronal memories. State-dependent learned command correction, no route/time/progress/ideal-action inputs. Full and independently loaded native validation still required; cached practice is NOT an app generation or lap proof.'});
+  return {reset,step,evaluate,metadata,prepared};
+}
+if(require.main===module){let env;require('node:readline').createInterface({input:process.stdin,crlfDelay:Infinity}).on('line',line=>{let id=null;try{if(line.length>8192)throw Error('Bounded request required');const m=JSON.parse(line);id=m.id;if(!Number.isInteger(id))throw Error('Request ID required');let result;if(m.op==='init'){if(env)throw Error('Already initialized');env=create(m.configuration);result=env.metadata();}else if(!env)throw Error('Initialize first');else if(m.op==='evaluate')result=env.evaluate(m.genes,{mode:m.mode,watchdogMs:m.watchdogMs});else throw Error('Unsupported actual physical operation');process.stdout.write(JSON.stringify({id,result})+'\n');}catch(error){process.stdout.write(JSON.stringify({id,error:error.stack})+'\n');}});}
+module.exports={create};

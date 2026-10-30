@@ -3,9 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0c1017">
+    <meta name="theme-color" content="#fcfefe">
     <meta name="description" content="Simulatore locale a fisica libera con il grafo annotato MaleCNS completo e atlante 3D orbitabile delle connessioni attive.">
     <title>MAL-E CNS / Circuit Lab</title>
+    <script src="ui-theme.js"></script>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
@@ -15,10 +16,11 @@
           <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
           <div>
             <p class="brand-name">MAL-E CNS</p>
-            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.6.0</span></p>
+            <p class="brand-subtitle">Circuit Lab <span id="build-version">5.7.0</span></p>
           </div>
         </div>
         <div class="topbar-meta">
+          <button class="button button--secondary theme-toggle" id="theme-toggle" type="button" aria-pressed="false" aria-label="Modalità scura" title="Attiva la modalità scura."><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5 8.7 8.7 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Scuro</span></button>
           <button class="button button--secondary" id="open-model-test" type="button" aria-controls="model-test-panel" aria-expanded="false" disabled>Apri test modelli</button>
           <span class="status-chip status-chip--live"><span class="status-dot"></span> Locale · offline</span>
           <span class="topbar-date" id="model-badge">MaleCNS V4 · 166.700 neuroni</span>
@@ -44,7 +46,7 @@
           </div>
           <div class="circuit-controls">
             <div class="circuit-field"><label class="control-label" for="circuit-select">Circuito</label><select id="circuit-select" aria-describedby="circuit-change-note"></select></div>
-            <div class="circuit-field"><label class="control-label" for="camera-select">Camera del circuito</label><select id="camera-select"><option value="overview">Panoramica</option><option value="follow">Segui auto</option></select></div>
+            <div class="circuit-field"><label class="control-label" for="camera-select">Camera del circuito</label><select id="camera-select" aria-describedby="first-person-note"><option value="overview">Panoramica</option><option value="follow">Segui auto</option><option value="first-person">Prima persona · auto selezionata</option></select><p class="hint" id="first-person-note" hidden>Posto guida e abitacolo schematici, non inclusi nel modello Porsche esterno. Trascina o usa le frecce per guardare, rotella per il campo visivo, Centra per guardare avanti.</p></div>
             <p id="circuit-change-note" class="hint">Nuova pista: riparte dalla generazione 1.</p>
           </div>
           <details class="model-test" id="model-test-panel">
@@ -176,9 +178,9 @@
               </div>
             </div>
             <div class="history-wrap">
-              <dl class="learning-summary"><div><dt>Distanza ultima gen.</dt><dd id="learning-distance">—</dd></div><div><dt>Media popolazione</dt><dd id="learning-mean">—</dd></div><div><dt>Giri validi max</dt><dd id="learning-laps">0 / 2</dd></div><div><dt>Miglior giro</dt><dd id="learning-lap-time">—</dd></div></dl>
-              <label class="history-mode" for="history-mode">Andamento<select id="history-mode"><option value="progress">Distanza percorsa (m)</option><option value="fitness">Punteggio netto (pt)</option></select></label>
-              <canvas id="history-canvas" role="img" aria-label="Distanza percorsa per generazione"></canvas>
+              <dl class="learning-summary"><div><dt>Progresso sicuro ultima gen.</dt><dd id="learning-distance">—</dd></div><div><dt>Media auto sicure</dt><dd id="learning-mean">—</dd></div><div><dt>Giri validi max</dt><dd id="learning-laps">0 / 2</dd></div><div><dt>Miglior giro</dt><dd id="learning-lap-time">—</dd></div></dl>
+              <label class="history-mode" for="history-mode">Andamento<select id="history-mode"><option value="progress">Progresso sicuro (m)</option><option value="raw-progress">Massimo grezzo, include urti (m)</option><option value="fitness">Punteggio netto (pt)</option></select></label>
+              <canvas id="history-canvas" role="img" aria-label="Progresso sicuro per generazione"></canvas>
               <div class="history-legend"><span><i class="legend-line"></i>Migliore</span><span><i class="legend-line history-mean"></i>Media</span></div>
               <p id="learning-trend" class="learning-trend">Servono 10 generazioni per confrontare due gruppi di 5.</p>
               <p class="hint" id="history-caption">Nessuna generazione conclusa.</p>
@@ -198,8 +200,9 @@
                 <p class="hint" id="population-note">Fino a 100 auto per generazione e worker. Più auto aumentano il carico; la velocità effettiva dipende dal calcolo disponibile.</p>
               </label>
               <label class="range-control" for="mutation-range">
-                <span><span class="control-label">MUTAZIONE</span><output id="mutation-output">16%</output></span>
-                <input id="mutation-range" type="range" min="0" max="35" step="1" value="16">
+                <span><span class="control-label">MUTAZIONE BASE</span><output id="mutation-output">32% base</output></span>
+                <input id="mutation-range" type="range" min="0" max="35" step="1" value="32" aria-describedby="mutation-note">
+                <p class="hint" id="mutation-note">Dopo 3 generazioni senza progresso fisico la mutazione sale a 1,5×; dopo 6 a 2× (massimo 35%). Se l’auto non ha chiuso 2 giri, fino a metà della popolazione può esplorare varianti della frontiera. Mutazione base 0 disattiva l’adattamento.</p>
               </label>
               <label class="range-control" for="speed-range">
                 <span><span class="control-label">VELOCITÀ SIMULAZIONE</span><output id="speed-output">1.0×</output></span>
@@ -252,7 +255,7 @@
                 <button class="button button--secondary" id="save-progress" type="button" aria-describedby="progress-file-note">Salva file…</button>
                 <button class="button button--secondary" id="load-progress" type="button" aria-describedby="progress-file-note">Carica file…</button>
               </div>
-              <p class="hint" id="progress-file-note">File condivisibile .malecns-save · solo app 5.6.0. Conserva modello, circuito e apprendimento di tutti i worker. Riprende in pausa dalla partenza della generazione salvata, non a metà giro. I file precedenti richiedono la loro versione dell’app: i progressi 5.5.0 restano utilizzabili con l’app 5.5.0.</p>
+              <p class="hint" id="progress-file-note">File condivisibile .malecns-save: conserva modello, circuito e apprendimento di tutti i worker. Si apre in pausa dalla partenza della generazione salvata. I file con una versione o ricompense diverse richiedono una copia compatibile e non si aprono nella release 5.7.0 distribuita.</p>
               <p class="progress-status hint" id="progress-status" role="status" aria-live="polite" aria-atomic="true">Nessun file salvato in questa sessione.</p>
               <input id="progress-file-input" type="file" accept=".malecns-save" hidden>
             </section>
@@ -376,6 +379,7 @@
     <script src="legacy-models.js"></script>
     <script src="data/circuits.js"></script>
     <script src="neural-learning.js"></script>
+    <script src="dense-neural.js"></script>
     <script src="data/terrain.js"></script>
     <script src="terrain.js"></script>
     <script src="vehicle-992.js"></script>
@@ -392,6 +396,7 @@
     <script src="model-comparison.js"></script>
     <script src="model-test.js"></script>
     <script src="learning-metrics.js"></script>
+    <script src="session-ui.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

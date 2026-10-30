@@ -10,7 +10,7 @@
   else root.MaleCNSLearning=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const VERSION=3,CHANNELS=28,GAIN_GROUPS=16,READOUT_LIMIT=64,CONTROL_INTERVAL=6;
+  const VERSION=3,CHANNELS=28,GAIN_GROUPS=16,READOUT_LIMIT=64,CONTROL_INTERVAL=6,MIN_POLICY_CONTEXT_SPEED_MPS=2;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const normal=r=>Math.sqrt(-2*Math.log(Math.max(1e-9,r())))*Math.cos(2*Math.PI*r());
   function build(graph){
@@ -65,7 +65,7 @@
     const p=graph.learning,values=genome?.adapterVersion===(p?.version??VERSION)&&genome.policyWeights;
     return Float32Array.from({length:p?.gainGroups??GAIN_GROUPS},(_,g)=>values?Math.exp(clamp(values[CHANNELS*2+g],-.8,.8)):1);
   }
-  function commands(graph,brain,genome,enabled=true,edgesEnabled=true){
+  function commands(graph,brain,genome,enabled=true,edgesEnabled=true,launchBias=0){
     if(!enabled||!edgesEnabled)return [0,0,0];
     const p=graph.learning,values=genome.policyWeights;
     if(genome.adapterVersion!==p.version||!valid(graph,values))throw Error('Policy MaleCNS incompatibile: usare Reset, non il vecchio controller assistito.');
@@ -83,6 +83,7 @@
     if(signal<1e-7)return [0,0,0];
     steering=Math.tanh(steering+values[values.length-2]);
     longitudinal=Math.tanh(longitudinal+values[values.length-1]);
+    longitudinal=clamp(longitudinal+(Number.isFinite(launchBias)?launchBias:0),-1,1);
     return [steering,Math.max(0,longitudinal),Math.max(0,-longitudinal)];
   }
   function mutate(graph,values,r,amount){
@@ -100,32 +101,118 @@
       return chosen&&scale?clamp(v+normal(r)*p.scales[i]*scale,-8,8):v;
     });
   }
+  function rememberActivity(brain,speedMps=null){
+    // Training-only observations while the vehicle is moving. Stationary
+    // brake-hold frames must not become the most frequent context that the
+    // motor mutation preserves. This metadata never enters neural inference.
+    // No sensors, coordinates, track progress, target actions or reward labels
+    // enter the cache; calls without speed retain the helper's test API.
+    if(speedMps!==null&&(!Number.isFinite(speedMps)||Math.abs(speedMps)<MIN_POLICY_CONTEXT_SPEED_MPS))return false;
+    const features=brain.policyFeatures;if(!features?.length)return false;
+    const experience=brain.policyExperience||(brain.policyExperience={centres:[],samples:0});
+    experience.samples++;const centres=experience.centres;
+    let nearest=null,distance=Infinity;
+    for(const centre of centres){let d=0;for(let j=0;j<features.length;j++)d+=(features[j]-centre.values[j])**2;d/=features.length;if(d<distance){distance=d;nearest=centre;}}
+    if(!nearest||distance>.0225&&centres.length<12){centres.push({values:Array.from(features),count:1});return true;}
+    // Replace a rarely observed pattern when a new neural context arrives;
+    // keep the frequently visited contexts needed to preserve useful behaviour.
+    if(distance>.0225&&centres.length===12){const rare=centres.reduce((a,b)=>a.count<b.count?a:b);if(rare.count<=2){rare.values=Array.from(features);rare.count=1;return true;}}
+    nearest.count++;const rate=1/nearest.count;
+    for(let j=0;j<features.length;j++)nearest.values[j]+=(features[j]-nearest.values[j])*rate;
+    return true;
+  }
+  function motorVector(features){const norm=1/Math.sqrt(features.length);return [...features.map(v=>v*norm),1];}
+  const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
+  function orthogonal(vector,basis){
+    const result=vector.slice();
+    // Two passes avoid cancelling the small useful contrast through numerical
+    // error when recurrent descending neurons are strongly correlated.
+    for(let pass=0;pass<2;pass++)for(const b of basis){const projection=dot(result,b);for(let j=0;j<result.length;j++)result[j]-=projection*b[j];}
+    return result;
+  }
+  function safeMotorMutation(graph,values,r,amount,experience,focus=null){
+    const p=graph.learning,scale=Math.max(0,amount)/.16;if(!scale)return values.slice();
+    const focusedActions=focus==='longitudinal'?[1]:focus==='steering'?[0]:focus==='combined'?[0,1]:null;
+    const centres=experience?.centres?.filter(c=>c.values?.length===p.nodes.length&&c.values.every(Number.isFinite)&&c.count>0);
+    if(!centres?.length&&!focusedActions)return localMutation(graph,values,r,amount*.35);
+    const sorted=(centres||[]).slice().sort((a,b)=>b.count-a.count),basis=[];
+    // Preserve the incumbent's own outputs in its most visited neural context.
+    // This is a null-space mutation of the motor readout, not a driving rule.
+    // Protecting several correlated contexts also froze the failing corner
+    // response. One anchor keeps the dominant behaviour without that lock.
+    for(const centre of sorted.slice(0,1)){
+      const v=orthogonal(motorVector(centre.values),basis),length=Math.sqrt(dot(v,v));
+      if(length>1e-7)basis.push(v.map(x=>x/length));
+    }
+    const contrasts=(centres||[]).map(c=>{const v=orthogonal(motorVector(c.values),basis);return {v,norm2:dot(v,v)};}).filter(c=>c.norm2>1e-5);
+    let direction,target;
+    if(contrasts.length){
+      // Sample genuinely different neural contexts preferentially. Tiny
+      // contrasts mostly cause coefficient noise, not useful action changes.
+      let draw=r()*contrasts.reduce((sum,c)=>sum+c.norm2,0),c=contrasts.at(-1);
+      for(const candidate of contrasts){draw-=candidate.norm2;if(draw<=0){c=candidate;break;}}
+      direction=c.v;target=c.norm2;
+      if(r()<.5){
+        const randomDirection=orthogonal(Array.from({length:p.nodes.length+1},()=>normal(r)),basis),response=Math.abs(dot(randomDirection,c.v));
+        if(response>1e-5){direction=randomDirection;target=response;}
+      }
+    }
+    else {direction=orthogonal(Array.from({length:p.nodes.length+1},()=>normal(r)),basis);target=Math.sqrt(dot(direction,direction));}
+    if(!(target>1e-7))return values.slice();
+    const roll=r(),actions=focusedActions||(roll<.35?[0]:roll<.7?[1]:[0,1]),child=values.slice();
+    // A bend may require a coordinated brake/steering change, while neither
+    // isolated change is better under the real rollout reward.
+    for(const action of actions){
+      const magnitude=normal(r)*.24*scale,delta=direction.map(v=>v*magnitude/target);
+      const size=Math.sqrt(dot(delta,delta));let shrink=size>6?6/size:1;
+      const indices=Array.from({length:p.nodes.length},(_,j)=>p.readoutOffset+j*2+action);indices.push(values.length-2+action);
+      for(let j=0;j<indices.length;j++)if(delta[j])shrink=Math.min(shrink,(8-Math.abs(values[indices[j]]))/Math.abs(delta[j]));
+      for(let j=0;j<indices.length;j++)child[indices[j]]+=delta[j]*shrink*(1-1e-12);
+    }
+    return child;
+  }
+  function scaleMutation(values,child,factor){
+    const delta=values.map((v,i)=>(child[i]-v)*factor);let shrink=1;
+    for(let i=0;i<values.length;i++)if(delta[i])shrink=Math.min(shrink,(8-Math.abs(values[i]))/Math.abs(delta[i]));
+    return values.map((v,i)=>v+delta[i]*shrink*(1-1e-12));
+  }
+  function mirroredMutation(values,child){return values.map((v,i)=>2*v-child[i]);}
   class EvolutionStrategy{
     constructor(graph){this.graph=graph;const p=graph.learning;this.mean=p.mean.slice();this.sigma=p.scales.slice();this.updates=0;this.episodes=0;}
-    update(ranked){
-      const eligible=ranked.filter(agent=>valid(this.graph,agent.genome?.policyWeights));
+    update(ranked,compare=(a,b)=>b.fitness-a.fitness){
+      if(typeof compare!=='function')throw Error('Criterio di selezione neurale non valido.');
+      const eligible=ranked.filter(agent=>valid(this.graph,agent.genome?.policyWeights)).sort(compare);
       if(eligible.length<2)return;
       this.updates++;this.episodes+=eligible.length;
       // An identical return supplies no preference signal. Never learn a
       // direction just because an agent happened to be first in the array.
-      if(eligible.every(agent=>agent.fitness===eligible[0].fitness))return;
-      const count=Math.min(eligible.length,Math.max(2,Math.ceil(eligible.length/4)));
-      const weights=Array.from({length:eligible.length},(_,i)=>i<count?Math.log(count+.5)-Math.log(i+1):0),total=weights.reduce((a,b)=>a+b,0);
-      weights.forEach((_,i)=>weights[i]/=total);
-      // Average tied ranks, including a tie that spans the selection cutoff.
-      // Positive affine transformations of rewards leave the update unchanged.
+      if(eligible.every(agent=>compare(agent,eligible[0])===0))return;
+      const count=Math.min(eligible.length,Math.max(1,Math.min(Math.floor(eligible.length/2),Math.max(2,Math.ceil(eligible.length/4)))));
+      const eliteWeights=Array.from({length:count},(_,i)=>Math.log(count+.5)-Math.log(i+1)),total=eliteWeights.reduce((a,b)=>a+b,0);
+      eliteWeights.forEach((_,i)=>eliteWeights[i]/=total);
+      const weights=Array(eligible.length).fill(0),scaleWeights=Array(eligible.length).fill(0);
+      for(let i=0;i<count;i++){
+        weights[i]=eliteWeights[i];scaleWeights[i]=eliteWeights[i];
+        weights[eligible.length-1-i]=-eliteWeights[i];
+      }
+      // Use the bottom ranked trials as a negative direction signal without
+      // allowing them into the safe-only parent/champion path. Spread adaptation
+      // still uses elites only; rank ties remain order-invariant across cutoffs.
       for(let start=0;start<eligible.length;){
-        let end=start+1;while(end<eligible.length&&eligible[end].fitness===eligible[start].fitness)end++;
-        const tied=weights.slice(start,end).reduce((a,b)=>a+b,0)/(end-start);
-        for(let i=start;i<end;i++)weights[i]=tied;
+        let end=start+1;while(end<eligible.length&&compare(eligible[end],eligible[start])===0)end++;
+        const tied=weights.slice(start,end).reduce((a,b)=>a+b,0)/(end-start),tiedScale=scaleWeights.slice(start,end).reduce((a,b)=>a+b,0)/(end-start);
+        for(let i=start;i<end;i++){weights[i]=tied;scaleWeights[i]=tiedScale;}
         start=end;
       }
       const p=this.graph.learning;
       for(let j=0;j<this.mean.length;j++){
-        let mean=0;for(let i=0;i<eligible.length;i++)mean+=weights[i]*eligible[i].genome.policyWeights[j];
-        let variance=0;for(let i=0;i<eligible.length;i++)variance+=weights[i]*(eligible[i].genome.policyWeights[j]-this.mean[j])**2;
-        this.mean[j]=clamp(.35*this.mean[j]+.65*mean,-8,8);
-        this.sigma[j]=clamp(Math.sqrt(.85*this.sigma[j]**2+.15*variance),p.scales[j]*.5,p.scales[j]*3);
+        let direction=0,variance=0,scaleTotal=0;
+        for(let i=0;i<eligible.length;i++){
+          direction+=weights[i]*(eligible[i].genome.policyWeights[j]-this.mean[j]);
+          variance+=scaleWeights[i]*(eligible[i].genome.policyWeights[j]-this.mean[j])**2;scaleTotal+=scaleWeights[i];
+        }
+        this.mean[j]=clamp(this.mean[j]+.325*direction,-8,8);
+        this.sigma[j]=clamp(Math.sqrt(.85*this.sigma[j]**2+.15*variance/Math.max(1e-12,scaleTotal)),p.scales[j]*.5,p.scales[j]*3);
       }
     }
     sample(r,amount=.16,stagnation=0,mirror=null){
@@ -145,5 +232,5 @@
     }
     metrics(){return {algorithm:'diagonal evolution strategy',version:this.graph.learning.version,updates:this.updates,episodes:this.episodes,parameters:this.mean.length,meanExploration:this.sigma.reduce((a,b)=>a+b,0)/this.sigma.length,warmStart:false};}
   }
-  return {VERSION,CHANNELS,GAIN_GROUPS,CONTROL_INTERVAL,build,valid,supportedVersion,initial,drive,synapticGains,commands,mutate,localMutation,EvolutionStrategy};
+  return {VERSION,CHANNELS,GAIN_GROUPS,CONTROL_INTERVAL,MIN_POLICY_CONTEXT_SPEED_MPS,build,valid,supportedVersion,initial,drive,synapticGains,commands,mutate,localMutation,rememberActivity,safeMotorMutation,scaleMutation,mirroredMutation,EvolutionStrategy};
 });

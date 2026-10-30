@@ -1,5 +1,99 @@
 # Apprendimento: correzioni e verifiche di sviluppo
 
+## 29 ottobre 2026 — soglia del passo e mutazione delle nuove sessioni
+
+Un V2 da zero procedeva a **2,001–2,011 m/s**, appena sopra il vecchio limite
+di passo di **1,75 m/s**, e poteva così restare attivo senza completare giri.
+La revisione `progress-8-pace-recovery-margin` alza la frazione minima di
+andatura a `0,075`; dopo la finestra di otto secondi lascia proseguire un'auto
+lenta soltanto se sta sopra **1,25×** la soglia minima e registra nuovo
+progresso sicuro. `progress-7-moving-pace` conserva la precedente regola per
+le sessioni che la usano.
+
+La mutazione iniziale ora è **32%** nelle sessioni nuove, tanto nell'interfaccia
+quanto nei motori browser/Windows e nel confronto modelli. Il controllo
+visualizza il valore reale del motore. Caricando un salvataggio si conserva la
+mutazione contenuta nel file.
+
+Nel test naturale V2 del **Laboratorio**, seed 7717, 32 auto e 12 generazioni
+da zero, con mutazione 16% il fronte sicuro è passato
+da **86,824 a 132,966 m**; con 32% dallo stesso punto di partenza a
+**851,059 m** (circa 9,8× il fronte finale del controllo). La media sicura è
+passata da **19,738 a 369,949 m**. Il seed di verifica 850816 ha dato
+**58,633 m** al 16% e **77,468 m** al 32% (+32%). Nessuno dei due seed ha
+completato un giro. Sono misure di progresso iniziale V2, non di convergenza.
+
+Sul V3 già allenato a Monza, il 32% non ha migliorato il checkpoint: a gen.110
+il fronte sicuro è **797,586 m**, contro **798,730 m** al 16%; 72 auto sicure
+in entrambi i rami e zero giri. Non cambiare la mutazione nei salvataggi
+esistenti e non interpretare il nuovo predefinito come una cura generale per
+V3/V4/V5.
+
+Il bias di lancio è ora passato realmente al decoder e viene tolto oltre
+**2 m/s**, per non sovrascrivere la policy già in marcia. Il confronto V3/Monza
+ha ridotto il danno rispetto al bias costante, ma entrambi i rami sono rimasti
+senza giri: anche questo è solo un accorgimento locale, non una soluzione
+all'apprendimento.
+
+Verifica locale: `npm test` — **454 test superati, 0 falliti**; benchmark V2
+12 generazioni naturali incluso. La versione resta **5.7.0**: nessun tag,
+commit di versione o release GitHub è stato creato. La pulizia dei file
+segnalati resta incompleta perché il controllo automatico ha bloccato le
+cancellazioni; non sono stati rimossi file.
+
+## 29 ottobre 2026 — memoria delle situazioni in movimento
+
+La memoria temporanea usata per orientare le mutazioni non registra più i
+campioni quando la velocità dell'auto è sotto 2 m/s. Prima, una vettura ferma
+con il freno premuto poteva ripetere la stessa attività neurale a ogni passo e
+rendere proprio quella risposta la più frequente, proteggendola dalle mutazioni.
+Il filtro agisce soltanto sulla memoria di training: non cambia i sensori della
+rete, le azioni in inferenza, la fisica, le ricompense o il formato dei salvataggi.
+
+Nel confronto V3/Monza dal medesimo checkpoint gen.106, seed 7717 e 100 auto,
+il controllo rimane a **791,439 m sicuri** nelle gen.106–109. Con il filtro, il
+fronte passa a **798,730 m sicuri** in gen.108 e resta lì in gen.109 (+7,292 m);
+gli episodi sicuri passano da 66 a 70 nella gen.109. Entrambi fanno zero giri.
+Quattro generazioni successive (gen.110–113) mantengono 798,730 m senza
+completare un giro: è un miglioramento locale riprodotto, ma il nuovo fronte si
+ristagna.
+
+Il replay del leader sicuro gen.114 si arresta ancora in pista a 0 km/h, con
+acceleratore 0, freno 0,175 e sterzo 0,006. Un A/B dal medesimo checkpoint prova
+mutazioni coordinate di sterzo e motore: dopo una generazione di selezione il
+fronte sicuro resta 798,730 m, uguale al controllo. Non promuovere questa
+seconda variante. Prove su un solo seed e pista: non dimostrano un giro, una
+convergenza generale o un vantaggio su altri modelli.
+
+## 29 ottobre 2026 — pratica allineata e mutazione longitudinale
+
+`evaluatePractice()` usava il guadagno sensoriale e il bias motore standard
+(`0,35` e `0,18`) anche per Monza, Monaco e Le Mans. La simulazione reale delle
+piste strette usa invece `0,8` e `0,02`. `neuralStepForTrack()` ora applica a
+pratica e pista gli stessi parametri. Un test di regressione confronta i due
+percorsi di controllo.
+
+Un replay CUDA V3/Monza del checkpoint gen. 80 ha poi mostrato che l'agente
+sicuro fermo a 790,461 m mantiene gas zero e freno applicato; la telemetria
+conferma che la vettura rallenta fino a fermarsi. Il problema osservato in
+questo replay è la policy longitudinale che non riapplica il gas, non un
+attuatore del freno guasto. La mutazione per un frontier fermo ora modifica
+solo l'uscita longitudinale gas/freno e preserva la sterzata.
+
+Confronto appaiato, quattro generazioni per ramo, seed 7717 e popolazione 40.
+Il primo esito fisico coincide con il riferimento; fra le generazioni 81–83,
+la media di progressione degli agenti sicuri è salita da 138,71 m a 277,86 m
+e gli agenti sicuri oltre 500 m da 4,33 a 8,67 per generazione. Gli hash del
+sorgente comportamentale differiscono solo in `outputs/simulation.js`.
+RTX 4060: 62.934 chiamate CUDA nel ramo trattato, zero fallback CPU. Il miglior
+progresso sicuro è rimasto 790,461 m in entrambi i rami, con zero giri: è un
+segnale d'esplorazione su un solo seed, non convergenza o generalizzazione.
+
+Il replay CPU diagnostico riproduce gli esiti terminali CUDA e conferma che il
+salvataggio originale dell'autore non è cambiato. La candidata locale 5.7.0
+rimane separata dalla release 5.6.0; attribuzione dei modelli, commit, tag e
+pubblicazione attendono la conferma dei modelli di sviluppo usati.
+
 Verifiche del 12–13 ottobre 2026, confrontate con il sorgente distribuito in
 `v5.6.0` (`7cb6fcf0b12bd56bd7a7510fef147f7356a2f3a4`). Questo lavoro non
 crea una nuova versione, non sposta il tag e non sostituisce portable o installer
@@ -42,6 +136,37 @@ simulatore, non risultati o garanzie del paper.
 Ricompense `progress-3`, decoder, dinamica neurale, sensori, fisica, circuiti,
 formato dei salvataggi e dimensioni dei tensori sono rimasti quelli della
 5.6.0. Non viene effettuata alcuna migrazione o aggiramento dei controlli.
+
+## Aggiornamento locale 20 ottobre 2026 — esiti sicuri
+
+Questa correzione riguarda il sorgente di sviluppo; non è contenuta nei binari
+5.6.0 già distribuiti. La fisica, le ricompense, i parametri delle reti e il
+formato dei salvataggi non cambiano.
+
+- Gli urti, le uscite, i progressi non validi e le prove censurate restano nelle
+  metriche diagnostiche, ma non aggiornano l'ottimizzatore, il campione pulito,
+  la frontiera fisica sicura o l'archivio dei genitori. Una generazione di soli
+  esiti non sicuri conserva il campione precedente e, con mutazione attiva,
+  riparte con esploratori nuovi.
+- Le prove valide si ordinano prima con il punteggio effettivo, ricompense meno
+  tutte le penalità (giri lenti e mancati inclusi). Giri, tempo e distanza non
+  possono scavalcare un saldo peggiore; a parità aiutano a risolvere il pareggio.
+  Un leader sicuro di distanza può comunque generare varianti mirate senza
+  sostituire il campione con una corsa peggiore.
+- Fermare manualmente una generazione senza incidente non la trasforma in un
+  urto: riceve la normale penalità per il mancato giro e resta un episodio
+  valutabile. A mutazione zero non vengono inventati parametri o esploratori.
+- La frontiera sicura resta runtime-only per non aggiungere campi al formato
+  `.malecns-save` della 5.6.0. Riprendendo un vecchio salvataggio, questa
+  frontiera riparte da zero e viene ricostruita dai successivi esiti sicuri;
+  il campo diagnostico storico continua invece a conservare il suo significato.
+
+Nel test naturale V2 integrato (seed 7717, Laboratorio, 32 auto, mutazione
+0,16, 12 generazioni da zero) il massimo progresso passa da **439,44 m** nella
+prima generazione a **1.428,85 m** nella dodicesima; l'ottimizzatore registra
+246 episodi sicuri e 12 aggiornamenti. È un risultato di un singolo scenario,
+non una prova di giro completato, convergenza o miglioramento di V3/V4.
+La suite completa successiva va eseguita prima di distribuire questi sorgenti.
 
 ## Risultato misurato su V3
 
@@ -116,3 +241,154 @@ Evidenze locali: `.impeccable/review/learning-ml/final-all.tap`,
 `hybrid-final/result.json`, `dev-app-progress/progress-smoke.json`.
 I report grezzi possono contenere percorsi locali:
 non vengono pubblicati o inclusi nei pacchetti.
+
+## Soglia di lentezza: revisione di sviluppo `progress-7-moving-pace`
+
+Nella revisione precedente la velocità media degli ultimi otto secondi può
+essere insufficiente anche quando l'auto, proprio al controllo della soglia,
+supera la velocità minima e avanza su strada mai percorsa. La nuova revisione mantiene
+la penalità di 1.400 punti, ma in questo caso specifico non termina subito
+l'episodio: richiede sia la velocità corrente almeno pari al minimo, sia un
+incremento effettivo del progresso massimo. Urti, uscite di pista, progressi
+non validi e assenza di avanzamento continuano a terminare la prova.
+
+La modifica riguarda le nuove sessioni del sorgente di sviluppo. I salvataggi
+esistenti conservano la loro revisione, comprese `progress-3` e
+`progress-6-missing-lap`: caricarli non applica automaticamente questa regola.
+Il salvataggio originale dell'utente non è stato modificato. È stata preparata
+una copia sperimentale separata `SPERIMENTALE-solo-dev-v3-monza-progress7-copia.malecns-save`
+nella cartella locale `.impeccable/review/learning-ml/saved-v3-moving-pace-copy-20261027-85/`.
+La copia conserva i cinque worker, i genomi della popolazione e dell'archivio,
+lo stato e i contatori dell'ottimizzatore; azzera storico, punteggi, classifiche
+e record precedenti per non confrontare ricompense diverse. La copia viene
+caricata in pausa, con 40 auto per worker. Report e verifica locali descrivono
+anche i genomi dell'archivio mantenuti come campioni esterni da rivalutare.
+Un salvataggio creato con `progress-7-moving-pace` non è compatibile con la
+release 5.6.0 già distribuita, che non riconosce questa revisione, anche se il
+numero di versione del sorgente rimane 5.6.0 durante lo sviluppo. Non
+sostituire binari distribuiti né presentare tali file come compatibili.
+
+Per aprire il sorgente come app Windows separata è disponibile
+`Avvia-sviluppo-lentezza-v560.cmd`. Richiede le dipendenze locali del progetto,
+usa un profilo dedicato e avvia una sessione nuova in pausa con V3, Monza e 16
+auto. Non importa il salvataggio dell'utente: caricando quello storico,
+l'app conserva le sue regole `progress-3`; la copia sperimentale sopra indicata
+si può caricare manualmente per provare `progress-7`. Questo avvio di sviluppo non è un
+installer né sostituisce il portable o la release esistenti.
+
+Sul salvataggio V3/Monza gen. 64, una prova A/B separata, con due generazioni
+per braccio, ha riprodotto le 40 traiettorie fino all'arresto originale. La
+miglior distanza sicura è passata da 733,862 a 775,837 m in entrambe le
+generazioni; nel primo braccio aggiornato una delle auto fatte proseguire ha
+poi urtato. Nessun braccio ha completato un giro: il confronto identifica uno
+stop prematuro, non dimostra che il problema di apprendimento sia risolto.
+Report e verifica: `saved-v3-moving-slow-recovery-2gen-ab-20261026-82` nella
+cartella locale `.impeccable/review/learning-ml/`. Il controllo usa una sola
+sessione, un circuito e un seed; non dimostra la generalizzazione a V2–V5.
+
+## Coerenza delle prove locali nella revisione di sviluppo
+
+In `progress-7-moving-pace`, uno stato di pratica acquisito durante la
+simulazione conserva anche la fase di aggiornamento neurale e l'ultimo comando
+in vigore. La prova riprende quindi con la stessa cadenza della vettura reale;
+se uno stato non contiene questi dati temporanei, mantiene il precedente
+comportamento di ripiego. I campi sono interni alla pratica e non vengono
+aggiunti allo schema dei salvataggi.
+
+Nella stessa revisione, una prova locale che termina con un urto, un'uscita
+di pista o un progresso non valido non viene promossa come miglioramento,
+anche se la sua penalità totale è minore di quella di un'auto ferma. La
+normale esplorazione continua: questa regola non impedisce a tutti i figli di
+urtare. Le revisioni storiche mantengono il loro criterio precedente e il
+salvataggio originale dell'utente non viene modificato.
+
+Un confronto di ricerca sulla RTX 4060, con lo stesso worker V3/Monza e sei
+generazioni naturali per braccio, ha osservato una promozione con urto nel
+controllo e nessuna nel braccio filtrato. Il miglior progresso sicuro finale
+è rimasto 777,875 m in entrambi, con zero giri: correggere la selezione non
+ha dimostrato di risolvere l'apprendimento. Il confronto isolava il filtro,
+non comprendeva la successiva correzione di fase. Report e verifica sono in
+`.impeccable/review/learning-ml/saved-v3-progress7-safe-practice-ab-cuda-20261027-89/`.
+
+Un successivo replay di sei generazioni del sorgente aggiornato, sullo stesso
+worker e seed, ha incluso sia il filtro sia l'allineamento della fase. Il
+risultato è ancora 777,875 m sicuri e zero giri; 25 valutazioni di pratica
+non hanno promosso esiti insicuri. Sono passati 134 test sulle aree modificate.
+Il replay resta limitato a V3/Monza e non sostituisce la verifica dell'app
+Windows e dei pacchetti da eseguire prima di un'eventuale distribuzione.
+
+Nell'ultima generazione del confronto appaiato, la distanza media delle 31
+auto con esito sicuro passa da 157,123 a 179,955 m e quelle arrivate ad almeno
+500 m passano da sei a sette. Un'auto passa da 6,726 a 714,527 m; un'altra
+urta in entrambi i bracci. Il record individuale e il numero di giri non
+cambiano: questi dati su un solo seed non dimostrano un miglioramento stabile.
+L'analisi confronta gli esiti terminali registrati, non l'intera traiettoria.
+
+Una prosecuzione di 16 generazioni naturali sulla RTX 4060 ha portato il
+worker 0 della copia sperimentale fino alla generazione 80. Il miglior
+progresso sicuro misurato è 790,461 m, senza giri completi. È disponibile
+una nuova copia condivisibile, separata dall'originale, in
+`.impeccable/review/learning-ml/progress7-trained-copy-20261027-93/`.
+Include tutti e cinque i worker: solo il primo è stato aggiornato, gli altri
+rimangono alle generazioni 67, 65, 65 e 65. Il motore desktop di sviluppo ha
+ripristinato la copia in pausa e riesportato gli stessi dati; il controllo
+indipendente ha verificato anche la presenza del genoma da 790,461 m nella
+popolazione iniziale e nell'archivio. Non è stata eseguita una nuova prova
+del portable o dell'installer distribuito su questo file. La successiva prova
+dell'interfaccia Windows di sviluppo ha superato 61 controlli, compresa
+l'importazione della copia in pausa con tutti e cinque i worker. La release
+5.6.0 distribuita non riconosce la revisione sperimentale e rifiuta
+correttamente questo file.
+
+La prova dell'interfaccia ha individuato e permesso di correggere una perdita
+di campioni non ancora valutati: l'ispezione in pausa poteva propagare un
+campione globale e sostituire quelli già salvati nei worker. Ora l'ispezione
+di una generazione già vista in pausa non propaga nuovi campioni; in
+allenamento un campione ricevuto attende la valutazione di quello precedente.
+Un round-trip di cinque worker con codifica, caricamento, ripresa e generazione
+forzata ha verificato che i quattro migranti originariamente presenti vengono
+conservati e inseriti nella popolazione successiva. La coda interna non cambia
+lo schema dei salvataggi: l'eventuale campione globale salvato viene
+ritrasmesso alla ripresa.
+
+La suite successiva alla correzione dei campioni ha superato 166 test su
+simulazione, worker, salvataggi e modelli. I test e lo smoke GUI verificano
+comportamento e conservazione dei dati; non dimostrano che la policy completi
+un giro né certificano i pacchetti distribuiti.
+
+Una successiva prosecuzione dalla generazione 80 ha completato altre 12
+generazioni naturali sullo stesso worker V3/Monza, con 40 auto e seed 7717.
+Le prime due riproducono gli 80 esiti registrati nel riferimento precedente.
+Il miglior progresso sicuro è 790,601 m e nessuna auto completa un giro:
+il miglioramento rispetto a 790,461 m è di circa 0,14 m e non dimostra una
+soluzione al problema di apprendimento. Il run ha registrato 183.698 chiamate
+sulla RTX 4060 senza fallback CPU. I risultati e la verifica indipendente sono
+in `.impeccable/review/learning-ml/progress7-natural-continue-cuda-20261027-100/`;
+il confronto riguarda un solo worker e seed.
+
+La copia separata `SPERIMENTALE-solo-dev-v3-monza-gen92-worker0.malecns-save`
+è in `.impeccable/review/learning-ml/progress7-continuation-copy-20261027-101/`.
+Solo il primo dei cinque worker è stato aggiornato, fino alla prossima
+generazione 92; i quattro rimanenti sono invariati. Il migliore genoma sicuro
+è presente sia nell'archivio sia nella popolazione iniziale. La copia usa
+ancora `progress-7-moving-pace` ed è apribile soltanto nel sorgente di sviluppo
+compatibile, non nella release 5.6.0 distribuita. L'originale dell'utente è
+rimasto invariato; un controllo separato ha verificato il ripristino in pausa
+e l'ispezione dei suoi cinque worker con `progress-3`. Lo smoke dell'interfaccia
+Windows di sviluppo sulla copia gen. 92 ha superato 61 controlli, incluso il
+caricamento in pausa e il confronto degli stati dei cinque worker. Il report è
+in `.impeccable/review/learning-ml/progress7-continuation-copy-ui-smoke-20261027-103/`.
+
+Un replay del genoma migliore della copia gen. 92 riproduce l'esito fisico
+della generazione 89. In questa singola prova l'auto inizia a frenare dopo i
+600 m e rallenta fino a fermarsi prima della terminazione per lentezza; il
+comando finale è gas zero, freno 0,186. In un confronto diagnostico sulla
+stessa traiettoria, rimuovendo soltanto il comando fisico del freno per un
+secondo, la velocità al termine di quell'intervallo aumenta di circa 2,82 km/h
+rispetto al controllo. È un intervento temporaneo di verifica, non una policy
+di guida o una modifica all'app. Conferma l'effetto del freno in quel tratto,
+non spiega da solo perché il modello continui a frenare né dimostra che gli
+altri modelli abbiano imparato. I report sono nelle cartelle locali
+`progress7-gen92-frontier-braking-trace-cuda-20261027-104/` e
+`progress7-gen92-brake-effect-cuda-20261027-105/` sotto
+`.impeccable/review/learning-ml/`.

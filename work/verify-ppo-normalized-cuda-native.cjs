@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict'),Native=require('./neural-ppo-normalized-cuda-native.cjs'),Identity=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),out=path.resolve(process.argv[2]||path.join(base,'ppo-normalized-cuda-zero-native-first'));fs.mkdirSync(out,{recursive:false});
+const modelFile=path.join(base,'neuronal-statehead-6584-cma-search/clean.malecns-statehead.json'),preparedFile=path.join(base,'neuronal-clean-6584-statehead-early1024-prepared/prepared.json'),normalizationFile=path.join(base,'neuronal-normalization-520-prepared/normalization.json'),origin=JSON.parse(JSON.parse(fs.readFileSync(modelFile,'utf8')).payloadJson),initial=JSON.parse(fs.readFileSync(path.join(base,'neuronal-ppo-normalized520-first/initial-policy.json'),'utf8'));
+try{
+ const env=Native.create({modelFile,preparedFile,normalizationFile,weights:initial.weights}),trace=crypto.createHash('sha256'),start=Date.now();let state=env.state(),controls=0;
+ assert.equal(state.bestProgress,0);assert.equal(state.totalSimulationSeconds,0);
+ while(!state.complete){if(Date.now()-start>180000)throw Error('Declared native validation wall bound');state=env.step();controls++;assert.equal(Math.min(state.car.outputs[1],state.car.outputs[2]),0);trace.update(JSON.stringify([state.bestProgress,state.totalSimulationSeconds,state.car.outputs])+'\n');}
+ const result=Object.fromEntries(['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'].map(k=>[k,state[k]])),actionTraceSha256=trace.digest('hex');
+ for(const k of Object.keys(result))assert.deepEqual(result[k],origin.expectedResult[k],k);assert.equal(actionTraceSha256,origin.fullTraceSha256);const cuda=env.cudaStats();assert.equal(cuda.cpuFallbacks,0);assert.equal(cuda.gpuCalls,controls);
+ const report={passed:true,complete:true,controls,result,actionTraceSha256,cuda,identity:env.policyIdentity,sources:Identity.collect(['work/neural-ppo-normalized-cuda-native.cjs','work/verify-ppo-normalized-cuda-native.cjs','.impeccable/runtime-node24/node.exe']),wallSeconds:(Date.now()-start)/1000,boundary:'Independent from-line zero-correction native composition proof only. No claim that a trained nonzero policy is verified.'};
+ fs.writeFileSync(path.join(out,'verification.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,controls,actionTraceSha256,result}));
+}catch(error){fs.writeFileSync(path.join(out,'failed.json'),JSON.stringify({passed:false,error:error.stack},null,2),{flag:'wx'});console.error(error.stack);process.exitCode=1;}finally{Native.close();}

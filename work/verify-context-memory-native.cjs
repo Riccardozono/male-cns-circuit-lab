@@ -1,0 +1,11 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict'),Native=require('./neural-context-memory-native.cjs'),Parent=require('./neural-context-memory-parent.cjs'),I=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),tag=process.argv[2],dir=tag?path.join(base,tag):path.join(base,'learned-context-memory-preflight');
+if(tag&&!/^[a-z0-9-]+$/.test(tag))throw Error('Bounded tag required');if(!tag)fs.mkdirSync(dir);const file=path.join(dir,'independent-native.json');if(fs.existsSync(file))throw Error('Preserve proof');
+try{
+ const parent=Parent.load(),report=tag?JSON.parse(fs.readFileSync(path.join(dir,'report.json'),'utf8')):null;if(report)assert(report.passed&&report.bestClean&&report.eligibleForIndependentNativeProof);
+ const genes=report?report.bestClean.genes:parent.initialGenes,expected=report?report.bestClean.episode.result:parent.expectedResult,expectedTrace=report?report.bestClean.episode.actionTraceSha256:parent.trace,env=Native.create(genes),hash=crypto.createHash('sha256');let state=env.state(),controls=0,retained=0;
+ while(!state.complete){if(env.memoryValues().some(v=>v>0))retained++;state=env.step();controls++;hash.update(JSON.stringify([state.bestProgress,state.totalSimulationSeconds,state.car.outputs])+'\n');}
+ assert.equal(hash.digest('hex'),expectedTrace);for(const k of ['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'])assert.deepEqual(state[k],expected[k]);const cuda=Native.stats();assert(cuda.gpuCalls>0&&cuda.cpuFallbacks===0);
+ const proof={passed:true,genes,controls,retainedControls:retained,result:expected,actionTraceSha256:expectedTrace,parentReportSha256:parent.reportSha256,reportSha256:report?I.sha(fs.readFileSync(path.join(dir,'report.json'))):null,cuda,sourceHashes:I.collect(['work/verify-context-memory-native.cjs','work/neural-context-memory-native.cjs']),boundary:'Independent full native physical run. No practice capture/replay. Artificial learned memory, not full biological physiology. No deployment.'};fs.writeFileSync(file,JSON.stringify(proof,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,controls,retained,result:expected,trace:expectedTrace}));
+}finally{Native.close();}

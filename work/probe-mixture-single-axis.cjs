@@ -1,0 +1,10 @@
+'use strict';
+// One actual learned-parameter trial: unchanged18 weights, full retained gate.
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),Model=require('./neural-mixture-feedback-model.cjs'),Native=require('./neural-mixture-feedback-native.cjs'),I=require('./neural-research-source-identity.cjs');
+const file=path.resolve('.impeccable/review/neural-sacl/mixture-single-axis-full-native.json');if(fs.existsSync(file))throw Error('Preserve actual trial');
+try{
+ const p=Model.load(),genes=p.initialGenes.slice();genes[18]=1;const env=Native.create(genes),hash=crypto.createHash('sha256');let s=env.state(),controls=0,retained=0;
+ while(!s.complete){s=env.step();controls++;hash.update(JSON.stringify([s.bestProgress,s.totalSimulationSeconds,s.car.outputs])+'\n');if(env.feedbackGate()>Math.max(...env.memoryValues())+1e-12)retained++;}
+ const result=Object.fromEntries(['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'].map(k=>[k,s[k]])),clean=!['urto','fuori pista','progresso non valido'].some(x=>s.reason.includes(x)),improved=clean&&s.fitness>p.expectedResult.fitness+1e-6&&s.bestProgress>=p.expectedResult.bestProgress&&s.laps>=p.expectedResult.laps;
+ const record={format:'male-cns-single-learned-mixture-actual-trial-v1',complete:s.complete,censored:false,genes,controls,retainedGateUsed:retained,finalGate:env.feedbackGate(),result,reference:p.expectedResult,improvesReference:improved,promoted:false,actionTraceSha256:hash.digest('hex'),cuda:Native.stats(),parentReportSha256:p.reportSha256,sourceHashes:I.collect(['work/probe-mixture-single-axis.cjs','work/neural-mixture-feedback-native.cjs']),boundary:'One real full-from-line parameter trial, not forced acceleration/braking or a training target. Changing only learned mixture isolates its effect with prior18weights fixed. Not deployed or a proof of convergence.'};fs.writeFileSync(file,JSON.stringify(record,null,2),{flag:'wx'});console.log(JSON.stringify({complete:s.complete,controls,retained,finalGate:record.finalGate,result,improvesReference:improved}));
+}finally{Native.close();}

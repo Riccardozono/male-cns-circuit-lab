@@ -23,5 +23,5 @@ for(const id of ['monza','le-mans'])test(id+': dense forest is deterministic, fu
   assert.equal(JSON.stringify({cars:s.cars,rng:s.rng,track:s.track}),before);world.userData.dispose();
 });
 test('Added woodland files are packaged while app/save version and original assets remain untouched',()=>{
-  const pkg=require('../../package.json');assert.equal(pkg.version,'5.6.0');for(const file of [...sources.assets.map(a=>'outputs/assets/'+a.file),'outputs/assets/WOODLAND-CREDITS.md','outputs/assets/woodland-provenance-v1.json'])assert.ok(pkg.build.files.includes(file));
+  const pkg=require('../../package.json');assert.equal(pkg.version,'5.7.0');for(const file of [...sources.assets.map(a=>'outputs/assets/'+a.file),'outputs/assets/WOODLAND-CREDITS.md','outputs/assets/woodland-provenance-v1.json'])assert.ok(pkg.build.files.includes(file));
 });

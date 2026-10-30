@@ -1,0 +1,5 @@
+'use strict';
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),M=require('./neural-affine-model.cjs');
+const root=path.resolve(__dirname,'..'),r=JSON.parse(fs.readFileSync(path.join(root,'.impeccable/review/neural-sacl/neuronal-statehead-6584-cma-search/report.json'),'utf8'));
+test('Unit fixtures: zero weights/gate preserve prior commands and input ownership',()=>{for(const row of r.records.slice(0,16)){const p=[.2,.3,0];assert.deepEqual(M.apply(p,1,[0,0,0,0]),p);assert.deepEqual(M.apply(p,0,row.genes.slice(0,4)),p);assert.notEqual(M.apply(p,0,[0,0,0,0]),p);}});
+test('Gain feedback is state dependent; bounds and exclusive pedals hold',()=>{assert.notDeepEqual(M.apply([.2,.3,0],1,[.2,.1,.3,-.5]),M.apply([.8,.9,0],1,[.2,.1,.3,-.5]));for(const row of r.records.slice(0,64)){const x=row.genes.slice(0,4);for(const prior of [[.2,.3,0],[-.8,0,.7]]){const c=M.apply(prior,.8,x);assert.ok(c.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));assert.equal(Math.min(c[1],c[2]),0);}}assert.throws(()=>M.apply([0,.2,.2],1,[0,0,0,0]),/exclusive/);assert.throws(()=>M.weights([0,0,0,Infinity]),/bounded/);});

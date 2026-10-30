@@ -1,0 +1,17 @@
+'use strict';
+// Isolated research copy for revalidating the saved neural prior on a new driver.
+// The original anchor and the source-compatible research modules stay untouched.
+const assert=require('node:assert/strict'),Desktop=require('./neural-instant-desktop-model.cjs'),Prior=require('./neural-prior-memory-native.cjs'),Layout=require('./neural-direct-nonlinear-layout.cjs'),Cuda=require('./cuda-exact-v3-packed-runtime.cjs'),P=require('../.impeccable/experimental-context8/outputs/progress-save.js');
+function createFrame(modelFile){
+ const fs=require('node:fs'),I=require('./neural-research-source-identity.cjs');assert.ok(fs.existsSync(modelFile),'A separately copied, source-identified context model is required');
+ const loaded=Desktop.load(modelFile),modelData=loaded.inner.data,choice={file:modelFile,modelSha256:loaded.sha256,actionTraceSha256:modelData.fullTraceSha256,result:modelData.expectedResult};
+ const env=Prior.create({modelFile:loaded.inner.parentFile,preparedFile:loaded.inner.preparedFile,weights:loaded.data.weights}),read=new Set(env.model.head.environment.readoutNodes),extra=[];
+ assert.equal(modelData.status,'clean-native-verified');assert.equal(modelData.modelId,'v3');assert.equal(modelData.circuitId,'monza');
+ for(let i=0;i<env.graph.n;i++)if(env.graph.classNames[env.graph.classCodes[i]]==='descending_neuron'&&!read.has(i))extra.push(i);
+ assert.equal(read.size,128);assert.equal(extra.length,123);const dimension=642,linear=Array(dimension*2).fill(0);linear[(dimension-2)*2]=1;linear[(dimension-1)*2+1]=1;
+ return {env,choice,priorParentFile:loaded.inner.parentFile,priorPreparedFile:loaded.inner.preparedFile,graph:env.graph,track:env.track,extra,dimension,initialWeights:Layout.extend(linear,dimension),I};
+}
+function observe(f){const prior=f.env.peek(),raw=f.env.state().observation;assert.equal(raw.length,516);const car=f.env.currentCar(),x=[...raw,...f.extra.map(i=>Math.tanh(8*car.brain.activity[i])),1,prior[0],prior[1]-prior[2]],active=f.graph.learning.nodes.some(i=>Math.abs(car.brain.activity[i])>=1e-7);assert.equal(x.length,642);return {x,active};}
+function commands(latent,active){if(!Array.isArray(latent)||latent.length!==2||latent.some(v=>!Number.isFinite(v)))throw Error('Finite motor latent required');if(!active)return [0,0,0];const s=Math.max(-1,Math.min(1,latent[0])),a=Math.max(-1,Math.min(1,latent[1]));return [s,Math.max(0,a),Math.max(0,-a)];}
+function metadata(f){return {format:'male-cns-pinned-learned-prior-final-readout-driver-refresh-v1',modelId:'v3',circuitId:'monza',appVersion:'5.6.0',graph:P.compatibleGraph(f.graph),dimension:f.dimension,initialWeights:f.initialWeights,trainableMotorWeights:f.initialWeights.length,anatomicalDescendingCount:251,artificialHiddenUnits:64,priorModelFile:f.choice.file,priorModelSha256:f.choice.modelSha256,priorParentFile:f.priorParentFile,priorPreparedFile:f.priorPreparedFile,priorTraceSha256:f.choice.actionTraceSha256,priorExpectedResult:f.choice.result,constantFeatureIndices:[639],priorFeatureIndices:[640,641],boundary:'Isolated current-driver reproduction harness. Same frozen verified neural parent and numeric weights; a copied envelope records current driver compatibility. The published/source model and original anchor are unchanged. Exact full-from-line result and action trace are mandatory before using this runtime for any further experiment.'};}
+module.exports={createFrame,observe,commands,metadata,stats:Cuda.stats,close:Cuda.close};

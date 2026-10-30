@@ -29,8 +29,14 @@ test('Teleport and projection jumps do not produce progress, gates or lap reward
 test('Changing to a nearby hairpin segment without corresponding motion is rejected',()=>{
   const f=fixture();f.car.x=.01;f.car.lifetime=1/60;R.step(f.track,f.car,{along:400,dt:1/60});assert.equal(f.car.reward,0);assert.equal(f.car.rewardState.along,0);assert.equal(f.car.lastAlong,0);
 });
+test('A rejected chainage projection does not poison the next physically continuous step',()=>{
+  const f=fixture();f.car.x=.01;f.car.lifetime=1/60;R.step(f.track,f.car,{along:400,dt:1/60});
+  assert.equal(f.car.reward,0);assert.equal(f.car.rewardState.invalidSteps,1);assert.equal(f.car.rewardState.along,0);
+  f.car.x=.11;f.car.lifetime+=1/60;f.car.vehicle.speedMps=.1;R.step(f.track,f.car,{along:400.1,dt:1/60});
+  assert.equal(f.car.alive,true);assert.equal(f.car.reason,'');assert.equal(f.car.rewardState.invalidSteps,0);near(f.car.bestProgress,.1);near(f.car.reward,.5);
+});
 test('A single bad projection can recover without new fake progress',()=>{
-  const f=fixture();f.car.lifetime=1/60;R.step(f.track,f.car,{along:500,dt:1/60});f.move(1,.1);assert.equal(f.car.rewardState.invalidSteps,0);near(f.car.bestProgress,1);assert.equal(f.car.alive,true);
+  const f=fixture();f.car.lifetime=1/60;R.step(f.track,f.car,{along:500,dt:1/60});f.move(1,.1);assert.equal(f.car.rewardState.invalidSteps,0);assert.ok(f.car.bestProgress>0&&f.car.bestProgress<1);assert.equal(f.car.alive,true);
 });
 test('Collision and off-road steps cannot earn even a last-moment finish bonus',()=>{
   for(const extra of [{collision:true},{onRoad:false}]){const f=fixture();f.move(999,39.96);f.move(1,.04,extra);assert.equal(f.car.laps,0);assert.ok(f.car.noLapPenalty>=2000);assert.equal(f.car.rewardBreakdown.rewards.lap,0);}
@@ -42,9 +48,66 @@ test('Terminal failure/no-lap costs apply immediately and exactly once',()=>{
 test('Missing-lap cost is strict but graded by genuine progress, not manually assigned bestProgress',()=>{
   const a=fixture(),b=fixture(),c=fixture();a.end();b.move(900,36);b.end();c.car.bestProgress=999;c.end();near(a.car.noLapPenalty,3000);near(b.car.noLapPenalty,2100);near(c.car.noLapPenalty,3000);
 });
+test('The new reward charges a proportional penalty for an unfinished second lap while older revisions remain unchanged',()=>{
+  const justOne=fixture();justOne.move(1000,40);justOne.end();near(justOne.car.noLapPenalty,R.RULES.missingLapPenalty);assert.equal(justOne.car.noLapPenaltyApplied,true);
+  const halfway=fixture();halfway.move(1500,60);halfway.end();near(halfway.car.noLapPenalty,R.RULES.missingLapPenalty*.5);
+  const almost=fixture();almost.move(1900,76);almost.end();near(almost.car.noLapPenalty,R.RULES.missingLapPenalty*.1);
+  const completed=fixture();completed.move(2000,80);assert.equal(completed.car.laps,2);assert.equal(completed.car.noLapPenalty,0);
+  const progress6=fixture();progress6.car.rewardRevision=R.MISSING_LAP_REVISION;progress6.move(1000,40);progress6.end();near(progress6.car.noLapPenalty,R.RULES.missingLapPenalty);
+  const savedRules=fixture();savedRules.car.rewardRevision=R.BRAKE_LOCK_REVISION;savedRules.move(1000,40);savedRules.end();assert.equal(savedRules.car.noLapPenalty,0);
+  assert.ok(F.compareAgents(savedRules.car,justOne.car)<0,'the added missing-lap penalty participates in actual agent ranking');
+  for(const car of [justOne.car,halfway.car,almost.car])near(car.fitness,car.reward-car.penalty);
+});
 test('A crawling agent is stopped by recent ineffective pace, not a global episode time cap',()=>{
   const slow=fixture();slow.move(40,100);assert.equal(slow.car.reason,'troppo lenta / senza progresso');assert.ok(slow.car.rewardBreakdown.penalties.slowProgress>0);assert.ok(slow.car.lifetime<25);
   const long=fixture({total:10000,referenceMps:25});long.move(2000,100);assert.equal(long.car.alive,true);assert.ok(long.car.lifetime>99);assert.equal(long.car.rewardBreakdown.penalties.slowProgress,0);
+});
+test('A slow-window penalty does not prematurely stop a clearly recovering car in the new revision',()=>{
+  for(const ppm of [1,10]){
+    const f=fixture({ppm});f.move(1.4,7);f.move(3.2,8);f.move(6,1.5);
+    assert.equal(f.car.alive,true);assert.equal(f.car.rewardBreakdown.penalties.slowProgress,1400);
+    assert.equal(f.car.noLapPenaltyApplied,undefined);assert.ok(f.car.bestProgress>8*ppm);
+    f.move(0,9);assert.ok(['ferma / senza progresso','troppo lenta / senza progresso'].includes(f.car.reason));
+    assert.ok(f.car.rewardBreakdown.penalties.stall===1400||f.car.rewardBreakdown.penalties.slowProgress===2800);
+    assert.ok(f.car.noLapPenalty>=2000);
+    const penalty=f.car.penalty;f.end();near(f.car.penalty,penalty);
+  }
+});
+test('The current pace rule stops a borderline crawler while progress-7 retains its former recovery threshold',()=>{
+  for(const ppm of [1,10]){
+    const current=fixture({ppm});current.move(1.4,7);current.move(3.2,8);current.move(3,1.5);
+    assert.equal(current.car.reason,'troppo lenta / senza progresso');assert.equal(current.car.rewardBreakdown.penalties.slowProgress,1400);
+    const historical=fixture({ppm});historical.car.rewardRevision=R.PREVIOUS_PACE_REVISION;historical.move(1.4,7);historical.move(3.2,8);historical.move(3,1.5);
+    assert.equal(historical.car.alive,true);assert.equal(historical.car.rewardBreakdown.penalties.slowProgress,1400);
+  }
+});
+test('Historical reward revisions retain their original slow-stop behavior',()=>{
+  for(const revision of [R.LEGACY_REVISION,R.PREVIOUS_REVISION,R.BRAKE_LOCK_REVISION,R.MISSING_LAP_REVISION]){
+    const f=fixture();f.car.rewardRevision=revision;f.move(1.4,7);f.move(3.2,8);f.move(4.5,1.5);
+    assert.equal(f.car.reason,'troppo lenta / senza progresso',revision);
+    assert.equal(f.car.rewardBreakdown.penalties.slowProgress,1400);assert.ok(f.car.noLapPenalty>=2000);
+  }
+});
+test('Backward motion does not defer a slow stop and a collision still terminates',()=>{
+  const reverse=fixture();reverse.move(1.4,7);reverse.move(3.2,8);reverse.move(-4.5,1.5);
+  assert.equal(reverse.car.reason,'troppo lenta / senza progresso');assert.equal(reverse.car.rewardBreakdown.penalties.slowProgress,1400);
+  const crash=fixture();crash.move(1.4,7);crash.move(3.2,8);crash.move(4.5,1.5,{collision:true});
+  assert.equal(crash.car.reason,'urto');assert.ok(crash.car.rewardBreakdown.penalties.collision>=900);
+});
+test('New reward progressively penalizes a learned brake lock after real motion, grace, and near-zero progress',()=>{
+  const f=fixture();f.car.outputs=[0,0,.8];f.move(25,1);f.move(0,1.5);near(f.car.rewardBreakdown.penalties.stall,0);
+  f.move(0,2);assert.ok(f.car.rewardBreakdown.penalties.stall>0);assert.equal(f.car.alive,true);
+  const charged=f.car.rewardBreakdown.penalties.stall;f.car.outputs=[0,0,0];f.move(0,1);near(f.car.rewardBreakdown.penalties.stall,charged);near(f.car.rewardState.brakeLockSeconds,0);
+});
+test('New reward detects a light brake held at a standstill after the grace period',()=>{
+  const f=fixture();f.car.outputs=[0,0,.08];f.move(25,1);f.move(0,1.5);near(f.car.rewardBreakdown.penalties.stall,0);
+  f.move(0,2);assert.ok(f.car.rewardBreakdown.penalties.stall>0,'a persistent 8% brake command while stopped is costly');
+  const savedR5=fixture();savedR5.car.rewardRevision=R.BRAKE_LOCK_REVISION;savedR5.car.outputs=[0,0,.08];savedR5.move(25,1);savedR5.move(0,1.5);savedR5.move(0,2);
+  assert.ok(savedR5.car.rewardBreakdown.penalties.stall>0,'the prior brake-lock rule remains active in progress-5 saves');
+});
+test('Ordinary corner braking and historical progress-3/progress-4 rewards keep their original scoring',()=>{
+  const corner=fixture();corner.car.outputs=[0,0,1];corner.move(30,2);near(corner.car.rewardBreakdown.penalties.stall,0);
+  for(const revision of [R.LEGACY_REVISION,R.PREVIOUS_REVISION]){const old=fixture();old.car.rewardRevision=revision;old.car.outputs=[0,0,.08];old.move(25,1);old.move(0,5);near(old.car.rewardBreakdown.penalties.stall,0);}
 });
 test('Waiting/moving slowly is worse than early useful motion; an early crash is not a clean lap',()=>{
   const stopped=fixture(),crashed=fixture(),lap=fixture();stopped.move(0,9);crashed.move(100,4);crashed.move(1,.04,{collision:true});lap.move(1000,40);lap.end();

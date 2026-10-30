@@ -1,0 +1,11 @@
+'use strict';
+// Driver-refresh copy of the gated test harness. Policy and physics are unchanged.
+const Core=require('./neural-prior-memory-core-driver-refresh.cjs'),M=require('./neural-prior-greedy-kernel-motors.cjs');
+function create({modelFile,gateSource='stateHeadPeak'}={}){if(!['stateHeadPeak','lastFrontierPeak'].includes(gateSource))throw Error('Known endogenous neural-memory gate required');const frame=Core.createFrame(modelFile),owned=new WeakSet();let observation,controls=0;
+ function memory(){return frame.env.neuronalMemory();}
+ function observe(){const o=Core.observe(frame),m=memory(),gate=m[gateSource];if(!Number.isFinite(gate)||gate<0||gate>1)throw Error('Actual bounded endogenous neuronal memory required');return {...o,gate,m};}
+ function state(){return {...frame.env.state(),x:observation.x,active:observation.active,neuronalGate:observation.gate,neuronalMemory:observation.m,controls};}
+ function reset(){frame.env.reset();controls=0;observation=observe();return state();}
+ function step(w){if(frame.env.state().complete)return state();M.validate(w);const prior=observation.x.slice(640,642),raw=observation.gate===0?prior:M.mean(observation.x,w),latent=observation.gate===0?prior:raw.map((v,j)=>prior[j]+observation.gate*(v-prior[j]));frame.env.stepWithCommands(Core.commands(latent,observation.active));controls++;if(!frame.env.state().complete)observation=observe();return state();}
+ observation=observe();return {state,reset,step,capture(){const saved={prior:frame.env.capture(),observation:structuredClone(observation),controls};owned.add(saved);return saved;},restore(saved){if(!owned.has(saved))throw Error('Own actually reached neuronal/body state required');frame.env.restore(saved.prior);observation=structuredClone(saved.observation);controls=saved.controls;return state();},metadata:()=>({...Core.metadata(frame),format:'male-cns-endogenous-neuronal-gated-kernel-driver-refresh-v1',initialWeights:M.initialWeights(),trainableMotorWeights:16,artificialHiddenUnits:0,neuronalKernelCount:8,additionalNeuronalMemoryValues:1,policyInputDimensions:643,gateSource,gateDescription:'Actual endogenous neuronal history value; never lap, distance, route, clock, pose, reward or replay tape.'})};}
+module.exports={create,stats:Core.stats,close:Core.close};

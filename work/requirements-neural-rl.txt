@@ -1,0 +1,6 @@
+# Isolated experimental training only; not dependencies of the Windows release.
+# Install Torch from https://download.pytorch.org/whl/cu128 first.
+torch==2.11.0+cu128
+stable-baselines3==2.9.0
+gymnasium==1.4.0
+numpy==2.5.4

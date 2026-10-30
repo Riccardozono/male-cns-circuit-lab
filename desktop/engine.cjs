@@ -35,6 +35,7 @@ class DesktopEngine {
     this.forwardGpuRequest = forwardGpuRequest;
     this.workers = [];
     this.states = [];
+    this.seenGenerations = [];
     this.bundle = null;
     this.bundles = new Map();
     this.options = null;
@@ -133,7 +134,7 @@ class DesktopEngine {
     const workerCount = restoredWorkers?restoredWorkers.length:clampInteger(rawOptions.workerCount ?? recommendedWorkers, 1, MAX_WORKERS);
     this.options = {
       population: clampInteger(rawOptions.population ?? DEFAULT_POPULATION, 4, MAX_POPULATION),
-      mutation: Math.max(0, Math.min(.35, Number(rawOptions.mutation ?? .16))),
+      mutation: Math.max(0, Math.min(.35, Number(rawOptions.mutation ?? .32))),
       speedMultiplier: Math.max(.5, Math.min(30, Number(rawOptions.speedMultiplier ?? 1))),
       circuitId: rawOptions.circuitId || 'lab',
       mode: rawOptions.mode || 'connectome',
@@ -143,6 +144,9 @@ class DesktopEngine {
     };
     this.options.running=rawOptions.running??true;
     this.states = Array(workerCount).fill(null);
+    // Restored paused workers may report their existing champion merely
+    // because the UI inspects a car. That is not a new scored generation.
+    this.seenGenerations=restoredWorkers?restoredWorkers.map(w=>w.state.generation):Array(workerCount).fill(0);
     this.startedAt = Date.now();
     const ready = [];
     for (let index = 0; index < workerCount; index++) ready.push(this.spawn(index, bundle,restoredWorkers?.[index]?.state));
@@ -156,10 +160,16 @@ class DesktopEngine {
     this.globalChampionFitness = -Infinity;
     this.globalChampionWorker = null;
     this.globalChampionStats = null;
+    this.seenGenerations.fill(0);
   }
 
   considerChampion(index, state) {
     if(this.restoring)return;
+    const generation=Number(state?.generation);
+    if(!Number.isInteger(generation)||generation<1)return;
+    const seen=this.seenGenerations[index]??0;
+    if(this.options?.running===false&&generation<=seen)return;
+    this.seenGenerations[index]=Math.max(seen,generation);
     const fitness = Number(state?.bestEver);
     if (!Number.isFinite(fitness) || !state?.champion || !state.championStats || (this.globalChampionStats&&compareAgents(state.championStats,this.globalChampionStats)>=0)) return;
     this.globalChampionFitness = fitness;
@@ -257,6 +267,7 @@ class DesktopEngine {
     if(this.restoring)throw Error('Caricamento dei progressi in corso.');
     const type = command.type;
     if (!type) return this.info();
+    const resuming=type==='pause'&&Boolean(command.value)&&this.options?.running===false;
     if(type==='vehicleControl'){
       // Manual inspection applies only to the displayed worker, not all islands.
       const index=clampInteger(command.workerIndex??0,0,Math.max(0,this.workers.length-1));
@@ -278,6 +289,9 @@ class DesktopEngine {
       if(fields[type])this.options[fields[type]]=type==='pause'?Boolean(command.value):command.value;
     }
     for (const worker of this.workers) worker?.postMessage(command);
+    // The global record is part of a shareable save; resend it after resume
+    // so workers can queue it behind any unconsumed saved migrant.
+    if(resuming)this.broadcastGlobalChampion();
     return this.info();
   }
 
@@ -294,6 +308,7 @@ class DesktopEngine {
     const workers = this.workers.filter(Boolean);
     this.workers = [];
     this.states = [];
+    this.seenGenerations = [];
     for(const pending of this.progressRequests.values()){clearTimeout(pending.timer);pending.reject(Error('Prova sostituita durante il salvataggio.'));}this.progressRequests.clear();
     await Promise.all(workers.map(worker => worker.terminate()));
   }

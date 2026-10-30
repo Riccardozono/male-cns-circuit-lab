@@ -8,7 +8,7 @@
   const MODELS=Object.freeze(['v2','v3','v4','v5']);
   const TERMINAL=new Set(['completed','limit','stopped','error']);
   function settings(raw={}){
-    const value={circuitId:raw.circuitId||'lab',population:Number(raw.population??16),mutation:Number(raw.mutation??.16),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
+    const value={circuitId:raw.circuitId||'lab',population:Number(raw.population??16),mutation:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
     if(!Number.isInteger(value.population)||value.population<4||value.population>100)throw Error('Scegli da 4 a 100 agenti.');
     if(!Number.isFinite(value.mutation)||value.mutation<0||value.mutation>.35)throw Error('Mutazione non valida (0–35%).');
     if(!Number.isFinite(value.speedMultiplier)||value.speedMultiplier<.5||value.speedMultiplier>30)throw Error('Velocità non valida (0,5–30×).');

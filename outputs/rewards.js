@@ -8,7 +8,7 @@
   else root.MaleCNSRewards=factory();
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const REVISION='progress-3',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const LEGACY_REVISION='progress-3',PREVIOUS_REVISION='progress-4-brake-lock',BRAKE_LOCK_REVISION='progress-5-sensitive-brake-lock',MISSING_LAP_REVISION='progress-6-missing-lap',PREVIOUS_PACE_REVISION='progress-7-moving-pace',REVISION='progress-8-pace-recovery-margin',SUPPORTED_REVISIONS=Object.freeze([LEGACY_REVISION,PREVIOUS_REVISION,BRAKE_LOCK_REVISION,MISSING_LAP_REVISION,PREVIOUS_PACE_REVISION,REVISION]),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const RULES=Object.freeze({
     progressPerLap:5000,checkpointsPerLap:32,checkpointPerLap:500,
     lapBase:8000,fastLapBonus:2000,slowLapFactor:4000,slowLapCap:8000,
@@ -18,7 +18,8 @@
     collision:900,offTrack:1400,impactSpeedPenalty:180,impactReferenceMps:70,
     forwardRiskPerSecond:4,slipPerSecond:8,slipThresholdRad:.22,
     stall:1400,stallSeconds:8,progressWindowMeters:1,
-    minPaceFraction:.05,paceWindowSeconds:8,paceGraceSeconds:16,
+    brakeLockGraceSeconds:2,brakeLockPenaltyPerSecond:350,brakeLockSpeedFloorMps:.6,brakeLockMotionMps:.5,brakeLockMinimumCommand:.05,
+    minPaceFraction:.075,paceWindowSeconds:8,paceGraceSeconds:16,paceRecoverySpeedFactor:1.25,
     noLapPenalty:2000,missingLapPenalty:1000,
     regressionFactor:4000,regressionCapPerLap:3000,
     invalidProgress:1200,maxInvalidSteps:3,maxLapsPerGeneration:2
@@ -27,9 +28,10 @@
   const penaltyKeys=['time','slowLap','reverse','risk','slip','collision','offTrack','stall','slowProgress','noLap','regression','invalid'];
   const zeros=keys=>Object.fromEntries(keys.map(k=>[k,0]));
   function referenceLapTime(track){return Math.max(1,track.total/(track.lapReferenceSpeed||35*(track.pixelsPerMeter||1)));}
-  function initialise(track,car,previousLap=null){
-    car.rewardRevision=REVISION;car.rewardBreakdown={rewards:zeros(rewardKeys),penalties:zeros(penaltyKeys)};
-    car.rewardState={x:car.x,y:car.y,along:0,highWater:0,stallHighWater:0,nextCheckpoint:1,invalidSteps:0,finalized:false,paceTime:0,paceProgress:0};
+  function initialise(track,car,previousLap=null,revision=REVISION){
+    if(!SUPPORTED_REVISIONS.includes(revision))throw Error('Sistema di ricompense incompatibile.');
+    car.rewardRevision=revision;car.rewardBreakdown={rewards:zeros(rewardKeys),penalties:zeros(penaltyKeys)};
+    car.rewardState={x:car.x,y:car.y,along:0,observedAlong:0,highWater:0,stallHighWater:0,nextCheckpoint:1,invalidSteps:0,finalized:false,paceTime:0,paceProgress:0,brakeLockSeconds:0};
     car.previousGenerationLapTime=Number.isFinite(previousLap)&&previousLap>0?previousLap:null;
     car.baseFitness=0;return car;
   }
@@ -67,6 +69,10 @@
       if(car.laps<1){
         car.noLapPenalty=RULES.noLapPenalty+RULES.missingLapPenalty*(1-clamp(car.rewardState.highWater/track.total,0,1));
         car.noLapPenaltyApplied=true;debit(car,'noLap',car.noLapPenalty);
+      }else if((car.rewardRevision===MISSING_LAP_REVISION||car.rewardRevision===PREVIOUS_PACE_REVISION||car.rewardRevision===REVISION)&&car.laps<RULES.maxLapsPerGeneration){
+        const partialLap=clamp((car.rewardState.highWater-car.laps*track.total)/track.total,0,1);
+        car.noLapPenalty=RULES.missingLapPenalty*(RULES.maxLapsPerGeneration-car.laps)*(1-partialLap);
+        car.noLapPenaltyApplied=true;debit(car,'noLap',car.noLapPenalty);
       }
       car.rewardState.finalized=true;
     }
@@ -78,17 +84,19 @@
     return {fitness:car.baseFitness,bestProgress:car.bestProgress,laps:car.laps,bestLapTime:car.bestLapTime};
   }
   function step(track,car,{along,onRoad=true,collision=false,forwardClearance=Infinity,dt}){
-    const s=car.rewardState,ppm=track.pixelsPerMeter||1,reference=referenceLapTime(track);
+    const s=car.rewardState,ppm=track.pixelsPerMeter||1,reference=referenceLapTime(track),previousHighWater=s.highWater;
     if(s.finalized)return;
-    const travelled=Math.hypot(car.x-s.x,car.y-s.y);let delta=along-s.along;
+    const travelled=Math.hypot(car.x-s.x,car.y-s.y);let delta=along-(s.observedAlong??s.along);
     if(delta>track.total/2)delta-=track.total;
     if(delta< -track.total/2)delta+=track.total;
     // Bound both coordinate motion and chainage change. A nearest-segment
     // switch at a hairpin must never invent metres, checkpoints or laps.
     const continuous=Number.isFinite(delta)&&Number.isFinite(travelled)&&travelled<=120*ppm*dt+1e-6*ppm&&Math.abs(delta)<=travelled*2+.02*ppm;
-    s.x=car.x;s.y=car.y;
-    // Do not re-anchor a bad projection to its new segment; it must recover
-    // relative to the last valid chainage or be terminated after three steps.
+    s.x=car.x;s.y=car.y;s.observedAlong=along;
+    // Re-anchor only the projection used to validate the next physical step.
+    // Never credit a rejected delta to progress, checkpoints, or laps. Keeping
+    // this observation separate from the last accepted chainage lets a valid
+    // next step recover instead of comparing cumulative drift to one-frame travel.
     if(continuous){s.along=along;car.lastAlong=along;s.invalidSteps=0;}else s.invalidSteps++;
     debit(car,'time',RULES.timePerReferenceLap*dt/reference);
     const v=Math.abs(car.vehicle?.speedMps??car.speed??0);
@@ -96,6 +104,16 @@
       debit(car,'slip',dt*RULES.slipPerSecond*clamp((Math.abs(car.slipAngle||0)-RULES.slipThresholdRad)/.5,0,1));
       const stopping=(4.619+v*v/(2*9.80665*1.3))*ppm;
       debit(car,'risk',dt*RULES.forwardRiskPerSecond*clamp((stopping-forwardClearance)/stopping,0,1));
+    }
+    // New sessions learn that holding even a light brake near a standstill is
+    // costly, but only after real movement and a grace period. Moving corner
+    // braking and historical reward revisions keep their original scoring.
+    if(car.rewardRevision===BRAKE_LOCK_REVISION||car.rewardRevision===MISSING_LAP_REVISION||car.rewardRevision===PREVIOUS_PACE_REVISION||car.rewardRevision===REVISION){
+      const oldSeconds=s.brakeLockSeconds||0,minimumPace=Math.max(RULES.brakeLockSpeedFloorMps,track.total/reference*RULES.minPaceFraction);
+      const throttle=Number(car.outputs?.[1])||0,brake=Number(car.outputs?.[2])||0;
+      const brakeLocked=s.highWater>20*ppm&&continuous&&onRoad&&!collision&&v<minimumPace&&Math.abs(delta)/(ppm*dt)<=RULES.brakeLockMotionMps&&brake>=RULES.brakeLockMinimumCommand&&throttle<=.05;
+      s.brakeLockSeconds=brakeLocked?oldSeconds+dt:0;
+      if(brakeLocked){const chargedSeconds=Math.max(0,s.brakeLockSeconds-RULES.brakeLockGraceSeconds)-Math.max(0,oldSeconds-RULES.brakeLockGraceSeconds);debit(car,'stall',RULES.brakeLockPenaltyPerSecond*chargedSeconds);}
     }
     // Never reward the step that hits a wall/leaves the road. G forces, hard
     // braking and steering alone are not faults and carry no arbitrary cost.
@@ -128,11 +146,19 @@
     else if(car.lifetime-car.lastProgressTime>RULES.stallSeconds){debit(car,'stall',RULES.stall);reason='ferma / senza progresso';}
     if(!reason&&car.lifetime-s.paceTime>=RULES.paceWindowSeconds){
       const recentPace=(s.highWater-s.paceProgress)/(car.lifetime-s.paceTime),minimum=track.total/reference*RULES.minPaceFraction;
-      if(car.lifetime>=RULES.paceGraceSeconds&&recentPace<minimum){debit(car,'slowProgress',RULES.stall);reason='troppo lenta / senza progresso';}
+      if(car.lifetime>=RULES.paceGraceSeconds&&recentPace<minimum){
+        debit(car,'slowProgress',RULES.stall);
+        // An average over the preceding window can still be low while a car
+        // is accelerating and making fresh progress. Keep the severe cost,
+        // but let only the new revision continue in that specific case.
+        const recoveryFactor=car.rewardRevision===REVISION?RULES.paceRecoverySpeedFactor:1;
+        const recovering=(car.rewardRevision===PREVIOUS_PACE_REVISION||car.rewardRevision===REVISION)&&v>=minimum*recoveryFactor/ppm&&s.highWater>previousHighWater+1e-12;
+        if(!recovering)reason='troppo lenta / senza progresso';
+      }
       s.paceTime=car.lifetime;s.paceProgress=s.highWater;
     }
     if(reason)finish(track,car,reason);
     refresh(car);
   }
-  return Object.freeze({REVISION,RULES,rewardKeys,penaltyKeys,initialise,step,finish,comparisonPenalty,recordStats,referenceLapTime,lapTerms});
+  return Object.freeze({REVISION,LEGACY_REVISION,PREVIOUS_REVISION,BRAKE_LOCK_REVISION,MISSING_LAP_REVISION,PREVIOUS_PACE_REVISION,SUPPORTED_REVISIONS,RULES,rewardKeys,penaltyKeys,initialise,step,finish,comparisonPenalty,recordStats,referenceLapTime,lapTerms});
 });

@@ -1,16 +1,27 @@
-# MAL-E CNS / Circuit Lab — Windows 5.6.0
+# MAL-E CNS / Circuit Lab — Windows 5.7.0
 
-Distribuzione corrente in `dist-landscape-v560/`: paesaggio NASA SRTM,
-aree ed edifici OSM, boschi Sketchfab più densi a Monza e fascia Le Mans
-estesa a 2 km. In **Vista 3D → Inquadra** usa **Bosco** o **Paesaggio**;
-rimangono la mappa 2D, l'inseguimento, la panoramica e l'atlante del cervello.
-Posizioni, architettura e registrazione geografica sono dichiarate stimate.
-[Guida 5.6.0](PAESAGGIO-v560.md) · [Verifica](VERIFICA-v560.md).
+La candidata 5.7.0 allinea i guadagni sensoriali della pratica locale alla
+simulazione sulle piste strette e, quando una policy sicura si arresta senza
+gas, esplora il solo comando longitudinale lasciando invariata la sterzata.
+Nel confronto appaiato V3/Monza di quattro generazioni, la progressione sicura
+media delle tre generazioni successive è 277,86 m contro 138,71 m nel
+controllo; la media degli agenti sicuri oltre 500 m è 8,67 contro 4,33.
+Entrambi i rami sono rimasti senza giri completati e al tetto sicuro di
+790,46 m. È un risultato limitato a un seed, non una prova di convergenza.
+[Note](RELEASE-v570.md) · [Verifica](VERIFICA-v570.md).
 
-Fisica, sensori, reti, ricompense e apprendimento della 5.5.0 sono conservati.
-I nuovi salvataggi richiedono esattamente **5.6.0**; i progressi 5.5.0 si
-usano con la vecchia app. Nessuna migrazione automatica, cancellazione o
-riscrittura dei progressi. Le vecchie distribuzioni rimangono disponibili.
+I nuovi salvataggi richiedono esattamente **5.7.0**; i file 5.6.0 e precedenti
+si aprono con le rispettive release conservate. Nessuna migrazione automatica.
+
+## Distribuzione precedente 5.6.0
+
+La distribuzione precedente 5.6.0 è conservata in `dist-landscape-v560/`:
+paesaggio NASA SRTM, aree ed edifici OSM, boschi Sketchfab più densi a Monza e
+fascia Le Mans estesa a 2 km. In **Vista 3D → Inquadra** usa **Bosco** o
+**Paesaggio**; rimangono la mappa 2D, l'inseguimento, la panoramica e l'atlante
+del cervello. [Guida 5.6.0](PAESAGGIO-v560.md) ·
+[Verifica](VERIFICA-v560.md). I file di salvataggio 5.6.0 richiedono la vecchia
+app; non vengono migrati automaticamente.
 
 ## Distribuzione precedente 5.5.0
 

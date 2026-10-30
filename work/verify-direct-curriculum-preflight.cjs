@@ -1,0 +1,15 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),Env=require('./neural-direct-curriculum-env.cjs'),Native=require('./neural-direct-scaled-native.cjs'),Snapshots=require('./neural-direct-curriculum-snapshots.cjs'),Objective=require('./neural-direct-training-objective-r7.cjs'),I=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),dir=path.join(base,'direct-neuronal-curriculum-preflight');fs.mkdirSync(dir);
+try{
+ const old=JSON.parse(fs.readFileSync(path.join(base,'direct-neuronal-scaled-preflight/verification.json')));assert(old.passed);const env=Env.create(),native=Native.create(),metadata=env.metadata(),weights=metadata.initialWeights,states=Snapshots.metadata().states;
+ const baseline=env.evaluate(weights);assert.equal(baseline.actionTraceSha256,old.baseline.actionTraceSha256);for(const key of ['bestProgress','fitness','laps','reason','totalSimulationSeconds','lapTimes'])assert.deepEqual(baseline.result[key],old.baseline.result[key]);assert.equal(baseline.trainingFitness,old.baseline.trainingFitness);
+ function reach(index){native.reset();if(index!==null)while(native.state().controls<states[index].controls){const s=native.step(weights);assert(!s.complete);}return native.state();}
+ let compared=0;
+ for(let index=0;index<states.length;index++){
+  let s=reach(index);env.resetAt(index);assert.deepEqual(env.inspect().car,s.car);assert.deepEqual(env.inspect().observation.x,s.x);const batch=env.rollout(weights,[.02,.02],64);let reset=false;
+  for(const row of batch.rows){if(reset)s=reach(row.start.snapshotIndex);else s=native.state();assert.deepEqual(s.x,row.x);const before=s.fitness;s=native.step(weights,row.action);assert.equal((s.fitness-before)/100,row.rawReward);assert.equal(Objective.penalty(s),row.trainingPenalty);assert.equal(row.done,s.complete);assert.deepEqual(row.next,s.complete?Array(77).fill(0):s.x);reset=s.complete;compared++;}
+ }
+ const resets=[];for(let i=0;i<64;i++)resets.push(env.reset().start.snapshotIndex);assert(resets.includes(null)&&resets.some(v=>v!==null));const cuda=Native.stats();assert(cuda.gpuCalls>0&&cuda.cpuFallbacks===0);
+ const proof={passed:true,metadata,baseline,actualTransitionComparisons:compared,actualSnapshotBodyAndNeuralComparisons:states.length,resetSample:resets,cuda,sourceHashes:I.collect(['work/verify-direct-curriculum-preflight.cjs','work/neural-direct-curriculum-env.cjs','work/neural-direct-scaled-native.cjs','outputs/data/connectome.json','outputs/data/circuits.json','.impeccable/runtime-node24/node.exe']),boundary:'Actual initial-policy full-line evaluation unchanged. Five complete physics/neural snapshots independently reached and matched;320actual sampled transitions replayed including resets. Curriculum distances are not counted as newly driven progress. Not a learned full lap or improved driving.'};fs.writeFileSync(path.join(dir,'verification.json'),JSON.stringify(proof,null,2),{flag:'wx'});console.log(JSON.stringify({passed:true,baseline:baseline.result,snapshots:states.length,actualTransitionComparisons:compared}));
+}finally{Native.close();}

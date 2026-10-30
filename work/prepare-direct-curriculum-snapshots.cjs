@@ -1,0 +1,12 @@
+'use strict';
+// Actual states of the initial policy. No fabricated position or driving action.
+const fs=require('node:fs'),path=require('node:path'),v8=require('node:v8'),assert=require('node:assert/strict'),crypto=require('node:crypto'),Native=require('./neural-direct-scaled-native.cjs'),Core=require('./neural-direct-scaled-core.cjs'),I=require('./neural-research-source-identity.cjs');
+const base=path.resolve('.impeccable/review/neural-sacl'),dir=path.join(base,'direct-curriculum-prepared');fs.mkdirSync(dir);
+try{
+ const old=JSON.parse(fs.readFileSync(path.join(base,'direct-neuronal-scaled-preflight/verification.json')));assert(old.passed);for(const[file,digest]of Object.entries(old.sourceHashes))assert.equal(I.sha(fs.readFileSync(file)),digest);
+ const native=Native.create(),weights=native.metadata().initialWeights,check=[400,550,650,720,770],snapshots=[],hash=crypto.createHash('sha256');let s=native.state();
+ while(!s.complete){s=native.step(weights);hash.update(JSON.stringify([s.bestProgress,s.totalSimulationSeconds,s.car.outputs])+'\n');if(snapshots.length<check.length&&s.bestProgress>=check[snapshots.length]&&!s.complete){const data=v8.serialize({car:s.car,observation:{x:s.x,active:s.active},ticks:Math.round(s.totalSimulationSeconds/Core.F.DT),steps:s.controls});snapshots.push({requestedProgress:check[snapshots.length],actualProgress:s.bestProgress,controls:s.controls,sha256:I.sha(data),data:data.toString('base64')});}}
+ assert.equal(snapshots.length,check.length);assert.equal(hash.digest('hex'),old.baseline.actionTraceSha256);
+ const packet={format:'male-cns-actual-neuronal-curriculum-states-v1',appVersion:'5.6.0',modelId:'v3',circuitId:'monza',metadata:native.metadata(),baseline:old.baseline,snapshots,sourceHashes:I.collect(['work/prepare-direct-curriculum-snapshots.cjs','work/neural-direct-scaled-native.cjs','outputs/data/connectome.json','outputs/data/circuits.json','.impeccable/runtime-node24/node.exe']),boundary:'Five actual independently replayed initial-policy states before failure. Each includes real physics, reward ledger and already-observed neural state. Checkpoint selection is training reset logic only; no checkpoint identity, coordinates, time or reference actions enter policy inputs. Full-line evaluation remains mandatory.'};
+ fs.writeFileSync(path.join(dir,'snapshots.json'),JSON.stringify(packet),{flag:'wx'});console.log(JSON.stringify({passed:true,count:snapshots.length,states:snapshots.map(({data,...x})=>x),baseline:s.bestProgress}));
+}finally{Native.close();}

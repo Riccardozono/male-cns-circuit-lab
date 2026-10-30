@@ -2,6 +2,7 @@
 // Rendering/controls only; simulation.js owns physics and neural state.
 const $=id=>document.getElementById(id),canvas=$('simulation-canvas'),ctx=canvas.getContext('2d');
 const historyCanvas=$('history-canvas'),historyCtx=historyCanvas.getContext('2d');
+const sessionUI=MaleCNSSessionUI.create(document);
 const COLORS=['#ff7658','#68d3c5','#f0bd69','#a6b4ff','#d7a4dd','#8ccf8b','#f5df91','#77b7dc'];
 let sim,selectedId=0,showSensors=true,view={scale:1,offsetX:0,offsetY:0},lastTime=0,lastUI=0,savedGeneration=0;
 let runtimeData=null,legacyDataPromise=null,activeModelId='v5',switchingModel=false,progressBusy=false;
@@ -12,9 +13,12 @@ let trackRenderer=null,trackCamera=null,trackFocus='',trackGesture=null;
 let circuit3D=null,circuit3DLoading=null,circuitView='2d',circuitViewRequest=0;
 const carRenderer=new MaleCNSCars.Renderer();
 const agentSelection=new MaleCNSAgents.Selection();
+const importedTrainingSessions=new WeakSet();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.6.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.7.0',number=n=>n.toLocaleString('it-IT');
+const TRAINING_COPY_PROFILE=new URLSearchParams(location.search).get('training-copy')==='verified-v3';
+const TRAINING_COPY_BOOTSTRAP_KEY='malecns-training-copy-defaults-v1';
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
@@ -47,6 +51,17 @@ function readModelPreference(){
   return 'v5';
 }
 function saveModelPreference(value){try{localStorage.setItem(MODEL_PREFERENCE_KEY,value);}catch{}}
+function initializeTrainingCopyDefaults(){
+  if(!TRAINING_COPY_PROFILE)return;
+  try{
+    if(localStorage.getItem(TRAINING_COPY_BOOTSTRAP_KEY)!=='1'){
+      localStorage.setItem(MODEL_PREFERENCE_KEY,'v3');
+      localStorage.setItem(PREFERENCE_KEY,'monza');
+      localStorage.setItem(TRAINING_COPY_BOOTSTRAP_KEY,'1');
+    }
+  }catch{}
+  $('population-range').value='16';
+}
 async function loadModelData(modelId){
   if(modelId==='v5')return MaleCNSProfiles.buildV5(runtimeData);
   if(modelId==='v4')return runtimeData;
@@ -65,6 +80,13 @@ function syncSpeedControl(){
   if(document.activeElement!==input||Math.abs(Number(input.value)-speed)>1e-9)input.value=String(speed);
   $('speed-output').textContent=speed.toFixed(1)+'×';
 }
+function syncMutationControl(){
+  if(!sim)return;
+  const base=Math.round(sim.mutation*100),lastMutation=sim.history.at(-1)?.mutationAmount;
+  const input=$('mutation-range');if(Number(input.value)!==base)input.value=String(base);
+  const effective=sim.mode==='connectome'&&Number.isFinite(lastMutation)?Math.round(lastMutation*100):null;
+  $('mutation-output').textContent=effective===null?`${base}% base`:`${base}% base · ${effective}% ultima gen.`;
+}
 function refreshTrackWidth(car=selected()){
   const station=trackFocus.startsWith('width:')?sim.track.widthStations[Number(trackFocus.slice(6))]:null;
   const info=FlySim.trackWidthAt(sim.track,station?station.alongMeters:car.lastAlong||0);
@@ -74,7 +96,7 @@ function refreshTrackWidth(car=selected()){
   if(circuitView==='3d'&&circuit3D?.worldData)$('track-elevation-note').textContent+=` Paesaggio entro ${(circuit3D.worldData.entry.coverageM||1000)/1000} km: NASA SRTM (2000), raccordo stimato; non modifica la fisica.`;
   $('landscape-source-note').hidden=!(circuitView==='3d'&&circuit3D?.worldData);
 }
-function resetTrackView(){trackCamera.reset();cameraSelect.value='overview';circuit3D?.setMode('overview');circuit3D?.reset();trackFocus='';$('track-landmark').value='';refreshTrackWidth();renderDirty=true;render();}
+function resetTrackView(){trackCamera.reset();if(circuitView==='3d'&&circuit3D?.mode==='first-person')circuit3D.reset();else{cameraSelect.value='overview';circuit3D?.setMode('overview');circuit3D?.reset();}trackFocus='';$('track-landmark').value='';refreshTrackWidth();renderDirty=true;render();}
 function focusTrack(key){
   if(key==='woodland'&&circuitView==='3d'&&circuit3D?.vegetation?.plan.farTrees){cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;if(!trackRenderer.details)$('track-details').click();circuit3D.focusWoodland();refreshTrackWidth();renderDirty=true;render();return;}
   if(key==='landscape'&&circuitView==='3d'&&circuit3D?.worldData){cameraSelect.value='overview';trackFocus=key;$('track-landmark').value=key;if(!trackRenderer.details)$('track-details').click();circuit3D.focusLandscape();refreshTrackWidth();renderDirty=true;render();return;}
@@ -150,7 +172,7 @@ async function setCircuitView(mode){
         if(request!==circuitViewRequest)return;
         circuit3D=new Circuit3D($('track-3d-canvas'),{onSelect:id=>{inspectAgent(id);renderDirty=true;},onReset:resetTrackView,onChange:()=>{renderDirty=true;if(circuit3D&&cameraSelect.value!==circuit3D.mode)cameraSelect.value=circuit3D.mode;},onModelStatus:message=>{$('track-3d-status').textContent=message+' · scenografia solo visiva · profilo della pista stimato attivo nella fisica';if(circuit3D&&sim){refreshTrackLandmarks();refreshTrackWidth();}},onFallback:message=>{setCircuitView('2d');$('track-3d-status').textContent=message;}});
         circuit3D.setTrack(sim.track,trackRenderer.model,FlySim.onRoad);
-        cameraSelect.value='follow';circuit3D.setMode('follow');
+        cameraSelect.value=cameraSelect.value==='first-person'?'first-person':'follow';circuit3D.setMode(cameraSelect.value);
       }
       if(circuit3D.lost)throw Error('Contesto grafico non disponibile: riapri l’app per riprovare.');
       circuit3D.setMode(cameraSelect.value);
@@ -159,9 +181,10 @@ async function setCircuitView(mode){
     finally{$('track-mode-3d').disabled=false;}
   }
   if(request!==circuitViewRequest)return;circuitView=mode;
+  if(mode==='2d'&&cameraSelect.value==='first-person'){cameraSelect.value='follow';circuit3D?.setMode('follow');}
   canvas.hidden=mode==='3d';$('track-3d-canvas').hidden=mode!=='3d';$('track-3d-hud').hidden=mode!=='3d';$('track-2d-legend').hidden=mode==='3d';
   $('track-mode-2d').setAttribute('aria-pressed',String(mode==='2d'));$('track-mode-3d').setAttribute('aria-pressed',String(mode==='3d'));
-  $('track-navigation-note').textContent=mode==='3d'?'Trascina per orbitare · Maiusc + trascina per spostare · rotella / pizzico per zoom · frecce per orbitare · clic su un’auto':'Trascina per spostare · rotella o pizzico per zoom · clic su un’auto o una curva';
+  syncTrackAccessibility();
   if(window.circuitLab){window.circuitLab.circuit3D=circuit3D;window.circuitLab.circuitView=mode;}
   refreshTrackLandmarks();
   resize();
@@ -198,7 +221,7 @@ function updateBrainMapActivity(force=false){const car=selected();if(car?.brainS
 function showWorkspace(viewName){
   $('visual-stage').dataset.view=viewName;$('circuit-view').hidden=viewName==='brain';$('brain-view').hidden=viewName==='circuit';
   for(const name of ['circuit','brain','split'])$('view-'+name).setAttribute('aria-pressed',String(name===viewName));
-  cameraSelect.disabled=viewName==='brain';invalidateBrainMap();requestAnimationFrame(()=>{resize();updateBrainMapActivity(true);});
+  cameraSelect.disabled=viewName==='brain';sessionUI.syncNavigation();invalidateBrainMap();requestAnimationFrame(()=>{resize();updateBrainMapActivity(true);});
 }
 function initBrainMapControls(){
   for(const name of ['circuit','brain','split'])$('view-'+name).onclick=()=>showWorkspace(name);
@@ -232,10 +255,21 @@ function drawCar(car) {
   carRenderer.drawLocal(ctx,car,{color,pixelLength:24*car.scale*view.scale});ctx.restore();
   if(chosen){ctx.fillStyle=color;ctx.font=`bold ${12/view.scale}px ui-monospace,monospace`;ctx.fillText(`A-${pad(car.id+1)}${car.alive?'':' · '+car.reason}`,car.x+14/view.scale,car.y-14/view.scale);}
 }
+function syncTrackAccessibility(){
+  const firstPerson=circuitView==='3d'&&circuit3D?.mode==='first-person',note=$('track-navigation-note'),surface=$('track-3d-canvas');
+  $('first-person-note').hidden=!firstPerson;
+  const instructions=firstPerson?'Trascina o usa le frecce per guardare · rotella, pizzico o zoom per il campo visivo · Centra o Home per guardare avanti':circuitView==='3d'?'Trascina per orbitare · Maiusc + trascina per spostare · rotella / pizzico per zoom · frecce per orbitare · clic su un’auto':'Trascina per spostare · rotella o pizzico per zoom · clic su un’auto o una curva';
+  if(note.textContent!==instructions)note.textContent=instructions;
+  const name=firstPerson?`Vista in prima persona dall’auto A-${pad(selected().id+1)}, posto guida schematico`:'Circuito 3D interattivo con barriere e vie di fuga schematiche, auto in scala e sensori sui bordi fisici';
+  if(surface.getAttribute('aria-label')!==name)surface.setAttribute('aria-label',name);
+  const description=firstPerson?'track-navigation-note first-person-note track-3d-status':'track-navigation-note track-3d-status';
+  if(surface.getAttribute('aria-describedby')!==description)surface.setAttribute('aria-describedby',description);
+}
 function render() {
+  syncTrackAccessibility();
   if(circuitView==='3d'&&circuit3D&&trackRenderer){
     circuit3D.render(sim,selected(),COLORS,{sensors:showSensors,boundaries:trackRenderer.boundaries,details:trackRenderer.details,sensorDistances:FlySim.sensorDistances,angles:FlySim.ANGLES});
-    $('track-view-label').textContent=circuit3D.mode==='follow'?`3D · segui A-${pad(selectedId+1)}`:'3D · panoramica';
+    $('track-view-label').textContent=circuit3D.mode==='first-person'?`Prima persona · A-${pad(selected().id+1)}`:circuit3D.mode==='follow'?`3D · segui A-${pad(selectedId+1)}`:'3D · panoramica';
     const car=selected();$('track-3d-hud').textContent=`A-${pad(car.id+1)} · ${((car.vehicle?.speedMps||0)*3.6).toFixed(0)} km/h · marcia ${car.vehicle?.gear||'N'} · ${car.laps}/2 giri${car.alive?'':' · '+car.reason}`;
     window.circuitLab.circuit3D=circuit3D;window.circuitLab.circuitView=circuitView;renderDirty=false;lastRenderTime=performance.now();return;
   }
@@ -272,27 +306,29 @@ function history() {
   const rect=historyCanvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
   const width=Math.round(rect.width*dpr),height=Math.round(rect.height*dpr),values=sim.history.slice(-32);
   const mode=$('history-mode').value,series=MaleCNSLearningMetrics.series(values,sim.track,mode);
-  const key=`${mode}|${width}|${height}|${values.map(v=>`${v.generation}:${v.best}:${v.mean}:${v.bestProgress||0}`).join(';')}`;
+  const key=`${document.documentElement.dataset.theme||'light'}|${mode}|${width}|${height}|${values.map(v=>`${v.generation}:${v.best}:${v.mean}:${v.bestSafeProgress||0}:${v.meanSafeProgress||0}:${v.bestProgress||0}`).join(';')}`;
   if(historyKey===key)return;historyKey=key;
   if(historyCanvas.width!==width)historyCanvas.width=width;
   if(historyCanvas.height!==height)historyCanvas.height=height;
   historyCtx.setTransform(dpr,0,0,dpr,0,0);historyCtx.clearRect(0,0,rect.width,rect.height);
   const {min,max}=series,span=Math.max(1,max-min),plot={left:8,right:rect.width-8,top:26,bottom:rect.height-24};
-  historyCtx.font='12px system-ui';historyCtx.fillStyle='#a9b2b7';historyCtx.fillText(`${Math.round(max).toLocaleString('it-IT')} ${series.unit}`,8,15);
+  const themeStyle=getComputedStyle(document.documentElement),historyInk=themeStyle.getPropertyValue('--history-ink').trim(),historyBest=themeStyle.getPropertyValue('--history-best').trim(),historyRule=themeStyle.getPropertyValue('--history-rule').trim();
+  historyCtx.font='12px system-ui';historyCtx.fillStyle=historyInk;historyCtx.fillText(`${Math.round(max).toLocaleString('it-IT')} ${series.unit}`,8,15);
   if(values.length){historyCtx.fillText(`Gen. ${values[0].generation} – ${values.at(-1).generation}`,8,rect.height-5);historyCtx.textAlign='right';historyCtx.fillText(`${Math.round(min)} ${series.unit}`,rect.width-8,rect.height-5);historyCtx.textAlign='left';}
   else historyCtx.fillText('Il grafico appare dopo la prima generazione.',8,rect.height/2);
-  historyCtx.strokeStyle='#2b3945';historyCtx.lineWidth=1;historyCtx.beginPath();historyCtx.moveTo(plot.left,plot.bottom);historyCtx.lineTo(plot.right,plot.bottom);historyCtx.stroke();
-  for(const [key,color] of [['mean','#74828b'],['best','#68d3c5']]){
+  historyCtx.strokeStyle=historyRule;historyCtx.lineWidth=1;historyCtx.beginPath();historyCtx.moveTo(plot.left,plot.bottom);historyCtx.lineTo(plot.right,plot.bottom);historyCtx.stroke();
+  for(const [key,color] of [['mean',historyInk],['best',historyBest]]){
     const points=series.points.map((v,i)=>({x:values.length===1?rect.width/2:plot.left+i/(values.length-1)*(plot.right-plot.left),y:plot.bottom-(v[key]-min)/span*(plot.bottom-plot.top)}));
     historyCtx.strokeStyle=color;historyCtx.lineWidth=2;historyCtx.beginPath();points.forEach((p,i)=>i?historyCtx.lineTo(p.x,p.y):historyCtx.moveTo(p.x,p.y));historyCtx.stroke();
     points.forEach(p=>{historyCtx.fillStyle=color;historyCtx.beginPath();historyCtx.arc(p.x,p.y,2.5,0,Math.PI*2);historyCtx.fill();});
   }
-  historyCanvas.setAttribute('aria-label',`${mode==='progress'?'Distanza percorsa in metri':'Punteggio netto in punti'} per generazione, migliore e media della popolazione. ${$('history-caption').textContent}`);
+  historyCanvas.setAttribute('aria-label',`${mode==='fitness'?'Punteggio netto in punti':mode==='raw-progress'?'Progresso fisico massimo grezzo, che include gli urti':'Progresso sicuro'} per generazione, migliore e media. ${$('history-caption').textContent}`);
 }
 function signal(id,value,center=false){$(id).style.transform=`scaleX(${FlySim.clamp(center?(value+1)/2:value,0,1)})`;$(id+'-value').textContent=value.toFixed(2);}
 function refreshVehicle(car){
   const v=car.vehicle?.simulationSeconds!==undefined?MaleCNSVehicle.telemetry(car.vehicle,true):car.vehicle;
   if(!v)return;
+  sessionUI.updateVehicle(v);
   const gear=g=>g===0?'N':g===-1?'R':String(g);
   $('vehicle-gear').textContent=gear(v.gear)+(v.shiftRemaining>0?' → '+gear(v.targetGear):'');
   $('vehicle-rpm').textContent=number(Math.round(v.rpm))+' rpm';
@@ -335,7 +371,8 @@ function saveChampion(){
 function refresh(force=false){
   const now=performance.now();if(!force&&now-lastUI<150)return;lastUI=now;
   syncAgentSelection();
-  const car=selected(),leader=best();syncSpeedControl();$('run-state').textContent=sim.running?'IN CORSO':'IN PAUSA';$('toggle-run').textContent=sim.running?'Pausa':'Riprendi';
+  const car=selected(),leader=best();syncSpeedControl();syncMutationControl();$('run-state').textContent=sim.running?'IN CORSO':'IN PAUSA';
+  sessionUI.update({running:sim.running,circuitLabel:sim.circuit.name||sim.circuit.label||sim.circuitId,history:sim.history,pixelsPerMeter:sim.track.pixelsPerMeter||1});
   if(globalThis.desktopCompute){
     const gpu=sim.engine?.gpu||{},adapterLabel=gpu.state==='active'&&gpu.adapter?.label?` · ${gpu.adapter.label}`:'',gpuLabel=!sim.graph.full?'CPU · modello legacy':gpu.state==='active'?`GPU+CPU WebGPU${adapterLabel}`:gpu.state==='fallback'?'CPU fallback':gpu.state==='lost'?'CPU fallback · device GPU perso':'GPU ibrida in avvio';
     $('dataset-status').textContent=`${sim.graph.dataset} · ${sim.modelLabel||modelOption(activeModelId).name} · ${sim.graph.n.toLocaleString('it-IT')} neuroni · ${sim.graph.edgeCount.toLocaleString('it-IT')} connessioni · APP WINDOWS · ${sim.engine?.workerCount||'multi'} worker CPU · ${gpuLabel}`;
@@ -348,7 +385,9 @@ function refresh(force=false){
   $('learning-distance').textContent=metres(learning.distance);$('learning-mean').textContent=metres(learning.meanDistance);$('learning-laps').textContent=`${learning.maxLaps} / 2`;$('learning-lap-time').textContent=lapClock(learning.lapTime);
   const trends={pending:'Servono 10 generazioni per confrontare due gruppi di 5.',improving:'Più strada nelle ultime 5 generazioni.',regressing:'Meno strada nelle ultime 5 generazioni.',stable:'Distanza stabile nelle ultime 5 generazioni.'};
   $('learning-trend').textContent=trends[learning.trend]+(learning.delta===null?'':` Mediana: ${metres(learning.previousMedian)} → ${metres(learning.recentMedian)}.`);$('learning-trend').dataset.trend=learning.trend;
-  $('history-caption').textContent=learning.generation===null?'Nessuna generazione conclusa.':`Ultima gen. ${learning.generation} · ${learning.updates} aggiornamenti · ${learning.stagnation} gen. senza nuovo progresso · ${learning.immigrants} esploratori indipendenti`;
+  const historyBasisNote=learning.progressBasis==='safe'?'':learning.progressBasis==='mixed'?' · storico parzialmente non separato per sicurezza':' · storico non separato per sicurezza';
+  const rawProgressNote=learning.rawDistance!==null&&learning.distance!==null&&learning.rawDistance>learning.distance+1?` · massimo grezzo ${metres(learning.rawDistance)} (può includere urti)`:'';
+  $('history-caption').textContent=learning.generation===null?'Nessuna generazione conclusa.':`Ultima gen. ${learning.generation} · ${learning.updates} aggiornamenti · ${learning.stagnation} gen. senza nuovo progresso · ${learning.immigrants} esploratori indipendenti${historyBasisNote}${rawProgressNote}`;
   $('alive-count').textContent=`${sim.cars.filter(c=>c.alive).length}/${sim.population} attive`;
   $('selected-agent-id').textContent='A-'+pad(car.id+1);$('selected-color-dot').style.background=COLORS[car.id%COLORS.length];
   $('agent-lap').textContent=car.laps;$('agent-speed').textContent=((car.vehicle?.speedMps||0)*3.6).toFixed(1)+' km/h';$('agent-lateral').textContent=car.alive?(car.diagnosticVehicle?'DIAGNOSTICA':'ATTIVA'):car.reason;
@@ -371,7 +410,10 @@ function refresh(force=false){
   if(brainAtlas?.visible&&!$('brain-view').hidden)updateBrainMapActivity();
   const modelNote=sim.modelLabel||modelOption(activeModelId).label;
   const training=sim.learningStats||sim.optimizer?.metrics();
-  $('mode-note').textContent=sim.mode==='connectome'?`Machine learning per ricompense · ${modelNote}. Sensori → sinapsi MaleCNS → attività ricorrente → sterzo/pedali appresi. Nessuna guida preimpostata. ${training?`${training.updates} aggiornamenti · ${training.episodes} episodi · ${training.parameters} parametri appresi. `:''}Le prime auto possono fermarsi o urtare; il miglioramento va misurato tra generazioni.`:sim.mode==='off'?'PROVA: rete spenta, tutti i comandi a zero. L’auto deve restare ferma.':'PROVA: acceleratore 70%, sterzo zero. L’auto deve andare dritta e urtare il bordo.';
+  const trainingCopyNote=TRAINING_COPY_PROFILE?(importedTrainingSessions.has(sim)
+    ?'Profilo sperimentale isolato · salvataggio importato. '
+    :'Profilo sperimentale isolato · sessione nuova, nessun salvataggio importato. '):'';
+  $('mode-note').textContent=trainingCopyNote+(sim.mode==='connectome'?`Machine learning per ricompense · ${modelNote}. Sensori → sinapsi MaleCNS → attività ricorrente → sterzo/pedali appresi. Nessuna guida preimpostata. ${training?`${training.updates} aggiornamenti · ${training.episodes} episodi · ${training.parameters} parametri appresi. `:''}Le prime auto possono fermarsi o urtare; il miglioramento va misurato tra generazioni.`:sim.mode==='off'?'PROVA: rete spenta, tutti i comandi a zero. L’auto deve restare ferma.':'PROVA: acceleratore 70%, sterzo zero. L’auto deve andare dritta e urtare il bordo.');
   $('next-generation').disabled=sim.mode!=='connectome';$('save-progress').disabled=progressBusy||switchingModel||sim.mode!=='connectome';$('load-progress').disabled=progressBusy||switchingModel;$('agent-select').value=String(car.id);
   if(!modelTestBusy&&sim.generation!==savedGeneration){saveChampion();savedGeneration=sim.generation;}
   syncModelTestControls();history();
@@ -399,7 +441,7 @@ function syncAgentSelection(force=false){
   $('agent-selection-note').textContent=automatic?(sim.cars.some(c=>c.alive)?'Selezione automatica della migliore auto attiva. Scegli un’auto per passare alla selezione manuale.':'Nessuna auto attiva: mostro la migliore finale della generazione. Scegli un’auto per passare alla selezione manuale.'):`Selezione manuale: A-${pad(selectedId+1)}. Premi “Auto: disattivata” per tornare alla migliore.`;
 }
 function inspectAgent(id){agentSelection.select(id);syncAgentSelection();refresh(true);}
-function reset(){sim.reset();savedGeneration=0;selectedId=0;populateAgents();historyKey='';invalidateBrainMap();renderDirty=true;refresh(true);render();}
+function reset(){const wasImported=importedTrainingSessions.has(sim);sim.reset();importedTrainingSessions.delete(sim);if(wasImported)progressStatus('Prova azzerata. Il file caricato resta invariato.');savedGeneration=0;selectedId=0;populateAgents();historyKey='';invalidateBrainMap();renderDirty=true;refresh(true);render();}
 function circuitInfo(){
   const c=sim.circuit;$('circuit-select').value=c.id;$('simulation-title').textContent=c.id==='lab'?'Laboratorio di guida':c.name+' · simulazione';
   const changed=trackRenderer?.model?.id!==c.id;
@@ -443,8 +485,9 @@ async function switchModel(modelId){
     const options={circuits:MALE_CNS_CIRCUITS,circuitId:previous.circuitId,population:previous.population,mutation:previous.mutation,speedMultiplier:previous.speedMultiplier,modelId,modelLabel:modelOption(modelId).name};
     next=globalThis.desktopCompute?new FlySim.DesktopSimulation(data,options):new FlySim.Simulation(data,options);
     if(globalThis.desktopCompute)await next.ready();
-    previous?.dispose?.(false);
+    const wasImported=importedTrainingSessions.has(previous);previous?.dispose?.(false);
     sim=next;activeModelId=modelId;saveModelPreference(modelId);selectedId=0;savedGeneration=0;lastTime=0;historyKey='';invalidateBrainMap();renderDirty=true;
+    if(wasImported)progressStatus('Modello cambiato. Il file caricato resta invariato.');
     window.circuitLab={sim,version:APP_VERSION,data,modelId};
     $('controller-select').value=modelId;populateAgents();buildBrainMap();updateModelSummary();circuitInfo();refresh(true);render();
   }catch(error){
@@ -455,6 +498,11 @@ async function switchModel(modelId){
   }
 }
 function progressStatus(message,error=false){const status=$('progress-status');status.textContent=message;status.dataset.error=String(error);}
+function progressCompatibility(revisions){
+  return APP_VERSION==='5.7.0'&&revisions.some(revision=>revision!==FlySim.Rewards.REVISION)
+    ?' Richiede una copia di sviluppo compatibile: la release 5.7.0 distribuita non lo apre.'
+    :'';
+}
 async function progressOperation(task){
   if(progressBusy||switchingModel||modelTestBusy)return;
   const main=document.querySelector('main'),focus=document.activeElement;
@@ -468,11 +516,11 @@ async function saveProgress(){
     if(globalThis.desktopProgress){
       const result=await desktopProgress.save();
       if(result.canceled){progressStatus('Salvataggio annullato. La prova continua senza modifiche.');return;}
-      progressStatus(`Salvato ${result.name} · ${result.workers} worker · app ${APP_VERSION}. Puoi condividere questo file.`);
+      progressStatus(`Salvato ${result.name} · ${result.workers} worker · app ${APP_VERSION}. Puoi condividere questo file.${progressCompatibility(result.rewardRevisions||[])}`);
     }else{
       const payload=MaleCNSProgress.fromSimulation(sim),text=await MaleCNSProgress.encode(payload,APP_VERSION),name=MaleCNSProgress.filename(payload,APP_VERSION);
       const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
-      progressStatus(`Download preparato: ${name}. La scrittura sul disco dipende dal browser.`);
+      progressStatus(`Download preparato: ${name}. La scrittura sul disco dipende dal browser.${progressCompatibility(payload.workers.map(worker=>worker.state.rewardRevision))}`);
     }
   });
 }
@@ -485,13 +533,13 @@ async function importProgress(file,name){
     const options={circuits:MALE_CNS_CIRCUITS,circuitId:p.circuitId,population:s.population,mutation:s.mutation,speedMultiplier:s.speedMultiplier,modelId,modelLabel:modelOption(modelId).name,progress:file};
     next=globalThis.desktopCompute?new FlySim.DesktopSimulation(data,options):new FlySim.Simulation(data,options);
     if(globalThis.desktopCompute)await next.ready();else MaleCNSProgress.restore(next,s);
-    previous?.dispose?.(false);sim=next;activeModelId=modelId;
+    previous?.dispose?.(false);sim=next;activeModelId=modelId;importedTrainingSessions.add(sim);
     saveModelPreference(modelId);saveSpeedPreference(s.speedMultiplier);try{localStorage.setItem(PREFERENCE_KEY,p.circuitId);}catch{}
     selectedId=0;savedGeneration=sim.generation;lastTime=0;historyKey='';invalidateBrainMap();renderDirty=true;
     window.circuitLab={sim,version:APP_VERSION,data,modelId};
-    $('controller-select').value=modelId;$('population-range').value=String(s.population);$('mutation-range').value=String(s.mutation*100);$('mutation-output').textContent=(s.mutation*100)+'%';
+    $('controller-select').value=modelId;$('population-range').value=String(s.population);$('mutation-range').value=String(s.mutation*100);syncMutationControl();
     $('speed-range').value=String(s.speedMultiplier);populateAgents();buildBrainMap();updateModelSummary();circuitInfo();refresh(true);render();
-    progressStatus(`Caricato ${name} · ${modelId.toUpperCase()} · ${sim.circuit.name} · gen. ${sim.generation} · ${p.workers.length} worker · app ${APP_VERSION}. In pausa: premi Riprendi.`);
+    progressStatus(`Caricato ${name} · ${modelId.toUpperCase()} · ${sim.circuit.name} · gen. ${sim.generation} · ${p.workers.length} worker · app ${APP_VERSION}. In pausa: premi Riprendi.${progressCompatibility(p.workers.map(worker=>worker.state.rewardRevision))}`);
   }catch(error){next?.dispose?.(false);await previous.reconnect?.();sim=previous;throw error;}
 }
 function initProgressControls(){
@@ -601,14 +649,14 @@ async function runModelTest(overrides=null){
 }
 function revealModelTest(){
   const panel=$('model-test-panel');
-  panel.open=true;$('open-model-test').setAttribute('aria-expanded','true');
+  panel.open=true;sessionUI.syncTest();$('open-model-test').setAttribute('aria-expanded','true');
   panel.scrollIntoView({block:'start',behavior:'auto'});
   const action=$(modelTestBusy?'model-test-stop':'model-test-start');
   (action.disabled?panel.querySelector('summary'):action).focus({preventScroll:true});
 }
 function initModelTestControls(){
   $('open-model-test').onclick=revealModelTest;
-  $('model-test-panel').ontoggle=()=>$('open-model-test').setAttribute('aria-expanded',String($('model-test-panel').open));
+  $('model-test-panel').ontoggle=()=>{sessionUI.syncTest();$('open-model-test').setAttribute('aria-expanded',String($('model-test-panel').open));};
   const body=$('model-test-results');
   modelTestRows=MaleCNSModelTest.MODELS.map(modelId=>{const row=document.createElement('tr'),heading=document.createElement('th');heading.scope='row';heading.textContent=modelId.toUpperCase();row.append(heading);for(let i=0;i<6;i++)row.append(document.createElement('td'));body.append(row);return row;});
   $('model-test-start').onclick=()=>runModelTest().catch(error=>{$('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';});
@@ -633,29 +681,32 @@ async function start(){try{
   $('dataset-status').textContent='Caricamento 166.700 neuroni MaleCNS…';
   carRenderer.load('assets/porsche-992-gt3r-top-v1.png',COLORS).then(()=>{carPreviewKey='';renderDirty=true;if(sim?.cars?.length&&window.circuitLab&&trackRenderer){render();refresh(true);}});
   runtimeData=await MaleCNSFull.load();
+  initializeTrainingCopyDefaults();
   let circuitId='lab';try{const saved=localStorage.getItem(PREFERENCE_KEY);if(MALE_CNS_CIRCUITS.circuits.some(c=>c.id===saved))circuitId=saved;}catch{}
   const savedSpeed=readSpeedPreference();$('speed-range').value=String(savedSpeed);$('speed-output').textContent=savedSpeed.toFixed(1)+'×';
   activeModelId=readModelPreference();$('controller-select').value=activeModelId;
   const initialData=await loadModelData(activeModelId);
-  const simulationOptions={circuits:MALE_CNS_CIRCUITS,circuitId,population:Number($('population-range').value),speedMultiplier:savedSpeed,modelId:activeModelId,modelLabel:modelOption(activeModelId).name};
+  const simulationOptions={circuits:MALE_CNS_CIRCUITS,circuitId,population:Number($('population-range').value),speedMultiplier:savedSpeed,modelId:activeModelId,modelLabel:modelOption(activeModelId).name,running:!TRAINING_COPY_PROFILE};
   sim=globalThis.desktopCompute?new FlySim.DesktopSimulation(initialData,simulationOptions):new FlySim.Simulation(initialData,simulationOptions);
   if(globalThis.desktopCompute)await sim.ready();
-  window.circuitLab={sim,version:APP_VERSION,data:initialData,modelId:activeModelId};
+  if(TRAINING_COPY_PROFILE)sim.running=false;
+  window.circuitLab={sim,version:APP_VERSION,data:initialData,modelId:activeModelId,trainingCopy:TRAINING_COPY_PROFILE};
   buildBrainMap();initBrainMapControls();initTrackControls();initVehicleControls();initProgressControls();initModelTestControls();
   $('car-closeup').onclick=closeUpCar;
   $('circuit-select').replaceChildren(...sim.circuits.map(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;return option;}));
   circuitInfo();
   $('circuit-select').onchange=e=>{
-    saveChampion();sim.setCircuit(e.target.value);savedGeneration=0;lastTime=0;historyKey='';invalidateBrainMap();renderDirty=true;populateAgents();circuitInfo();refresh(true);render();
+    const wasImported=importedTrainingSessions.has(sim);saveChampion();sim.setCircuit(e.target.value);importedTrainingSessions.delete(sim);if(wasImported)progressStatus('Circuito cambiato. Il file caricato resta invariato.');savedGeneration=0;lastTime=0;historyKey='';invalidateBrainMap();renderDirty=true;populateAgents();circuitInfo();refresh(true);render();
     try{localStorage.setItem(PREFERENCE_KEY,sim.circuitId);}catch{}
   };
-  $('camera-select').onchange=()=>{trackFocus='';$('track-landmark').value='';circuit3D?.setMode(cameraSelect.value);refreshTrackWidth();renderDirty=true;render();};
+  $('camera-select').onchange=async()=>{trackFocus='';$('track-landmark').value='';if(cameraSelect.value==='first-person'&&circuitView!=='3d')await setCircuitView('3d');circuit3D?.setMode(cameraSelect.value);refreshTrackWidth();renderDirty=true;render();};
   $('history-mode').onchange=()=>{historyKey='';history();};
+  document.addEventListener('malecns-theme-change',()=>{historyKey='';history();});
   updateModelSummary();refresh(true);
   $('toggle-run').onclick=()=>{sim.running=!sim.running;lastTime=0;invalidateBrainMap();renderDirty=true;refresh(true);render();};$('reset-sim').onclick=reset;$('next-generation').onclick=()=>{sim.evolve();invalidateBrainMap();renderDirty=true;refresh(true);render();};
   $('toggle-sensors').onclick=e=>{showSensors=!showSensors;e.currentTarget.textContent=showSensors?'Nascondi sensori':'Mostra sensori';e.currentTarget.setAttribute('aria-pressed',String(showSensors));renderDirty=true;render();};
   $('population-range').oninput=e=>{$('population-output').textContent=e.target.value+' AUTO';};$('population-range').onchange=e=>{sim.population=Number(e.target.value);reset();};
-  $('mutation-range').oninput=e=>{sim.mutation=Number(e.target.value)/100;$('mutation-output').textContent=e.target.value+'%';};
+  $('mutation-range').oninput=e=>{sim.mutation=Number(e.target.value)/100;syncMutationControl();};
   $('speed-range').oninput=e=>{const speed=normalizeSpeed(e.target.value);e.target.value=String(speed);sim.speedMultiplier=speed;saveSpeedPreference(speed);syncSpeedControl();};
   $('controller-select').onchange=async e=>{
     const value=e.target.value;
@@ -665,7 +716,7 @@ async function start(){try{
   };
   $('agent-select').onchange=e=>inspectAgent(Number(e.target.value));$('follow-best').onclick=()=>{agentSelection.toggle();syncAgentSelection();refresh(true);render();};
   if(globalThis.desktopCompute)window.addEventListener('desktop-compute-error',event=>{$('run-state').textContent='ERRORE WORKER';$('mode-note').textContent=event.detail||'Errore del motore desktop.';});
-  document.addEventListener('visibilitychange',()=>{lastTime=0;});window.addEventListener('resize',resize);populateAgents();refresh(true);showWorkspace('circuit');await setCircuitView('3d');resize();document.querySelector('main').inert=false;document.querySelector('main').setAttribute('aria-busy','false');requestAnimationFrame(frame);
+  document.addEventListener('visibilitychange',()=>{lastTime=0;});window.addEventListener('resize',resize);populateAgents();refresh(true);showWorkspace('circuit');await setCircuitView('3d');resize();document.querySelector('main').inert=false;document.querySelector('main').setAttribute('aria-busy','false');sessionUI.ready();requestAnimationFrame(frame);
 }catch(error){
   $('run-state').textContent='ERRORE DATI';$('dataset-status').textContent='Dataset non caricato';$('mode-note').textContent=error.message+' Riapri l’app con tutti i file della cartella outputs.';
   document.querySelectorAll('button,input,select').forEach(control=>control.disabled=true);console.error(error);

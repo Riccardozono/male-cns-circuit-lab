@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const F=require('../simulation.js'),data=require('../data/connectome.json'),manifest=require('../data/provenance.json');
+const F=require('../simulation.js'),V=require('../vehicle-992.js'),data=require('../data/connectome.json'),manifest=require('../data/provenance.json');
 const track=F.makeTrack(),graph=F.compileGraph(data);
 const {fixture}=require('./fixtures/reward-rollout.cjs');
 const near=(a,b,epsilon=1e-8)=>assert.ok(Math.abs(a-b)<epsilon,`${a} != ${b}`);
@@ -25,6 +25,17 @@ test('Official subset: size, unique IDs, integer weights, checksum',()=>{
   assert.ok(data.edges.every(e=>Number.isInteger(e[2])&&e[2]>=5));
   const hash=crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname,'../data/connectome.json'))).digest('hex');
   assert.equal(hash,manifest.subsetSha256);
+});
+test('Fresh sessions use the measured 32% mutation default in engine and UI',()=>{
+  const sim=new F.Simulation(data,{population:4});
+  assert.equal(sim.mutation,.32);
+  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+  assert.match(html,/id="mutation-output">32% base/);
+  assert.match(html,/id="mutation-range"[^>]*value="32"/);
+  const desktopRuntime=fs.readFileSync(path.join(__dirname,'../desktop-runtime.js'),'utf8');
+  assert.match(desktopRuntime,/this\._mutation = options\.mutation \?\? \.32/);
+  const desktopEngine=fs.readFileSync(path.join(__dirname,'../../desktop/engine.cjs'),'utf8');
+  assert.match(desktopEngine,/rawOptions\.mutation \?\? \.32/);
 });
 test('All exported neurons have a real directed path to an output',()=>{
   const reachable=new Set(data.outputIndices);let size;
@@ -85,6 +96,24 @@ test('Real ray intersection and changed heading/position change sensor distances
   const car=F.makeCar(track),before=F.sense(track,car);car.heading+=0.5;
   assert.notDeepEqual(F.sense(track,car),before);assert.ok(before.every(v=>v>0&&v<=1));
 });
+test('Road sensors measure Porsche body clearance against the collision walls',()=>{
+  const t=V.configureTrack(F.makeTrack([[0,0],[0,100],[100,100],[100,0]],5,true), 'lab'),car=F.makeCar(t);
+  Object.assign(car,{x:50,y:98,heading:0,footprintSensorsEnabled:true});
+  assert.equal(F.onRoad(t,car.x,car.y),true);assert.equal(F.collided(t,car),false);
+  const sensors=F.roadSense(t,car),centreForward=F.raycast(t,car.x,car.y,car.heading),frontX=car.x+V.SPEC.lengthM/2,
+    frontY=car.y,frontClearance=F.raycast(t,frontX,frontY,car.heading);
+  near(sensors[2],frontClearance/F.SENSOR_MAX);assert.ok(sensors[2]<centreForward/F.SENSOR_MAX);
+  Object.assign(car,{y:97});
+  assert.equal(F.onRoad(t,car.x,car.y),true,'the car centre remains on the road');
+  assert.equal(F.collided(t,car),true,'the Porsche footprint crosses the physical wall');
+  const edgeSensors=F.roadSense(t,car);
+  assert.ok(edgeSensors[0]>.9,'the left/right body-clearance sensor reports the exposed side');
+});
+test('Footprint-clearance sensory migration is opt-in for V3 until other models are verified',()=>{
+  const Legacy=require('../legacy-models.js'),v2=new F.Simulation(Legacy.buildV2(data),{population:1,mutation:0}),
+    v3=new F.Simulation(Legacy.tagV3(JSON.parse(JSON.stringify(data))),{population:1,mutation:0});
+  assert.equal(v2.cars[0].footprintSensorsEnabled,false);assert.equal(v3.cars[0].footprintSensorsEnabled,true);
+});
 test('Brakes reduce speed; cannot force reverse',()=>{
   const car=F.makeCar(track);car.speed=100/3.6;F.drive(track,car,[0,0,1]);assert.ok(car.speed<100/3.6);
   for(let i=0;i<360;i++)F.drive(track,car,[0,0,1]);assert.equal(car.speed,0);assert.ok(car.longitudinalVelocity>=0);
@@ -110,25 +139,276 @@ test('Neural motor logits launch a fresh population without overlapping pedals',
   assert.ok(forward[1]>0&&forward[2]===0);assert.ok(reverse[1]===0&&reverse[2]>0);
   assert.ok(forward[1]>=F.NEURAL_MOTOR_LAUNCH_BIAS);assert.ok(reverse[2]>0);
 });
+test('Policy readout receives the track launch bias but still needs an active MaleCNS signal',()=>{
+  const sim=new F.Simulation(require('../data/connectome.json'),{population:1}),car=sim.cars[0],p=sim.graph.learning;
+  const genome=F.cloneGenome(car.genome),brain=F.makeBrain(sim.graph);genome.policyWeights.fill(0);
+  const node=p.nodes[0];brain.activity[node]=1;
+  const wide=F.neuralOutputsFromBrain(sim.graph,brain,genome,F.NEURAL_MOTOR_LAUNCH_BIAS);
+  const narrow=F.neuralOutputsFromBrain(sim.graph,brain,genome,F.MAP_NEURAL_MOTOR_LAUNCH_BIAS);
+  assert.deepEqual(wide,[0,F.NEURAL_MOTOR_LAUNCH_BIAS,0]);
+  assert.deepEqual(narrow,[0,F.MAP_NEURAL_MOTOR_LAUNCH_BIAS,0]);
+  genome.policyWeights[genome.policyWeights.length-1]=-1;
+  const neuralBrake=F.neuralOutputsFromBrain(sim.graph,brain,genome,F.NEURAL_MOTOR_LAUNCH_BIAS);
+  assert.equal(neuralBrake[1],0);assert.ok(neuralBrake[2]>0);
+  brain.activity.fill(0);
+  assert.deepEqual(F.neuralOutputsFromBrain(sim.graph,brain,genome,F.NEURAL_MOTOR_LAUNCH_BIAS),[0,0,0]);
+});
+test('Track launch bias helps a stopped active policy and is removed once it is moving',()=>{
+  const sim=new F.Simulation(require('../data/connectome.json'),{population:1,circuitId:'monza',circuits:require('../data/circuits.json')}),p=sim.graph.learning,genome=F.cloneGenome(sim.cars[0].genome);
+  genome.policyWeights.fill(0);
+  const outputAtSpeed=speedMps=>{const brain=F.makeBrain(sim.graph);brain.activity[p.nodes[0]]=1;return F.neuralStepForTrack(sim.track,sim.graph,brain,genome,[],true,true,speedMps);};
+  assert.deepEqual(outputAtSpeed(0),[0,F.MAP_NEURAL_MOTOR_LAUNCH_BIAS,0]);
+  assert.deepEqual(outputAtSpeed(2.01),[0,0,0]);
+  genome.policyWeights[genome.policyWeights.length-1]=-1;
+  const stoppedBrake=outputAtSpeed(0)[2],movingBrake=outputAtSpeed(2.01)[2];
+  assert.ok(stoppedBrake>0&&movingBrake>stoppedBrake,'launch bias must not cancel an active brake, especially while moving');
+});
 test('Imported champion is carried into the next generation',()=>{
   const sim=new F.Simulation(data,{population:3}),champion=F.cloneGenome(sim.cars[1].genome);
   sim.adoptChampion(champion);sim.evolve();
   assert.deepEqual(sim.cars[1].genome,champion);
 });
-test('Raw progress remains observable but does not override penalized fitness elites',()=>{
-  const sim=new F.Simulation(data,{population:4,mutation:.12});
+test('Learning ranking puts a safe rollout ahead of a farther, faster-scoring crash',()=>{
+  const crash={fitness:1e6,bestProgress:9000,laps:2,bestLapTime:100,reason:'urto'},safe={fitness:-100,bestProgress:900,laps:0,bestLapTime:Infinity,reason:'ferma / senza progresso'};
+  assert.ok(F.compareLearningAgents(safe,crash)<0);
+  assert.ok(F.compareLearningAgents({fitness:-100,laps:2,bestLapTime:900,bestProgress:2000,reason:'limite 2 giri'},{fitness:100,laps:1,bestLapTime:300,bestProgress:5000,reason:'ferma / senza progresso'})<0,'safe lap completion count leads over fewer laps');
+  assert.ok(F.compareLearningAgents({fitness:-5000,laps:0,bestProgress:733},{fitness:0,laps:0,bestProgress:21})<0,'the safe no-lap frontier must not be replaced by a stalled near-start policy');
+  assert.ok(F.compareLearningAgents({fitness:100,laps:1,bestLapTime:700,bestProgress:500,reason:'ferma / senza progresso'},{fitness:100,laps:1,bestLapTime:800,bestProgress:1000,reason:'ferma / senza progresso'})<0);
+  assert.equal(F.isSafeLearningOutcome({reason:'',rewardBreakdown:{penalties:{collision:1}}}),false);
+});
+test('A farther collision stays in raw metrics but cannot advance safe learning or parent selection',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12});
   const winner=sim.cars[0],progressLeader=sim.cars[2];
-  for(const car of sim.cars) {car.reward=0;car.penalty=900;car.fitness=-900;car.bestProgress=0;car.alive=false;car.reason='test';car.laps=1;}
-  winner.reward=300;winner.penalty=100;winner.fitness=200;winner.bestProgress=40;
-  sim.cars[1].reward=100;sim.cars[1].penalty=100;sim.cars[1].fitness=0;
-  progressLeader.reward=80;progressLeader.penalty=900;progressLeader.fitness=-820;progressLeader.bestProgress=420;
-  sim.history.push({bestProgress:420,bestLapTime:null});sim.stagnation=1;
+  const scored=(car,fitness,bestProgress,reason)=>{
+    Object.assign(car.rewardBreakdown.rewards,{progress:5000,checkpoints:500,lap:8000});
+    Object.assign(car.rewardBreakdown.penalties,{risk:13500-fitness});
+    car.reward=13500;car.penalty=13500-fitness;car.fitness=fitness;car.bestProgress=bestProgress;car.laps=1;
+    car.lapTimes=[742.55];car.bestLapTime=742.55;car.rewardState.finalized=true;car.alive=false;car.reason=reason;
+  };
+  scored(winner,4061.7051939257017,6599.861744225725,'ferma / senza progresso');
+  for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],i===1||i===3||i===4?3000:2000,1000,'ferma / senza progresso');
+  scored(progressLeader,2249.107351357816,6620.4711111128945,'urto');
+  sim.safeLearningFrontier={progress:6599.861744225725,laps:1,lapTime:742.55};
+  const ranked=sim.cars.slice().sort(F.compareAgents);
+  assert.equal(ranked.indexOf(progressLeader),4);
+  assert.ok(ranked.slice(0,6).includes(progressLeader),'candidate is inside the broad parent pool');
+  assert.ok(!ranked.slice(0,4).includes(progressLeader),'candidate is outside the actual policy mutation elite');
+  sim.history.push({bestProgress:6599.861744225725,bestLapTime:742.55});
   sim.evolve();
-  assert.equal(sim.history.at(-1).best,200);
-  assert.equal(sim.history.at(-1).bestProgress,420);
+  assert.equal(sim.history.at(-1).best,4061.7051939257017);
+  assert.equal(sim.history.at(-1).bestProgress,6620.4711111128945);
+  assert.equal(sim.learningFrontier.progress,6620.4711111128945,'the raw physical maximum remains visible');
+  assert.equal(sim.safeLearningFrontier.progress,6599.861744225725,'the crash does not rewrite the clean frontier');
+  assert.equal(sim.stagnation,1,'a crash cannot reset the safe-progress stagnation clock');
   assert.deepEqual(sim.cars[0].genome,winner.genome);
-  assert.notDeepEqual(sim.cars[1].genome,progressLeader.genome);
-  assert.equal(sim.history.at(-1).meanProgress,(40+420+0+0)/4);
+  assert.notDeepEqual(sim.champion,progressLeader.genome,'the crash cannot replace the safe champion');
+  assert.equal(sim.lastFrontierOffspringCount,0,'unsafe progress is not a mutation lineage');
+  assert.ok(!sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(progressLeader.genome)),'the crashed candidate is not carried into the next population');
+  near(sim.history.at(-1).meanProgress,(6599.861744225725+6620.4711111128945+14*1000)/16);
+});
+test('Research V3 risk repair mutates a near-frontier crash seed without retaining or promoting the unsafe genome',()=>{
+  const Legacy=require('../legacy-models.js'),v3=Legacy.tagV3(JSON.parse(JSON.stringify(data)));
+  const ordinary=new F.Simulation(v3,{population:4}),highDose=new F.Simulation(v3,{population:4,riskRepairEnabled:true,riskRepairOffspringRate:.18});
+  assert.equal(ordinary.riskRepairEnabled,false,'risk repair is off in ordinary app sessions');assert.equal(ordinary.riskRepairOffspringRate,.06);
+  assert.equal(highDose.riskRepairOffspringRate,.18,'headless experiments can vary only the reserved mutation branch');
+  const sim=new F.Simulation(v3,{population:16,mutation:.12,riskRepairEnabled:true}),unsafe=sim.cars[2],unsafeGenome=JSON.stringify(unsafe.genome);
+  const scored=(car,fitness,bestProgress,reason)=>{
+    car.fitness=fitness;car.reward=fitness;car.penalty=reason==='urto'?100:0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardState.finalized=true;car.alive=false;car.reason=reason;
+    if(reason==='urto')car.rewardBreakdown.penalties.collision=100;
+  };
+  scored(sim.cars[0],200,100,'ferma / senza progresso');
+  scored(sim.cars[1],190,120,'ferma / senza progresso');
+  for(let i=3;i<sim.cars.length;i++)scored(sim.cars[i],50-i,10,'ferma / senza progresso');
+  scored(unsafe,150,125,'urto');
+  sim.safeLearningFrontier={progress:120,laps:0,lapTime:null};sim.learningFrontier={progress:125,laps:0,lapTime:null};sim.stagnation=6;
+  sim.evolve();
+  assert.equal(sim.lastRiskRepairOffspringCount,1,'a small branch is reserved for repair offspring');
+  assert.equal(sim.lastRiskRepairParentProgress,125);
+  assert.equal(sim.safeLearningFrontier.progress,120,'unsafe progress does not move the safe frontier');
+  assert.equal(sim.champion&&F.isSafeLearningOutcome(sim.championStats),true,'unsafe policies cannot become champion');
+  assert.ok(!sim.cars.some(car=>JSON.stringify(car.genome)===unsafeGenome),'the crashed genome is never copied forward unchanged');
+  assert.equal(sim.lastFrontierDiagnostics.riskRepairOffspringCount,1);
+});
+test('Crash trials reach only the negative optimizer feedback, never safe generation selection',()=>{
+  const sim=new F.Simulation(require('../legacy-models.js').buildV2(data),{population:8,mutation:.16}),safe=sim.cars.slice(0,4),crashed=sim.cars.slice(4),observed={all:0,unsafe:0};
+  for(const [i,car] of safe.entries()){
+    car.alive=false;car.reason='ferma / senza progresso';car.rewardState.finalized=true;car.bestProgress=700+i*100;car.fitness=100+i;
+  }
+  for(const [i,car] of crashed.entries()){
+    car.alive=false;car.reason='urto';car.rewardState.finalized=true;car.rewardBreakdown.penalties.collision=900;car.bestProgress=1100+i*100;car.fitness=1000+i;
+  }
+  const crashedGenomes=new Set(crashed.map(car=>JSON.stringify(car.genome))),originalUpdate=sim.optimizer.update.bind(sim.optimizer);
+  sim.optimizer.update=(ranked,compare)=>{observed.all=ranked.length;observed.unsafe=ranked.filter(car=>!F.isSafeLearningOutcome(car)).length;return originalUpdate(ranked,compare);};
+  sim.evolve();
+  assert.deepEqual(observed,{all:8,unsafe:4});
+  assert.ok(sim.champion&&F.isSafeLearningOutcome(safe.sort(F.compareLearningAgents)[0]),'champion remains from a safe outcome');
+  assert.ok(!sim.cars.some(car=>crashedGenomes.has(JSON.stringify(car.genome))),'crashed genomes are never copied as parents');
+});
+test('A safe physical leader seeds learning even with a slightly lower reward',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],leader=sim.cars[2];
+  const scored=(car,fitness,bestProgress)=>{
+    car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.rewardBreakdown.rewards.progress=fitness;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
+  };
+  scored(winner,100,6599.8617);
+  for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],i===1||i===3||i===4?80:20,1000);
+  scored(leader,50,6600.23);
+  assert.ok(leader.bestProgress-winner.bestProgress<1);
+  const ranked=sim.cars.slice().sort(F.compareAgents);
+  assert.equal(ranked.indexOf(leader),4);
+  sim.evolve();
+  assert.equal(sim.history.at(-1).best,100,'fitness champion remains authoritative');
+  assert.deepEqual(sim.cars[0].genome,leader.genome,'the furthest safe no-lap policy seeds the next learning generation');
+  assert.deepEqual(sim.champion,winner.genome,'the best safe-fitness champion remains protected');
+});
+test('Safe archive preserves progress, lap-count and fastest-lap frontiers outside the fitness top four',()=>{
+  const sim=new F.Simulation(data,{population:8,mutation:.12}),genomes=sim.cars.map(car=>JSON.stringify(car.genome));
+  const rows=[
+    {fitness:1000,progress:100,laps:0,times:[]},
+    {fitness:900,progress:200,laps:0,times:[]},
+    {fitness:800,progress:300,laps:0,times:[]},
+    {fitness:700,progress:400,laps:0,times:[]},
+    {fitness:600,progress:1000,laps:0,times:[]},
+    {fitness:500,progress:700,laps:2,times:[110,100]},
+    {fitness:400,progress:600,laps:1,times:[80]},
+    {fitness:300,progress:500,laps:0,times:[]}
+  ];
+  sim.cars.forEach((car,i)=>{const row=rows[i];car.bestProgress=row.progress;car.laps=row.laps;car.lapTimes=row.times.slice();car.bestLapTime=row.times.length?Math.min(...row.times):Infinity;
+    car.fitness=row.fitness;car.reward=row.fitness;car.penalty=0;car.baseFitness=row.fitness;car.rewardBreakdown.rewards.progress=row.fitness;
+    car.rewardState.finalized=true;car.alive=false;car.reason=row.laps>=2?'limite 2 giri':'ferma / senza progresso';});
+  sim.evolve();
+  const archived=sim.hallOfFame.map(entry=>genomes.indexOf(JSON.stringify(entry.genome)));
+  assert.equal(sim.hallOfFame.length,4);
+  assert.ok(archived.includes(0),'fitness champion remains archived');
+  assert.ok(archived.includes(4),'highest safe progress survives even outside the fitness top four');
+  assert.ok(archived.includes(5),'maximum completed laps survive in the safe archive');
+  assert.ok(archived.includes(6),'fastest safe lap survives in the safe archive');
+  assert.deepEqual(sim.safeLearningFrontier,{progress:1000,laps:2,lapTime:80});
+});
+test('Prolonged stagnation breeds from and preserves the best archived safe-progress lineage',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],liveLeader=sim.cars[2];
+  const archivedGenome=F.cloneGenome(sim.cars[15].genome);archivedGenome.encoder[0]+=.01;
+  const scored=(car,fitness,bestProgress)=>{
+    car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardBreakdown.rewards.progress=fitness;car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
+  };
+  scored(winner,100,150);
+  for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],80-i,100+i);
+  scored(liveLeader,50,700);liveLeader.speed=0;liveLeader.outputs=[.0206,0,.2541];
+  sim.hallOfFame=[{genome:archivedGenome,fitness:10,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
+  sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};
+  sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+  sim.evolve();
+  assert.equal(sim.safeLearningFrontier.progress,900,'an unevaluated safe archive lineage remains authoritative frontier evidence');
+  assert.equal(sim.lastFrontierDiagnostics.frontierParentSource,'hall-of-fame');
+  assert.equal(sim.lastFrontierDiagnostics.frontierParentProgress,900);
+  assert.equal(sim.lastFrontierDiagnostics.frontierMutationFocus,'longitudinal','a stopped no-gas leader explores throttle/brake while preserving its steering response');
+  assert.ok(sim.lastFrontierOffspringCount>0,'the archived safe controller is explored with mutations');
+  assert.ok(sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(archivedGenome)),'the archive controller remains available for future generations');
+  assert.deepEqual(sim.cars[0].genome,liveLeader.genome,'the furthest safe no-lap rollout remains the learning seed');
+});
+test('Replayed archive genomes replace stale progress and unsafe lineages are removed',()=>{
+  for(const replaySafe of [true,false]){
+    const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],leader=sim.cars[2],archivedCar=sim.cars[15];
+    const archivedGenome=F.cloneGenome(archivedCar.genome);
+    const scored=(car,fitness,bestProgress,reason='ferma / senza progresso')=>{
+      car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+      car.rewardBreakdown.rewards.progress=fitness;car.rewardState.finalized=true;car.alive=false;car.reason=reason;
+    };
+    scored(winner,100,150);scored(leader,80,700);
+    for(let i=1;i<sim.cars.length;i++)if(i!==2&&i!==15)scored(sim.cars[i],20-i,100+i);
+    scored(archivedCar,replaySafe?95:-100,200,replaySafe?'ferma / senza progresso':'urto');
+    sim.hallOfFame=[{genome:archivedGenome,fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
+    sim.champion=F.cloneGenome(archivedGenome);sim.championStats={fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity};sim.bestEver=1000;
+    sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};
+    sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+    sim.evolve();
+    const refreshed=sim.hallOfFame.find(entry=>JSON.stringify(entry.genome)===JSON.stringify(archivedGenome));
+    if(replaySafe){
+      assert.ok(refreshed,'a safe replay remains available in the archive');
+      assert.equal(refreshed.bestProgress,200,'current physical progress replaces the stale 900 m record');
+    }else assert.equal(refreshed,undefined,'a current collision invalidates the old safe archive entry');
+    assert.ok(sim.championStats.fitness<1000,'a re-evaluated champion cannot retain its stale score');
+    assert.equal(sim.bestEver,sim.championStats.fitness,'the visible best score follows the re-evaluated safe champion');
+    assert.equal(sim.safeLearningFrontier.progress,700,'re-evaluated historical scores are replaced by the current safe population frontier');
+    assert.deepEqual(sim.safeLearningFrontier,{progress:700,laps:0,lapTime:null});
+    assert.equal(sim.stagnation,F.EVOLUTION_RULES.prolongedStagnationWindow+1,'no progress against the real historical record remains stagnant');
+    assert.notEqual(sim.lastFrontierDiagnostics.frontierParentSource,'hall-of-fame','an evaluated stale genome cannot become the special parent');
+  }
+});
+test('Evolution preserves a live practice snapshot and never fabricates one from a stopped car',()=>{
+  const sim=new F.Simulation(data,{population:8,mutation:0}),cars=sim.cars.slice();
+  cars.forEach((car,index)=>{
+    car.bestProgress=550+index*10;car.laps=0;car.bestLapTime=Infinity;car.fitness=car.baseFitness=car.reward=car.bestProgress;car.penalty=0;
+    car.rewardBreakdown.rewards.progress=car.bestProgress;car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
+  });
+  sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};sim.stagnation=12;
+  const actualElite=cars.slice().sort(F.compareLearningAgents)[0];
+  const movingSpeed=2.5*(actualElite.pixelsPerMeter||1);
+  actualElite.speed=movingSpeed;actualElite.vehicle.u=movingSpeed;actualElite.brain.activity.fill(.17);
+  const liveSnapshot=F.capturePracticeState(actualElite);liveSnapshot.bestProgress=actualElite.bestProgress;actualElite.practiceState=liveSnapshot;
+  V.stop(actualElite);
+  sim.evolve();
+  assert.strictEqual(actualElite.practiceState,liveSnapshot,'generation completion preserves the last observed moving state');
+  assert.ok(actualElite.practiceState.activity instanceof Float64Array);
+  assert.equal(actualElite.practiceState.speed,movingSpeed,'practice retains the observed speed from before parking');
+  assert.equal(actualElite.speed,0,'the completed episode remains physically parked');
+  assert.ok(cars.filter(car=>car!==actualElite).every(car=>!car.practiceState),'terminal cars without a live sample do not receive a fabricated practice state');
+});
+test('An all-crash generation cannot advance safe progress or create a crash-parent branch',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],leader=sim.cars[2];
+  const scored=(car,fitness,bestProgress)=>{
+    car.fitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardState.finalized=true;car.alive=false;car.reason='urto';
+  };
+  scored(winner,100,100);
+  for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],i===1||i===3||i===4?80:20,10);
+  scored(leader,50,120);
+  sim.learningFrontier={progress:120,laps:0,lapTime:null};sim.stagnation=F.EVOLUTION_RULES.stagnationWindow;
+  sim.safeLearningFrontier={progress:120,laps:0,lapTime:null};
+  sim.evolve();
+  assert.equal(sim.history.at(-1).best,100,'the fitness champion remains separately reported');
+  assert.equal(sim.safeLearningFrontier.progress,120,'unsafe progress does not replace the clean frontier');
+  assert.equal(sim.stagnation,F.EVOLUTION_RULES.stagnationWindow+1,'all-crash generations count as stagnant');
+  assert.equal(sim.lastFrontierOffspringCount,0,'all-crash batches restart exploration without selecting a crash parent');
+  assert.ok(!sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(leader.genome)));
+  assert.equal(F.EVOLUTION_RULES.frontierOffspringRate,.25);
+  assert.equal(F.EVOLUTION_RULES.stagnantFrontierOffspringRate,.25);
+});
+test('An all-crash generation preserves the clean checkpoint and restarts mutated candidates',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0];
+  const scored=(car,fitness,bestProgress)=>{
+    car.fitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardState.finalized=true;car.alive=false;car.reason='urto';
+  };
+  scored(winner,100,120);
+  for(let i=1;i<sim.cars.length;i++)scored(sim.cars[i],80-i,10);
+  sim.learningFrontier={progress:120,laps:0,lapTime:null};sim.stagnation=F.EVOLUTION_RULES.stagnationWindow;
+  sim.safeLearningFrontier={progress:120,laps:0,lapTime:null};
+  sim.evolve();
+  assert.equal(sim.history.at(-1).best,100,'the current fitness champion remains protected');
+  assert.equal(sim.lastFrontierOffspringCount,0,'the crashed leader does not become a special offspring branch');
+  assert.equal(sim.safeLearningFrontier.progress,120);
+  assert.ok(!sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(winner.genome)),'no crash policy is copied forward');
+});
+test('Prolonged stagnation widens mutation and assigns half the population to the physical frontier',()=>{
+  const legacy=require('../legacy-models.js');
+  for(const modelData of [legacy.buildV2(data),data]){
+    const sim=new F.Simulation(modelData,{population:16,mutation:.12}),winner=sim.cars[0];
+    const scored=(car,fitness,bestProgress)=>{
+      car.fitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+      car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
+    };
+    scored(winner,100,120);
+    for(let i=1;i<sim.cars.length;i++)scored(sim.cars[i],80-i,10);
+    sim.learningFrontier={progress:120,laps:0,lapTime:null};sim.safeLearningFrontier={progress:120,laps:0,lapTime:null};sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow-1;
+    sim.evolve();
+    assert.equal(sim.history.at(-1).stagnation,F.EVOLUTION_RULES.prolongedStagnationWindow,sim.modelId);
+    near(sim.history.at(-1).mutationAmount,.24);
+    assert.equal(sim.lastFrontierOffspringCount,8,`${sim.modelId}: half of a 16-car population explores the measured frontier after six stagnant generations`);
+    assert.deepEqual(sim.cars[0].genome,winner.genome,`${sim.modelId}: the fitness champion remains protected`);
+  }
 });
 test('Genome crossover preserves valid adapter shapes',()=>{
   const a={encoder:[1,2,3],readout:[4,5,6],gain:1},b={encoder:[7,8,9],readout:[10,11,12],gain:2};
@@ -136,6 +416,24 @@ test('Genome crossover preserves valid adapter shapes',()=>{
   assert.equal(child.encoder.length,3);assert.equal(child.readout.length,3);assert.ok(child.gain===1||child.gain===2);
   assert.ok(child.encoder.every(value=>a.encoder.includes(value)||b.encoder.includes(value)));
   assert.ok(child.readout.every(value=>a.readout.includes(value)||b.readout.includes(value)));
+});
+test('Functional policy crossover keeps each sensor and action block intact',()=>{
+  const sim=new F.Simulation(data,{population:4}),a=F.cloneGenome(sim.cars[0].genome),b=F.cloneGenome(sim.cars[1].genome),policy=sim.graph.learning;
+  a.policyWeights.fill(1);b.policyWeights.fill(-1);
+  const draws=[.1,.9,.1,.9,.1],child=F.crossoverPolicyBlocks(sim.graph,a,b,()=>draws.shift());
+  assert.equal(F.EVOLUTION_RULES.functionalCrossoverRate,.5);
+  assert.equal(child.policyWeights.length,policy.length);
+  assert.ok(child.policyWeights.every(value=>Number.isFinite(value)&&Math.abs(value)<=8));
+  assert.ok(child.policyWeights.slice(0,F.SENSOR_COUNT).every(value=>value===1),'sensor gains come from one parent as a complete block');
+  assert.ok(child.policyWeights.slice(F.SENSOR_COUNT,F.SENSOR_COUNT*2).every(value=>value===-1),'sensor biases come from one parent as a complete block');
+  assert.ok(child.policyWeights.slice(F.SENSOR_COUNT*2,policy.readoutOffset).every(value=>value===1),'synaptic gains come from one parent as a complete block');
+  for(let j=0;j<policy.nodes.length;j++){
+    assert.equal(child.policyWeights[policy.readoutOffset+j*2],-1,'steering weights stay grouped');
+    assert.equal(child.policyWeights[policy.readoutOffset+j*2+1],1,'longitudinal weights stay grouped');
+  }
+  assert.equal(child.policyWeights.at(-2),-1,'steering bias stays with steering weights');
+  assert.equal(child.policyWeights.at(-1),1,'longitudinal bias stays with longitudinal weights');
+  assert.deepEqual(draws,[],'each functional block makes exactly one parent choice');
 });
 test('Dynamic vehicle physics exposes inertia, slip and G forces',()=>{
   const car=F.makeCar(track);for(let i=0;i<60;i++)F.drive(track,car,[0,.8,0]);
@@ -230,12 +528,15 @@ test('Generations have no automatic simulation-time limit',()=>{
   assert.equal('maxSeconds' in sim,false);assert.equal(sim.generation,1);assert.ok(sim.elapsed>60);assert.equal(sim.cars[0].alive,true);
 });
 test('Reward-trained recurrent V2 learns from a cold start without modifying anatomical topology',()=>{
-  const compact=require('../legacy-models.js').buildV2(data),original=JSON.stringify(compact.edges),sim=new F.Simulation(compact,{population:32,mutation:.16});
-  for(let i=0;i<12;i++){const generation=sim.generation;let ticks=0;while(sim.generation===generation&&ticks++<14000)sim.tick();assert.ok(sim.generation>generation,'natural generation must finish');}
+  const compact=require('../legacy-models.js').buildV2(data),original=JSON.stringify(compact.edges),sim=new F.Simulation(compact,{population:32,mutation:.32});
+  let practiceEpisodes=0;const safeProgressByGeneration=[],evolve=sim.evolve.bind(sim);
+  sim.evolve=function(){const safe=this.cars.filter(F.isSafeLearningOutcome);safeProgressByGeneration.push(Math.max(0,...safe.map(car=>car.bestProgress)));return evolve();};
+  for(let i=0;i<12;i++){const generation=sim.generation;let ticks=0;while(sim.generation===generation&&ticks++<14000)sim.tick();assert.ok(sim.generation>generation,'natural generation must finish');practiceEpisodes+=sim.practiceEvaluations||0;assert.ok((sim.practiceEvaluations||0)<=32);}
   assert.equal(sim.history.length,12);
   assert.equal(sim.history[0].laps,0);
-  assert.ok(sim.history.at(-1).bestProgress>sim.history[0].bestProgress*2);
-  assert.equal(sim.optimizer.updates,12);assert.equal(sim.optimizer.episodes,384);
+  console.log('RL_TEST_BENCHMARK',JSON.stringify({model:'v2',seed:sim.seed,mutation:sim.mutation,generation1RawProgress:sim.history[0].bestProgress,generation12RawProgress:sim.history.at(-1).bestProgress,generation1SafeProgress:safeProgressByGeneration[0],generation12SafeProgress:safeProgressByGeneration.at(-1),episodes:sim.optimizer.episodes,warmStart:false}));
+  assert.ok(safeProgressByGeneration.at(-1)>safeProgressByGeneration[0]*2,
+    `safe progress did not double: seed=${sim.seed}, first=${safeProgressByGeneration[0]}, final=${safeProgressByGeneration.at(-1)}`);
+  assert.equal(sim.optimizer.updates,12);assert.ok(sim.optimizer.episodes>=24+practiceEpisodes);assert.ok(sim.optimizer.episodes<=384+practiceEpisodes,'ranked generation outcomes and bounded practice episodes feed the optimizer; only safe rollouts can be selected as parents');
   assert.equal(JSON.stringify(compact.edges),original);
-  console.log('RL_TEST_BENCHMARK',JSON.stringify({model:'v2',seed:sim.seed,generation1Progress:sim.history[0].bestProgress,generation12Progress:sim.history.at(-1).bestProgress,episodes:sim.optimizer.episodes,warmStart:false}));
 });

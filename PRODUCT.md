@@ -1,6 +1,80 @@
 # Product
 
-## Estensione corrente: alberi forniti e case Sketchfab, Windows 5.4.0
+## Interfaccia corrente in sviluppo: sessione Windows 5.6.0 — 13 ottobre 2026
+
+L'autore richiede un redesign, sceglie circuito grande e telemetria auto in primo
+piano, con configurazione e test separati, poi indica un'anteprima chiara come
+design da applicare. Dopo la revisione della vera app approva esplicitamente:
+«Approvo questa UI reale; l’immagine resta un riferimento visivo».
+
+La nuova superficie usa pannelli bianchi, testo e intestazioni navy, azioni
+rosse e indicatore generazione viola. Configurazione a sinistra, circuito
+interattivo grande, stato / storico / auto sotto. Navigazione diretta Sessione,
+Confronto modelli, Cervello 3D e Affiancati; il confronto apre il pannello, senza
+avviare una prova. Mappe 2D/3D, Segui auto/Panoramica/Prima persona, selezione automatica,
+diagnostici, sensori, crediti e salvataggi restano funzionali. Lo storico mostra
+generazioni realmente registrate, non dati illustrativi. Il redesign ricompone
+i controlli esistenti: non cambia solver, fisica, ricompense, anatomia o policy.
+
+La copia Windows di prova corrente, con entrambi i temi e la prima persona, è in
+`dist-first-person-dev-560/win-unpacked`; le precedenti copie in
+`dist-ui-theme-dev-560/win-unpacked` e
+`dist-ui-redesign-dev-560/win-unpacked` sono conservate. I launcher
+`Avvia-interfaccia-dev.cmd` / `.ps1` aprono la copia corrente con un profilo
+locale separato, `.impeccable/development-ui-profile`.
+Numero app e vincolo dei salvataggi restano 5.6.0. Nessuna nuova versione,
+pubblicazione, sostituzione del portable/installer o tag. La distribuzione
+pubblicata rimane precedente al redesign finché l'autore non chiede una release.
+
+Il sistema visuale sostituisce quello scuro in [DESIGN.md](DESIGN.md) e nel suo
+sidecar; la documentazione storica sotto rimane come storia, non come guida del
+tema corrente. [Guida di avvio e verifiche](docs/INTERFACCIA-DEV.md). L'approvazione
+del riferimento non certifica identità pixel per pixel o migliore convergenza.
+
+### Allineamento e prima persona — 13 ottobre 2026
+
+L'autore chiede di allineare circuito e cervello e aggiungere la prima persona
+sull'auto selezionata. In Affiancati, da 1191px, i pannelli condividono bordi
+superiore/inferiore e origine dei titoli; il canvas reale occupa lo spazio
+residuo, conservando i controlli. A 1190px e sotto resta l'impilamento.
+
+Il selettore nativo Camera del circuito aggiunge «Prima persona · auto
+selezionata» e apre il 3D anche dalla mappa 2D. Il punto occhi segue la
+carrozzeria e il riferimento del terreno della vettura osservata; trascinamento
+e frecce muovono lo sguardo, rotella/pizzico/zoom variano il campo visivo
+fra 40° e 95°. Centra/Home ripristina sguardo frontale e 70° restando in prima
+persona. Nome e descrizioni accessibili seguono modalità e auto selezionata;
+le altre viste ripristinano le proprie istruzioni.
+
+Punto occhi stimato e plancia/volante geometrici originali: non sono dati CAD
+o l'abitacolo Porsche originale. GLB esterno e texture restano identici.
+Soltanto in questa camera vengono omessi dal disegno l'esterno scelto e quelli
+che racchiudono il punto occhi, con anello di selezione, raggi e marker;
+popolazione, sensori fisici, rete, ricompense e progressi restano invariati.
+È un'estensione del sistema approvato, seed `58a4bd19`, con versione app e
+salvataggi 5.6.0. Fonti: [layout](outputs/styles.css),
+[controlli e accessibilità](outputs/app.js), [camera](outputs/circuit-3d.mjs),
+[geometria originale](outputs/car-3d.mjs) e [GLB esterno](outputs/supplied-car-3d.mjs).
+Guida operativa e verifiche: [INTERFACCIA-DEV.md](docs/INTERFACCIA-DEV.md);
+confronti documentali: `.impeccable/review/first-person/documenter.md`.
+
+### Tema corrente: variante scura opzionale — 13 ottobre 2026
+
+Dopo l'approvazione della UI reale chiara, l'autore chiede «aggiungi una modalita
+scura». Il bottone «Scuro», con luna SVG e `aria-pressed`, seleziona la variante
+scura della stessa interfaccia; il chiaro resta predefinito. Solo la preferenza
+locale `malecns-ui-theme` viene salvata e applicata prima del foglio di stile;
+se lo storage fallisce, la scelta funziona nella pagina corrente senza garanzia
+di persistenza. Nessuna modalità sistema/automatica. Type, spaziatura, forme,
+scena autentica e significato dei controlli sono condivisi. La richiesta supera
+il precedente divieto di chrome scuro soltanto per questa variante opzionale.
+Versione e vincolo dei salvataggi restano 5.6.0; build storiche e distribuzioni
+preservate, nessuna pubblicazione. Fonti: [stili](outputs/styles.css),
+[controller](outputs/ui-theme.js), [documento](outputs/index.html) e
+[ridisegno dello storico](outputs/app.js). Le evidenze pregresse e il perimetro
+documentale sono in `.impeccable/review/ui-theme/documenter.md`.
+
+## Estensione storica: alberi forniti e case Sketchfab, Windows 5.4.0
 
 L'utente fornisce il modello degli alberi e il suo link Sketchfab; chiede case
 scaricate dal medesimo sito per Monaco e Le Mans. Due mesh reali dello ZIP e
