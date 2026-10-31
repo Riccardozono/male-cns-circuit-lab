@@ -47,6 +47,7 @@ const allBenchmark = process.argv.includes('--benchmark-all');
 const benchmarkModelsArg = process.argv.find(argument => argument.startsWith('--benchmark-models='));
 const benchmarkCircuitsArg = process.argv.find(argument => argument.startsWith('--benchmark-circuits='));
 const benchmarkTimeoutArg = process.argv.find(argument => argument.startsWith('--benchmark-timeout-ms='));
+const benchmarkOutputArg = process.argv.find(argument => argument.startsWith('--benchmark-output-dir='));
 const benchmarkModels = benchmarkModelsArg ? benchmarkModelsArg.slice('--benchmark-models='.length).split(',').map(value => value.trim()).filter(Boolean) : ['v2', 'v3', 'v4', 'v5'];
 const benchmarkCircuits = benchmarkCircuitsArg ? benchmarkCircuitsArg.slice('--benchmark-circuits='.length).split(',').map(value => value.trim()).filter(Boolean) : ['lab', 'monza', 'monaco', 'le-mans'];
 const benchmarkTimeoutMs = benchmarkTimeoutArg ? Math.max(10000, Math.min(900000, Number(benchmarkTimeoutArg.slice('--benchmark-timeout-ms='.length)) || 180000)) : 180000;
@@ -186,7 +187,63 @@ function createWindow() {
     });
   }
   if (allBenchmark) {
-    mainWindow.webContents.on('console-message',details=>{if(details.message?.startsWith('BENCHMARK_CASE '))console.log(details.message);});
+    const benchmarkOutputDir = benchmarkOutputArg ? path.resolve(benchmarkOutputArg.slice('--benchmark-output-dir='.length)) : app.getPath('temp');
+    const benchmarkProgressPath = path.join(benchmarkOutputDir, 'male-cns-all-benchmark-progress.json');
+    const benchmarkReportPath = path.join(benchmarkOutputDir, 'male-cns-all-benchmark.json');
+    const benchmarkResults = [];
+    let activeBenchmarkCase = null;
+    let benchmarkCheckpointQueue = Promise.resolve();
+    const queueBenchmarkCheckpoint = (status = 'running', error = null, finalResult = null) => {
+      const results = finalResult?.results || benchmarkResults;
+      const report = {
+        ...(finalResult || {
+          schemaVersion: 1,
+          generatedAt: new Date().toISOString(),
+          benchmarkMode: 'Electron DesktopEngine + WebGPU/CPU fallback',
+          stoppingRule: 'stop each model/circuit case after the first agent completes at least one lap',
+          safetyGuard: `${benchmarkTimeoutMs / 1000} seconds wall time per case; not a simulated-time limit`,
+          configuration: {models: benchmarkModels, circuits: benchmarkCircuits, population: 16, mutation: .16, seed: 7717, speedMultiplier: 30, caseTimeoutMs: benchmarkTimeoutMs},
+          results
+        }),
+        status,
+        updatedAt: new Date().toISOString(),
+        activeCase: status === 'completed' ? null : activeBenchmarkCase,
+        summary: {
+          totalCases: benchmarkModels.length * benchmarkCircuits.length,
+          completedCases: results.length,
+          lapCases: results.filter(result => result.reachedOneLap).length,
+          pendingCases: Math.max(0, benchmarkModels.length * benchmarkCircuits.length - results.length)
+        }
+      };
+      if (error) report.error = String(error.stack || error.message || error);
+      const serialized = JSON.stringify(report, null, 2);
+      benchmarkCheckpointQueue = benchmarkCheckpointQueue.catch(() => {}).then(async () => {
+        await fs.mkdir(benchmarkOutputDir, {recursive: true});
+        await fs.writeFile(benchmarkProgressPath, serialized, 'utf8');
+      }).catch(writeError => console.error('DESKTOP_BENCHMARK_CHECKPOINT_ERROR ' + (writeError.stack || writeError.message)));
+      return benchmarkCheckpointQueue;
+    };
+    queueBenchmarkCheckpoint();
+    mainWindow.webContents.on('console-message', details => {
+      const message = details.message || '';
+      if (message.startsWith('BENCHMARK_CASE_START ')) {
+        try {
+          activeBenchmarkCase = JSON.parse(message.slice('BENCHMARK_CASE_START '.length));
+          queueBenchmarkCheckpoint();
+        } catch (error) {
+          console.error('DESKTOP_BENCHMARK_CASE_START_PARSE_ERROR ' + (error.stack || error.message));
+        }
+      } else if (message.startsWith('BENCHMARK_CASE ')) {
+        try {
+          benchmarkResults.push(JSON.parse(message.slice('BENCHMARK_CASE '.length)));
+          activeBenchmarkCase = null;
+          console.log(message);
+          queueBenchmarkCheckpoint();
+        } catch (error) {
+          console.error('DESKTOP_BENCHMARK_CASE_PARSE_ERROR ' + (error.stack || error.message));
+        }
+      }
+    });
     mainWindow.webContents.once('did-finish-load', () => {
       const probe = `(async () => {
         const models = ${JSON.stringify(benchmarkModels)};
@@ -234,7 +291,7 @@ function createWindow() {
           mutationControl.dispatchEvent(new Event('input', {bubbles: true}));
           if (Math.abs(Number(selectedSimulation?.mutation) - mutation) > 1e-9 || selectedSimulation?.seed !== seed) throw new Error('Seed o mutazione non applicati per ' + modelId);
         };
-        const selectCircuit = async circuitId => {
+        const selectCircuit = async (modelId, circuitId) => {
           dispatchChange('circuit-select', circuitId);
           const selected = await waitFor(() => currentSim()?.circuitId === circuitId, 5000);
           if (!selected) throw new Error('Timeout caricamento circuito ' + circuitId);
@@ -246,7 +303,7 @@ function createWindow() {
         };
         const runCase = async (modelId, circuitId) => {
           await selectModel(modelId);
-          await selectCircuit(circuitId);
+          await selectCircuit(modelId, circuitId);
           const sim = currentSim();
           const started = performance.now();
           let hit = null;
@@ -291,7 +348,12 @@ function createWindow() {
         if (!initialized) throw new Error('Timeout inizializzazione interfaccia benchmark.');
         const results = [];
         for (const modelId of models) {
-          for (const circuitId of circuits) {const result=await runCase(modelId,circuitId);results.push(result);console.log('BENCHMARK_CASE '+JSON.stringify(result));}
+          for (const circuitId of circuits) {
+            console.log('BENCHMARK_CASE_START '+JSON.stringify({modelId,circuitId,seed,mutation,population,speedMultiplier,caseTimeoutMs,startedAt:new Date().toISOString()}));
+            const result=await runCase(modelId,circuitId);
+            results.push(result);
+            console.log('BENCHMARK_CASE '+JSON.stringify(result));
+          }
         }
         const completedCases = results.filter(result => result.reachedOneLap).length;
         return {
@@ -307,9 +369,16 @@ function createWindow() {
       })()`;
       mainWindow.webContents.executeJavaScript(probe, true).then(result => {
         console.log('DESKTOP_BENCHMARK ' + JSON.stringify(result));
-        return fs.writeFile(path.join(app.getPath('temp'), 'male-cns-all-benchmark.json'), JSON.stringify(result, null, 2), 'utf8').then(() => result);
-      }).catch(error => {
+        return queueBenchmarkCheckpoint('completed', null, result).then(() => fs.mkdir(benchmarkOutputDir, {recursive: true})).then(() => fs.writeFile(benchmarkReportPath, JSON.stringify(result, null, 2), 'utf8')).then(() => result);
+      }).catch(async error => {
         console.error('DESKTOP_BENCHMARK_ERROR ' + (error.stack || error.message));
+        try {
+          await queueBenchmarkCheckpoint('failed', error);
+          await fs.mkdir(benchmarkOutputDir, {recursive: true});
+          await fs.writeFile(path.join(benchmarkOutputDir, 'male-cns-all-benchmark-error.json'), JSON.stringify({error: error.stack || error.message, activeCase: activeBenchmarkCase, completedCases: benchmarkResults}, null, 2), 'utf8');
+        } catch (reportError) {
+          console.error('DESKTOP_BENCHMARK_ERROR_REPORT_FAILED ' + (reportError.stack || reportError.message));
+        }
         app.exit(1);
       }).then(result => {
         if (result) app.exit(result.summary.completedCases === result.summary.totalCases ? 0 : 2);
