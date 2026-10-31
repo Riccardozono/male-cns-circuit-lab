@@ -356,7 +356,7 @@
     if(graph.full)throw Error('La pratica densa non può sostituire il solver completo GPU.');
     const rewardRevision=state.rewardRevision??Rewards.REVISION,car=makeCar(track,0,cloneGenome(genome),rewardRevision);
     Object.assign(car,{x:state.x,y:state.y,heading:state.heading,speed:state.speed,_physicsSpeed:state.speed},state.physics);
-    car.footprintSensorsEnabled=state.footprintSensorsEnabled??graph.modelId==='v3';
+    car.footprintSensorsEnabled=state.footprintSensorsEnabled??(graph.modelId==='v3'&&graph.sensorProfile!=='v3-centerline-legacy-v1');
     car.vehicle=JSON.parse(JSON.stringify(state.vehicle));car.brain=makeBrain(graph);car.brain.activity.set(state.activity);
     // Reward only actual motion AFTER this copied start. No gifted distance,
     // checkpoints, laps or replacement of the main generation's statistics.
@@ -422,7 +422,7 @@
       outputMeta=Array.from(outputs,index=>({...nodes[index],index}));
     }
     const outputMask=new Uint8Array(n);outputs.forEach(index=>{outputMask[index]=1;});
-    return {n,edgeCount:compact?data.edgeCount:data.edges.length,from,to,weights,rowOffsets,targets,csrWeights,inputs,outputs,nodes,bodyIds,positions,classCodes,sideCodes,classNames,coordinateCount,missingPosition,outputMeta,coreMask:compact?data.coreMask:null,outputMask,inputChannels,physicsChannels,roadChannels,visualInputCount:inputs.length,physicsRelayStart,physicsRelayCount:inputs.length-physicsRelayStart,roadRelayCount:inputs.length-physicsRelayStart,revision:data.modelRevision||1,dataset:data.dataset||'male-cns',modelId:data.modelId||`v${data.modelRevision||1}`,modelLabel:data.modelLabel||null,full:compact,solver:data.solver||null,policyConfig:data.policyConfig||null};
+    return {n,edgeCount:compact?data.edgeCount:data.edges.length,from,to,weights,rowOffsets,targets,csrWeights,inputs,outputs,nodes,bodyIds,positions,classCodes,sideCodes,classNames,coordinateCount,missingPosition,outputMeta,coreMask:compact?data.coreMask:null,outputMask,inputChannels,physicsChannels,roadChannels,visualInputCount:inputs.length,physicsRelayStart,physicsRelayCount:inputs.length-physicsRelayStart,roadRelayCount:inputs.length-physicsRelayStart,revision:data.modelRevision||1,dataset:data.dataset||'male-cns',modelId:data.modelId||`v${data.modelRevision||1}`,modelLabel:data.modelLabel||null,full:compact,solver:data.solver||null,policyConfig:data.policyConfig||null,sensorProfile:data.sensorProfile||null};
   }
   function makeGenome(random,outputCount) {
     const encoder=Array(SENSOR_COUNT*2).fill(0);for(let i=0;i<SENSOR_COUNT;i++){const expansion=i>=LEGACY_VISUAL_SENSOR_COUNT&&i<VISUAL_SENSOR_COUNT,roadRelay=i>=VISUAL_SENSOR_COUNT+VEHICLE_PHYSICS_SENSOR_COUNT;if(roadRelay){encoder[i]=0;encoder[SENSOR_COUNT+i]=0;continue;}const scale=expansion?.08:i<VISUAL_SENSOR_COUNT?.6:.15;encoder[i]=normal(random)*scale;encoder[SENSOR_COUNT+i]=normal(random)*scale;}
@@ -670,7 +670,7 @@
       const normalized=genomes.map(g=>normalizeGenome(g,this.graph.outputs.length));
       for(const g of normalized)if(g.policyWeights&&(g.adapterVersion!==ensureLearning(this.graph).version||!Learning.valid(this.graph,g.policyWeights)))throw Error('Dimensioni o versione della policy MaleCNS incompatibili: usare Reset.');
       if(rebaseOptimizer&&this.optimizer&&genomes[0]?.policyWeights)this.optimizer.adopt(genomes[0].policyWeights);
-      this.cars=normalized.map((g,i)=>{const car=makeCar(this.track,i,g,this.rewardRevision);car.footprintSensorsEnabled=this.graph.modelId==='v3';car.brain=this.brainFactory(this.graph);car.inputs=sense(this.track,car);car.physicsInputs=physicsSense(car,this.track);car.sensorVector=car.inputs.concat(car.physicsInputs);return car;});
+      this.cars=normalized.map((g,i)=>{const car=makeCar(this.track,i,g,this.rewardRevision);car.footprintSensorsEnabled=this.graph.modelId==='v3'&&this.graph.sensorProfile!=='v3-centerline-legacy-v1';car.brain=this.brainFactory(this.graph);car.inputs=sense(this.track,car);car.physicsInputs=physicsSense(car,this.track);car.sensorVector=car.inputs.concat(car.physicsInputs);return car;});
       for(const car of this.cars)car.previousGenerationLapTime=this.history.at(-1)?.bestLapTime??null;
       // Actions are decoded from the recurrent graph, never from sensors or
       // a separate wall-following controller. Physics remains at 60 Hz.

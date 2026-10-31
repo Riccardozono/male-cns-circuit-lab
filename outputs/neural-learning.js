@@ -16,7 +16,9 @@
   const normal=r=>Math.sqrt(-2*Math.log(Math.max(1e-9,r())))*Math.cos(2*Math.PI*r());
   function build(graph){
     const config=graph.policyConfig,version=config?.version??VERSION,gainGroups=config?.gainGroups??GAIN_GROUPS,readoutLimit=config?.readoutLimit??READOUT_LIMIT;
+    const normalizationCount=config?.readoutNormalizationCount??readoutLimit,signalCount=config?.readoutSignalCount??readoutLimit;
     if(!supportedVersion(version)||!Number.isInteger(gainGroups)||gainGroups<1||gainGroups>256||!Number.isInteger(readoutLimit)||readoutLimit<graph.outputs.length||readoutLimit>256)throw Error('Configurazione della policy neurale non valida.');
+    if(!Number.isInteger(normalizationCount)||normalizationCount<graph.outputs.length||normalizationCount>readoutLimit||!Number.isInteger(signalCount)||signalCount<1||signalCount>normalizationCount)throw Error('Normalizzazione del readout neurale non valida.');
     const inputSet=new Set(graph.inputs),distance=new Int32Array(graph.n);distance.fill(-1);
     const queue=new Uint32Array(graph.n);let head=0,tail=0;
     for(const input of graph.inputs){distance[input]=0;queue[tail++]=input;}
@@ -32,8 +34,10 @@
     if(config){
       // Keep the original core decoder identities; extend it with reachable
       // descending neurons outside that core, not raw sensors or route cues.
-      for(const node of candidates){if(selected.size>=config.coreReadoutLimit)break;if(graph.coreMask[node])selected.add(node);}
-      for(const node of candidates){if(selected.size>=readoutLimit)break;if(!graph.coreMask[node])selected.add(node);}
+      const coreReadoutLimit=config.coreReadoutLimit??Math.min(64,readoutLimit),isCore=node=>Boolean(graph.coreMask?.[node]);
+      if(!Number.isInteger(coreReadoutLimit)||coreReadoutLimit<0||coreReadoutLimit>readoutLimit)throw Error('Limite dei neuroni centrali non valido.');
+      for(const node of candidates){if(selected.size>=coreReadoutLimit)break;if(isCore(node))selected.add(node);}
+      for(const node of candidates){if(selected.size>=readoutLimit)break;if(!isCore(node))selected.add(node);}
       if(selected.size!==readoutLimit)throw Error('Neuroni discendenti reali insufficienti per V5.');
     }else for(const node of candidates){if(selected.size>=readoutLimit)break;selected.add(node);}
     if(selected.size<graph.outputs.length)throw Error('Readout neurale discendente mancante.');
@@ -45,12 +49,12 @@
     const readoutOffset=CHANNELS*2+gainGroups;
     for(let j=0;j<nodes.length;j++){scales[readoutOffset+j*2]=.08;scales[readoutOffset+j*2+1]=.2;}
     scales[length-2]=.035;scales[length-1]=.12;
-    const policy={version,nodes,groups,gainGroups,length,readoutOffset,mean,scales,trainingSamples:0,controlRateHz:60/CONTROL_INTERVAL,anatomicalEdges:graph.edgeCount};
+    const policy={version,nodes,groups,gainGroups,length,readoutOffset,normalizationCount,signalCount,decoderProfile:config?.decoderProfile||null,mean,scales,trainingSamples:0,controlRateHz:60/CONTROL_INTERVAL,anatomicalEdges:graph.edgeCount};
     if(config)for(const node of nodes)graph.outputMask[node]=1;
     graph.learning=policy;return policy;
   }
   function valid(graph,values){const p=graph.learning;return !!p&&Array.isArray(values)&&values.length===p.length&&values.every(v=>Number.isFinite(v)&&Math.abs(v)<=8);}
-  function supportedVersion(version){return version===VERSION||version===5;}
+  function supportedVersion(version){return version===VERSION||version===5||version===6;}
   function initial(graph,r){
     const p=graph.learning;
     return p.mean.map((v,i)=>clamp(v+normal(r)*p.scales[i],-8,8));
@@ -83,10 +87,10 @@
     if(genome.adapterVersion!==p.version||!valid(graph,values))throw Error('Policy MaleCNS incompatibile: usare Reset, non il vecchio controller assistito.');
     const features=brain.policyFeatures?.length===p.nodes.length?brain.policyFeatures:(brain.policyFeatures=new Float64Array(p.nodes.length));
     let signal=0,steering=0,longitudinal=0;
-    const norm=1/Math.sqrt(features.length);
+    const norm=1/Math.sqrt(p.normalizationCount??features.length),signalCount=p.signalCount??features.length;
     for(let j=0;j<features.length;j++){
       const activity=Number(brain.activity[p.nodes[j]])||0;
-      signal=Math.max(signal,Math.abs(activity));
+      if(j<signalCount)signal=Math.max(signal,Math.abs(activity));
       const feature=features[j]=Math.tanh(8*activity);
       steering+=feature*values[p.readoutOffset+j*2]*norm;
       longitudinal+=feature*values[p.readoutOffset+j*2+1]*norm;

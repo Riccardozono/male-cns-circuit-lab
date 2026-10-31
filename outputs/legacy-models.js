@@ -9,6 +9,10 @@
   // the original V2 JSON is not present in the current workspace anymore.
   const V2_NODE_COUNT=1121;
   const V2_INPUT_COUNT=790;
+  const V3_LEGACY_SENSOR_PROFILE='v3-centerline-legacy-v1';
+  const V3_CURRENT_SENSOR_PROFILE='v3-footprint-current-v57-v1';
+  const V3_WIDE_READOUT=Object.freeze({version:6,gainGroups:16,readoutLimit:128,coreReadoutLimit:0,
+    readoutNormalizationCount:64,readoutSignalCount:64,decoderProfile:'v3-wide-readout-128-v1'});
 
   function tagV3(source){
     if(!source?.nodes?.length||!source?.edges?.length)throw Error('Modello MaleCNS V3 non disponibile.');
@@ -17,6 +21,24 @@
       modelLabel:'MaleCNS V3 storico',
       modelBoundary:'Nucleo V3 ridotto verificato del progetto: 7.721 neuroni e 242.486 connessioni. Non è il grafo completo V4.'
     };
+  }
+
+  function tagV3WideReadout(source){
+    const base=tagV3(source);
+    return {...base,sensorProfile:V3_LEGACY_SENSOR_PROFILE,modelLabel:'MaleCNS V3 · readout 128 sperimentale',policyConfig:{...V3_WIDE_READOUT},
+      modelBoundary:base.modelBoundary+' Profilo sperimentale isolato: conserva i 64 neuroni discendenti storici come prime uscite e aggiunge 64 uscite discendenti con pesi iniziali nulli. Non è una nuova versione biologica del connectoma.'};
+  }
+
+  function tagV3TrainingBaseline(source){
+    const base=tagV3(source);
+    return {...base,sensorProfile:V3_LEGACY_SENSOR_PROFILE,modelLabel:'MaleCNS V3 controllo · sensori centrolinea compatibilità 5.6.0',
+      modelBoundary:base.modelBoundary+' Copia isolata di allenamento: sensori stradali misurati dal centro dell’auto per compatibilità con il salvataggio 5.6.0.'};
+  }
+
+  function tagV3TrainingCurrent(source){
+    const base=tagV3(source);
+    return {...base,sensorProfile:V3_CURRENT_SENSOR_PROFILE,modelLabel:'MaleCNS V3 · 64 uscite · sensori ingombro 5.7.0',
+      modelBoundary:base.modelBoundary+' Copia isolata di allenamento: decoder V3 storico a 64 uscite e sensori collision-aware del profilo 5.7.0.'};
   }
 
   function buildV2(source){
@@ -48,5 +70,5 @@
     };
   }
 
-  return {tagV3,buildV2};
+  return {tagV3,tagV3TrainingBaseline,tagV3TrainingCurrent,tagV3WideReadout,buildV2,V3_WIDE_READOUT,V3_LEGACY_SENSOR_PROFILE,V3_CURRENT_SENSOR_PROFILE};
 });

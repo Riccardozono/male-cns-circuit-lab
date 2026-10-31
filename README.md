@@ -191,14 +191,13 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 
 | Modello OpenAI | Ambiente | Commit attribuiti su GitHub |
 | --- | --- | ---: |
-| **GPT-6** | OpenAI Codex | **1** |
+| **GPT-5.6** | OpenAI Codex | **1** |
+| **GPT-5.6 Luna** | OpenAI Codex | **1** |
+| **GPT-6** | OpenAI Codex | **3** |
 | **GPT-6 Astra** | OpenAI Codex | **1** |
-| **GPT-6 Luna** | OpenAI Codex | **9** |
+| **GPT-6 Luna** | OpenAI Codex | **12** |
 | **GPT-6.1 Sol** | OpenAI Codex | **25** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
-| **GPT-5.6 Luna** | OpenAI Codex | **1** |
-| **GPT-5.6** | OpenAI Codex | **1** |
-| **GPT-6** | OpenAI Codex | **2** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).

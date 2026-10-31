@@ -28,11 +28,14 @@ const MAX_POPULATION = 100;
 const clampInteger = (value, min, max) => Math.max(min, Math.min(max, Math.round(Number(value) || min)));
 
 class DesktopEngine {
-  constructor(outputsDir, emitSnapshot, emitError, forwardGpuRequest = null) {
+  constructor(outputsDir, emitSnapshot, emitError, forwardGpuRequest = null, options = {}) {
     this.outputsDir = outputsDir;
     this.emitSnapshot = emitSnapshot;
     this.emitError = emitError;
     this.forwardGpuRequest = forwardGpuRequest;
+    this.trainingCopyV3=options.trainingCopyV3===true;
+    this.trainingCopyV3Baseline=options.trainingCopyV3Baseline===true;
+    this.trainingCopyV3Current=options.trainingCopyV3Current===true;
     this.workers = [];
     this.states = [];
     this.seenGenerations = [];
@@ -62,7 +65,7 @@ class DesktopEngine {
     if (id !== 'v4') {
       const legacyModels = require(path.join(this.outputsDir, 'legacy-models.js'));
       const source = JSON.parse(await fs.readFile(path.join(this.outputsDir, 'data', 'connectome.json'), 'utf8'));
-      const modelData = id === 'v2' ? legacyModels.buildV2(source) : legacyModels.tagV3(source);
+      const modelData = id === 'v2' ? legacyModels.buildV2(source) : this.trainingCopyV3?legacyModels.tagV3WideReadout(source):this.trainingCopyV3Baseline?legacyModels.tagV3TrainingBaseline(source):this.trainingCopyV3Current?legacyModels.tagV3TrainingCurrent(source):legacyModels.tagV3(source);
       const bundle = {
         modelId: id,
         full: false,

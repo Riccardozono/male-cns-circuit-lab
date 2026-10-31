@@ -37,6 +37,12 @@ const modelTestSmoke=process.argv.includes('--model-test-smoke');
 const learningSmoke = process.argv.includes('--learning-test');
 const uiSmoke = process.argv.includes('--ui-smoke');
 const trainingCopySmoke=process.argv.includes('--training-copy-smoke');
+const trainingCopyV3=process.argv.includes('--male-cns-training-copy-v3');
+const trainingCopyV3Baseline=process.argv.includes('--male-cns-training-copy-v3-baseline');
+const trainingCopyV3Current=process.argv.includes('--male-cns-training-copy-v3-current');
+const trainingCopyProfile=trainingCopyV3||trainingCopyV3Baseline||trainingCopyV3Current;
+const trainingCopyProgressArg=process.argv.find(argument=>argument.startsWith('--training-copy-progress='));
+const trainingCopyLearningSmoke=process.argv.includes('--training-copy-learning-smoke');
 const trackSmoke = process.argv.includes('--track-smoke');
 const performanceSmoke=process.argv.includes('--performance-test');
 const physicsSmoke=process.argv.includes('--physics-smoke');
@@ -91,8 +97,8 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1540,
     height: 980,
-    minWidth: (modelTestSmoke||uiSmoke||trainingCopySmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 1080,
-    minHeight: (modelTestSmoke||uiSmoke||trainingCopySmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 720,
+    minWidth: (modelTestSmoke||uiSmoke||trainingCopySmoke||trainingCopyLearningSmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 1080,
+    minHeight: (modelTestSmoke||uiSmoke||trainingCopySmoke||trainingCopyLearningSmoke||trackSmoke||performanceSmoke||physicsSmoke||carVisualSmoke||progressSmoke||selectionSmoke||metricSmoke||rewardsSmoke) ? 300 : 720,
     backgroundColor: '#0b1118',
     autoHideMenuBar: true,
     show: false,
@@ -104,10 +110,11 @@ function createWindow() {
       backgroundThrottling: false
     }
   });
-  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trainingCopySmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!process.argv.includes('--smoke-test')) mainWindow.show();});
+  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trainingCopySmoke&&!trainingCopyLearningSmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!process.argv.includes('--smoke-test')) mainWindow.show();});
   mainWindow.on('closed', () => {mainWindow = null;});
   if(uiSmoke||trainingCopySmoke)mainWindow.webContents.on('console-message',details=>{if(details.level==='error'||details.level===3)console.error('UI_BOOT '+details.message);});
-  mainWindow.loadURL(process.argv.includes('--male-cns-training-copy-v3')?'male-cns://app/index.html?training-copy=verified-v3':'male-cns://app/index.html');
+  const trainingCopyVariant=trainingCopyV3?'verified-v3-wide':trainingCopyV3Baseline?'verified-v3-baseline':'verified-v3-current';
+  mainWindow.loadURL(trainingCopyProfile?'male-cns://app/index.html?training-copy='+trainingCopyVariant:'male-cns://app/index.html');
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));
     const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
@@ -181,8 +188,17 @@ function createWindow() {
     mainWindow.webContents.once('did-finish-load',()=>{
       const outputArg=process.argv.find(argument=>argument.startsWith('--training-copy-output-dir='));
       const output=outputArg?path.resolve(outputArg.slice('--training-copy-output-dir='.length)):path.join(app.getPath('temp'),'male-cns-training-copy-'+app.getVersion());
-      require('./training-copy-smoke.cjs').run(mainWindow,{output,version:app.getVersion()}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
+      require('./training-copy-smoke.cjs').run(mainWindow,{output,version:app.getVersion(),expectMigrated:Boolean(trainingCopyProgressArg),wide:trainingCopyV3,sensorMode:trainingCopyV3Current?'current':'legacy'}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
         console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'training-copy-error.json'),JSON.stringify({error:error.stack||String(error),version:app.getVersion()},null,2));app.exit(1);
+      });
+    });
+  }
+  if(trainingCopyLearningSmoke){
+    mainWindow.webContents.once('did-finish-load',()=>{
+      const outputArg=process.argv.find(argument=>argument.startsWith('--training-copy-learning-output-dir='));
+      const output=outputArg?path.resolve(outputArg.slice('--training-copy-learning-output-dir='.length)):path.join(app.getPath('temp'),'male-cns-training-copy-learning-'+app.getVersion());
+      require('./training-copy-learning-smoke.cjs').run(mainWindow,{output,engine,version:app.getVersion(),expectedGenerations:3,wide:trainingCopyV3}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
+        console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'learning-error.json'),JSON.stringify({error:error.stack||error.message,version:app.getVersion()},null,2));app.exit(1);
       });
     });
   }
@@ -507,9 +523,18 @@ app.whenReady().then(async () => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('compute:error', {message: error.message});
   }, request => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('compute:gpu-request', request);
-  });
+  },{trainingCopyV3,trainingCopyV3Baseline,trainingCopyV3Current});
   ipcMain.handle('compute:start', (_event, options) => engine.start(options));
   ipcMain.handle('compute:restore-progress',async (_event,file,rendererToken)=>{const verified=await Progress.decode(JSON.stringify(file),app.getVersion());return engine.restoreProgress(verified.payload,rendererToken);});
+  ipcMain.handle('training-copy:load-default',async()=>{
+    if(!trainingCopyProfile)throw Error('Caricamento automatico disponibile solo nella copia di allenamento isolata.');
+    if(!trainingCopyProgressArg)return null;
+    const filePath=path.resolve(trainingCopyProgressArg.slice('--training-copy-progress='.length));
+    const file=JSON.parse(await fs.readFile(filePath,'utf8'));
+    const verified=await Progress.decode(JSON.stringify(file),app.getVersion());
+    await engine.validateProgress(verified.payload);
+    return verified;
+  });
   ipcMain.handle('compute:command', (_event, command) => engine.command(command));
   ipcMain.handle('compute:info', () => engine.info());
   ipcMain.handle('compute:gpu-response', (_event, payload) => engine.gpuResponse(payload));

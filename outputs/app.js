@@ -17,8 +17,11 @@ const importedTrainingSessions=new WeakSet();
 let carPreviewKey='';
 const trackPointers=new Map();
 const APP_VERSION='5.7.0',number=n=>n.toLocaleString('it-IT');
-const TRAINING_COPY_PROFILE=new URLSearchParams(location.search).get('training-copy')==='verified-v3';
-const TRAINING_COPY_BOOTSTRAP_KEY='malecns-training-copy-defaults-v1';
+const TRAINING_COPY_VARIANT=new URLSearchParams(location.search).get('training-copy');
+const TRAINING_COPY_PROFILE=['verified-v3-wide','verified-v3-baseline','verified-v3-current'].includes(TRAINING_COPY_VARIANT);
+const TRAINING_COPY_WIDE=TRAINING_COPY_VARIANT==='verified-v3-wide';
+const TRAINING_COPY_LEGACY_SENSORS=TRAINING_COPY_VARIANT==='verified-v3-wide'||TRAINING_COPY_VARIANT==='verified-v3-baseline';
+const TRAINING_COPY_CURRENT_SENSORS=TRAINING_COPY_VARIANT==='verified-v3-current';
 const cameraSelect=$('camera-select');
 const pad=n=>String(n).padStart(2,'0'),seconds=n=>`${pad(Math.floor(n/60))}:${pad(Math.floor(n%60))}`;
 const lapClock=n=>Number.isFinite(n)?`${seconds(n)}.${Math.floor((n%1)*10)}`:'—';
@@ -54,11 +57,8 @@ function saveModelPreference(value){try{localStorage.setItem(MODEL_PREFERENCE_KE
 function initializeTrainingCopyDefaults(){
   if(!TRAINING_COPY_PROFILE)return;
   try{
-    if(localStorage.getItem(TRAINING_COPY_BOOTSTRAP_KEY)!=='1'){
-      localStorage.setItem(MODEL_PREFERENCE_KEY,'v3');
-      localStorage.setItem(PREFERENCE_KEY,'monza');
-      localStorage.setItem(TRAINING_COPY_BOOTSTRAP_KEY,'1');
-    }
+    localStorage.setItem(MODEL_PREFERENCE_KEY,'v3');
+    localStorage.setItem(PREFERENCE_KEY,'monza');
   }catch{}
   $('population-range').value='16';
 }
@@ -72,7 +72,7 @@ async function loadModelData(modelId){
     });
   }
   const source=await legacyDataPromise;
-  return modelId==='v2'?MaleCNSLegacy.buildV2(source):MaleCNSLegacy.tagV3(source);
+  return modelId==='v2'?MaleCNSLegacy.buildV2(source):TRAINING_COPY_WIDE?MaleCNSLegacy.tagV3WideReadout(source):TRAINING_COPY_VARIANT==='verified-v3-baseline'?MaleCNSLegacy.tagV3TrainingBaseline(source):TRAINING_COPY_CURRENT_SENSORS?MaleCNSLegacy.tagV3TrainingCurrent(source):MaleCNSLegacy.tagV3(source);
 }
 function syncSpeedControl(){
   if(!sim)return;
@@ -412,7 +412,7 @@ function refresh(force=false){
   const training=sim.learningStats||sim.optimizer?.metrics();
   const trainingCopyNote=TRAINING_COPY_PROFILE?(importedTrainingSessions.has(sim)
     ?'Profilo sperimentale isolato · salvataggio importato. '
-    :'Profilo sperimentale isolato · sessione nuova, nessun salvataggio importato. '):'';
+    :'Profilo sperimentale isolato · sessione nuova, nessun salvataggio importato. ')+(TRAINING_COPY_LEGACY_SENSORS?'Sensori centrolinea legacy, compatibilità 5.6.0. ':'')+(TRAINING_COPY_CURRENT_SENSORS?'Sensori collision-aware del profilo V3 5.7.0. ':'')+(TRAINING_COPY_WIDE&&sim.graph.learning?.decoderProfile==='v3-wide-readout-128-v1'?'Decoder V3 sperimentale: 128 uscite discendenti, prime 64 conservate. ':''):'';
   $('mode-note').textContent=trainingCopyNote+(sim.mode==='connectome'?`Machine learning per ricompense · ${modelNote}. Sensori → sinapsi MaleCNS → attività ricorrente → sterzo/pedali appresi. Nessuna guida preimpostata. ${training?`${training.updates} aggiornamenti · ${training.episodes} episodi · ${training.parameters} parametri appresi. `:''}Le prime auto possono fermarsi o urtare; il miglioramento va misurato tra generazioni.`:sim.mode==='off'?'PROVA: rete spenta, tutti i comandi a zero. L’auto deve restare ferma.':'PROVA: acceleratore 70%, sterzo zero. L’auto deve andare dritta e urtare il bordo.');
   $('next-generation').disabled=sim.mode!=='connectome';$('save-progress').disabled=progressBusy||switchingModel||sim.mode!=='connectome';$('load-progress').disabled=progressBusy||switchingModel;$('agent-select').value=String(car.id);
   if(!modelTestBusy&&sim.generation!==savedGeneration){saveChampion();savedGeneration=sim.generation;}
@@ -682,15 +682,18 @@ async function start(){try{
   carRenderer.load('assets/porsche-992-gt3r-top-v1.png',COLORS).then(()=>{carPreviewKey='';renderDirty=true;if(sim?.cars?.length&&window.circuitLab&&trackRenderer){render();refresh(true);}});
   runtimeData=await MaleCNSFull.load();
   initializeTrainingCopyDefaults();
+  const trainingCopyProgress=TRAINING_COPY_PROFILE&&globalThis.desktopCompute?.loadTrainingDefault
+    ?await desktopCompute.loadTrainingDefault():null;
   let circuitId='lab';try{const saved=localStorage.getItem(PREFERENCE_KEY);if(MALE_CNS_CIRCUITS.circuits.some(c=>c.id===saved))circuitId=saved;}catch{}
   const savedSpeed=readSpeedPreference();$('speed-range').value=String(savedSpeed);$('speed-output').textContent=savedSpeed.toFixed(1)+'×';
   activeModelId=readModelPreference();$('controller-select').value=activeModelId;
   const initialData=await loadModelData(activeModelId);
-  const simulationOptions={circuits:MALE_CNS_CIRCUITS,circuitId,population:Number($('population-range').value),speedMultiplier:savedSpeed,modelId:activeModelId,modelLabel:modelOption(activeModelId).name,running:!TRAINING_COPY_PROFILE};
+  const simulationOptions={circuits:MALE_CNS_CIRCUITS,circuitId,population:Number($('population-range').value),speedMultiplier:savedSpeed,modelId:activeModelId,modelLabel:TRAINING_COPY_PROFILE?initialData.modelLabel:modelOption(activeModelId).name,running:!TRAINING_COPY_PROFILE,...(trainingCopyProgress?{progress:trainingCopyProgress}:{}),...(TRAINING_COPY_PROFILE?{workerCount:1}:{})};
   sim=globalThis.desktopCompute?new FlySim.DesktopSimulation(initialData,simulationOptions):new FlySim.Simulation(initialData,simulationOptions);
   if(globalThis.desktopCompute)await sim.ready();
   if(TRAINING_COPY_PROFILE)sim.running=false;
-  window.circuitLab={sim,version:APP_VERSION,data:initialData,modelId:activeModelId,trainingCopy:TRAINING_COPY_PROFILE};
+  if(trainingCopyProgress)importedTrainingSessions.add(sim);
+  window.circuitLab={sim,version:APP_VERSION,data:initialData,modelId:activeModelId,trainingCopy:TRAINING_COPY_PROFILE,trainingCopyProgressLoaded:Boolean(trainingCopyProgress),trainingCopyProgressGeneration:trainingCopyProgress?.payload?.workers?.[0]?.state?.generation??null};
   buildBrainMap();initBrainMapControls();initTrackControls();initVehicleControls();initProgressControls();initModelTestControls();
   $('car-closeup').onclick=closeUpCar;
   $('circuit-select').replaceChildren(...sim.circuits.map(c=>{const option=document.createElement('option');option.value=c.id;option.textContent=c.name;return option;}));

@@ -13,7 +13,7 @@
   function finite(v,label,min=-1e15,max=1e15){if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)fail(label+' non valido.');}
   function integer(v,label,min=0,max=1e12){finite(v,label,min,max);if(!Number.isInteger(v))fail(label+' non intero.');}
   function vector(v,length,label,min=-12,max=12){if(!Array.isArray(v)||v.length!==length)fail(label+': dimensioni incompatibili.');v.forEach(n=>finite(n,label,min,max));}
-  function compatibleGraph(graph){const p=F.ensureLearning(graph);return {dataset:graph.dataset,revision:graph.revision,nodes:graph.n,edges:graph.edgeCount,policyVersion:p.version,parameters:p.length,outputs:graph.outputs.length,...(graph.modelId==='v5'?{solver:{...graph.solver},gainGroups:p.gainGroups,readoutNodes:Array.from(p.nodes)}:{})};}
+  function compatibleGraph(graph){const p=F.ensureLearning(graph);return {dataset:graph.dataset,revision:graph.revision,nodes:graph.n,edges:graph.edgeCount,policyVersion:p.version,parameters:p.length,outputs:graph.outputs.length,...(graph.modelId==='v5'?{solver:{...graph.solver},gainGroups:p.gainGroups,readoutNodes:Array.from(p.nodes)}:{}),...(graph.modelId==='v3'&&graph.sensorProfile?{sensorProfile:graph.sensorProfile}:{}),...(graph.modelId==='v3'&&p.version===6?{decoderProfile:p.decoderProfile,readoutNormalizationCount:p.normalizationCount,readoutSignalCount:p.signalCount,gainGroups:p.gainGroups,readoutNodes:Array.from(p.nodes)}:{})};}
   function genome(g,graph){
     keys(g,['encoder','readout','gain','adapterVersion','sensorMappingVersion','policyWeights'],'Genoma');
     vector(g.encoder,F.SENSOR_COUNT*2,'Encoder');vector(g.readout,graph.outputs.length*3,'Readout',-100,100);finite(g.gain,'Guadagno',.01,100);

@@ -64,6 +64,7 @@ function compactCar(car) {
     id: car.id,
     x: car.x, y: car.y, heading: car.heading, speed: car.speed, steer: car.steer, scale: car.scale,
     pixelsPerMeter:car.pixelsPerMeter,vehicle:F.Vehicle.telemetry(car.vehicle,inspected),
+    footprintSensorsEnabled:car.footprintSensorsEnabled===true,
     alive: car.alive, reason: car.reason, distance: car.distance, progress: car.progress, bestProgress: car.bestProgress,diagnosticVehicle:Boolean(car.diagnosticVehicle),
     fitness: car.fitness, reward: car.reward, penalty: car.penalty, lastReward: car.lastReward, lastPenalty: car.lastPenalty,
     baseFitness:car.baseFitness,rewardRevision:car.rewardRevision,

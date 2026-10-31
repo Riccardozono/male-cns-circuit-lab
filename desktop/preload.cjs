@@ -5,6 +5,7 @@ const {contextBridge, ipcRenderer} = require('electron');
 contextBridge.exposeInMainWorld('desktopCompute', {
   start: options => ipcRenderer.invoke('compute:start', options || {}),
   restoreProgress: (file,rendererToken) => ipcRenderer.invoke('compute:restore-progress', file,rendererToken),
+  loadTrainingDefault: () => ipcRenderer.invoke('training-copy:load-default'),
   command: command => ipcRenderer.invoke('compute:command', command || {}),
   info: () => ipcRenderer.invoke('compute:info'),
   onSnapshot(callback) {
