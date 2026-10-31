@@ -592,3 +592,14 @@ altri modelli abbiano imparato. I report sono nelle cartelle locali
 `progress7-gen92-frontier-braking-trace-cuda-20261027-104/` e
 `progress7-gen92-brake-effect-cuda-20261027-105/` sotto
 `.impeccable/review/learning-ml/`.
+
+### A/B V2/Monaco: recupero da collisioni vicine alla frontiera (31 ottobre 2026)
+
+Confronto a freddo del ranking corrente con una variante di ricerca che consente a V2 di generare figli mutati da rollout con collisione poco oltre la frontiera sicura. Configurazione: Monaco, 16 auto, mutazione 0,16, velocità 30×, otto generazioni; seed 7717 e holdout 7718. I report e le varianti sono locali e ignorati da Git sotto `.impeccable/review/learning-ml/progress138-v2-monaco-riskrepair-ab-cold-7717/` e `progress139-v2-monaco-riskrepair-holdout-7718/`.
+
+| Seed | Fronte sicuro controllo | Riparazione sempre attiva | Urti controllo / variante | Episodi sicuri controllo / variante |
+|---|---:|---:|---:|---:|
+| 7717 | 17,143 m | 18,358 m | 18 / 22 | 110 / 106 |
+| 7718 | 13,341 m | 18,926 m | 16 / 21 | 112 / 107 |
+
+Il progresso sicuro aumenta in entrambi i seed, ma con più urti e meno episodi sicuri; nessun ramo completa un giro. Una variante che attiva la riparazione solo dopo tre generazioni stagnanti non si attiva sul seed 7717 e pareggia il controllo. Sul seed 7718 si attiva nelle gen. 6–8, porta il fronte da 13,341 a 14,522 m e gli urti da 16 a 18, sempre senza giri. Campione breve, due seed e un circuito: il risultato non dimostra un miglioramento robusto e la modifica non viene integrata nell'app.
