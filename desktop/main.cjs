@@ -378,7 +378,8 @@ function createWindow() {
             console.log('BENCHMARK_CASE '+JSON.stringify(result));
           }
         }
-        const completedCases = results.filter(result => result.reachedOneLap).length;
+        const lapCases = results.filter(result => result.reachedOneLap).length;
+        const totalCases = models.length * circuits.length;
         return {
           schemaVersion: 1,
           generatedAt: new Date().toISOString(),
@@ -386,7 +387,7 @@ function createWindow() {
           stoppingRule: 'stop each model/circuit case after the first agent completes at least one lap',
           safetyGuard: '${benchmarkTimeoutMs / 1000} seconds wall time per case; not a simulated-time limit',
           configuration: {models, circuits, population, mutation, seed, speedMultiplier, caseTimeoutMs},
-          summary: {totalCases: results.length, completedCases, pendingCases: results.length - completedCases},
+          summary: {totalCases, completedCases: results.length, lapCases, pendingCases: Math.max(0, totalCases - results.length)},
           results
         };
       })()`;
@@ -404,7 +405,7 @@ function createWindow() {
         }
         app.exit(1);
       }).then(result => {
-        if (result) app.exit(result.summary.completedCases === result.summary.totalCases ? 0 : 2);
+        if (result) app.exit(result.summary.lapCases === result.summary.totalCases ? 0 : 2);
       });
     });
   }
