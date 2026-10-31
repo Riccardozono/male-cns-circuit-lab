@@ -320,15 +320,34 @@ function createWindow() {
           }
           const history = sim.history || [];
           const last = history.at(-1) || null;
+          const generationHistory = history.map(item => ({
+            generation: item.generation,
+            bestProgress: item.bestProgress,
+            bestSafeProgress: item.bestSafeProgress,
+            meanSafeProgress: item.meanSafeProgress,
+            laps: item.laps,
+            bestLapTime: item.bestLapTime,
+            stagnation: item.stagnation,
+            mutationAmount: item.mutationAmount,
+            optimizerUpdates: item.learning?.updates ?? null,
+            optimizerEpisodes: item.learning?.episodes ?? null
+          }));
+          const safePeak = generationHistory.reduce((best, item) => Number(item.bestSafeProgress) > best.progress
+            ? {generation: item.generation, progress: Number(item.bestSafeProgress)}
+            : best, {generation: null, progress: 0});
           const result = {
             modelId,
             circuitId,
             seed,
+            caseTimeoutMs,
             adapter: 'reward-trained recurrent MaleCNS policy, no assisted driving',
             learning: {neurons:globalThis.FlySim.ensureLearning(sim.graph).nodes.length,parameters:sim.graph.learning.length,warmStart:false,stats:sim.learningStats},
             population: sim.population,
             mutation: sim.mutation,
             speedMultiplier: sim.speedMultiplier,
+            workerCount: sim.engine?.workerCount ?? null,
+            recommendedWorkerCount: sim.engine?.recommendedWorkerCount ?? null,
+            completionStatus: hit ? 'lap' : 'wall-time-limit',
             reachedOneLap: Boolean(hit),
             firstLapGeneration: hit?.generation ?? null,
             completedAgentCountAtFirstLap: hit ? sim.population - Number(hit.noLapCount || 0) : 0,
@@ -338,6 +357,10 @@ function createWindow() {
             generationsEvaluated: last?.generation ?? 0,
             finalBest: last?.best ?? null,
             finalBestProgress: last?.bestProgress ?? null,
+            finalBestSafeProgress: last?.bestSafeProgress ?? null,
+            peakBestSafeProgress: safePeak.progress,
+            peakBestSafeProgressGeneration: safePeak.generation,
+            generationHistory,
             elapsedWallSeconds: Number(((performance.now() - started) / 1000).toFixed(3)),
             gpu: sim.engine?.gpu || null
           };
