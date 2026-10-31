@@ -188,7 +188,7 @@
     for(let i=0;i<values.length;i++)if(delta[i])shrink=Math.min(shrink,(8-Math.abs(values[i]))/Math.abs(delta[i]));
     return values.map((v,i)=>v+delta[i]*shrink*(1-1e-12));
   }
-  function mirroredMutation(values,child){return values.map((v,i)=>2*v-child[i]);}
+  function mirroredMutation(values,child){return values.map((v,i)=>clamp(2*v-child[i],-8,8));}
   class EvolutionStrategy{
     constructor(graph){this.graph=graph;const p=graph.learning;this.mean=p.mean.slice();this.sigma=p.scales.slice();this.updates=0;this.episodes=0;}
     update(ranked,compare=(a,b)=>b.fitness-a.fitness){

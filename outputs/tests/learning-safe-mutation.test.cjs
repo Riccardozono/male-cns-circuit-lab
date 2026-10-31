@@ -180,6 +180,14 @@ test('Safe exploration and its mirrored counterpart are bounded and symmetric ne
   }
   assert.deepEqual(L.safeMotorMutation(s.graph,values,F.rng(1),0,x),values);
 });
+test('Mirrored offspring stay valid when context-free local mutation moves away from a weight bound',()=>{
+  const s=sim(),values=Array(s.graph.learning.length).fill(7.9);
+  const child=L.safeMotorMutation(s.graph,values,F.rng(1),.16,null);
+  const mirror=L.mirroredMutation(values,child);
+  assert.ok(L.valid(s.graph,child));
+  assert.ok(L.valid(s.graph,mirror));
+  assert.ok(mirror.every(weight=>Math.abs(weight)<=8));
+});
 test('Recording observed activity never changes neurons, policy weights or decoded actions',()=>{
   const s=sim(),car=s.cars[0],x=context(s.graph.learning.nodes.length);
   car.brain.policyFeatures=Float64Array.from(x.centres[0].values);
