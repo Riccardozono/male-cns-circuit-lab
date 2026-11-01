@@ -767,7 +767,11 @@
         for(const parent of learningRanked.slice(0,practiceEliteBudget))if(parent.alive&&!parent.practiceState)parent.practiceState=capturePracticeState(parent);
       }
       if(this.mutation>0&&!noSafeLearningCandidate)this.optimizer?.update(optimizerRanked,usesLearningOutcome?compareOptimizerAgents:undefined);
-      const records=eligible.map(car=>({car,...Rewards.recordStats(car)})).sort(compareAgents),safeRecords=records.filter(record=>isSafeLearningOutcome(record.car)).sort(compareAgents),recordWinner=safeRecords[0];
+      const records=eligible.map(car=>({car,...Rewards.recordStats(car)})).sort(compareAgents);
+      // Persist the same safe learning objective used by the ES and next-generation seed.
+      // Fitness-only champion selection can discard the farthest safe no-lap policy when
+      // slow-progress penalties outweigh its demonstrated distance.
+      const safeRecords=records.filter(record=>isSafeLearningOutcome(record.car)).sort(compareLearningAgents),recordWinner=safeRecords[0];
       const evaluatedGenomeKeys=new Set(eligible.map(car=>JSON.stringify(car.genome))),currentSafeByGenome=new Map();
       for(const {car} of safeRecords){const key=JSON.stringify(car.genome),existing=currentSafeByGenome.get(key);if(!existing||compareSafeFrontier(car,existing)<0||(compareSafeFrontier(car,existing)===0&&compareAgents(car,existing)<0))currentSafeByGenome.set(key,car);}
       // Old saves can contain archive/champion scores from a different runtime
@@ -788,7 +792,7 @@
         else {this.champion=null;this.championStats=null;this.bestEver=-Infinity;}
         this.archiveRevalidationPending=false;
       }
-      const improved=Boolean(recordWinner&&(!this.championStats||this.archiveRevalidationPending||compareAgents(recordWinner,this.championStats)<0));
+      const improved=Boolean(recordWinner&&(!this.championStats||this.archiveRevalidationPending||compareLearningAgents(recordWinner,this.championStats)<0));
       // Keep raw motion for diagnostics. Only safe physical outcomes may clear
       // stagnation or advance the learning frontier used by mutation logic.
       const frontier=this.learningFrontier,searchTargetBeforeGeneration={...frontier},maxLaps=Math.max(...eligible.map(c=>c.laps));

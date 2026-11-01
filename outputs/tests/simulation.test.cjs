@@ -245,7 +245,7 @@ test('Crash trials reach only the negative optimizer feedback, never safe genera
   assert.ok(sim.champion&&F.isSafeLearningOutcome(safe.sort(F.compareLearningAgents)[0]),'champion remains from a safe outcome');
   assert.ok(!sim.cars.some(car=>crashedGenomes.has(JSON.stringify(car.genome))),'crashed genomes are never copied as parents');
 });
-test('A safe physical leader seeds learning even with a slightly lower reward',()=>{
+test('A safe physical leader seeds learning and remains champion even with a lower reward',()=>{
   const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],leader=sim.cars[2];
   const scored=(car,fitness,bestProgress)=>{
     car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.rewardBreakdown.rewards.progress=fitness;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
@@ -260,7 +260,8 @@ test('A safe physical leader seeds learning even with a slightly lower reward',(
   sim.evolve();
   assert.equal(sim.history.at(-1).best,100,'fitness champion remains authoritative');
   assert.deepEqual(sim.cars[0].genome,leader.genome,'the furthest safe no-lap policy seeds the next learning generation');
-  assert.deepEqual(sim.champion,winner.genome,'the best safe-fitness champion remains protected');
+  assert.deepEqual(sim.champion,leader.genome,'the safe learning champion matches the policy seeded into the next generation');
+  assert.equal(sim.championStats.bestProgress,leader.bestProgress);
 });
 test('Safe archive preserves progress, lap-count and fastest-lap frontiers outside the fitness top four',()=>{
   const sim=new F.Simulation(data,{population:8,mutation:.12}),genomes=sim.cars.map(car=>JSON.stringify(car.genome));

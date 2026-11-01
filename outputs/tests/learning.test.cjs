@@ -39,12 +39,12 @@ test('Identical sensory history yields identical actions regardless of circuit c
   b.cars[0].x=900000;b.cars[0].y=-600000;b.cars[0].progress=5000;
   for(let n=0;n<16;n++)assert.deepEqual(F.neuralStep(a.graph,a.cars[0].brain,a.cars[0].genome,sensors),F.neuralStep(b.graph,b.cars[0].brain,b.cars[0].genome,sensors));
 });
-test('Learning can select lap progress while the historical score champion stays score-ranked',()=>{
+test('Learning and champion persistence use safe progress before the first lap',()=>{
   const sim=new F.Simulation(compact(),{population:4}),completed=sim.cars[0],crashed=sim.cars[1];
   for(const c of sim.cars){c.alive=false;c.reason='ferma / senza progresso';c.rewardState.finalized=true;c.reward=100;c.penalty=400;c.fitness=-300;c.bestProgress=100;}
   completed.laps=1;completed.bestLapTime=300;completed.reward=200;completed.penalty=30000;completed.fitness=-29800;completed.bestProgress=sim.track.total;crashed.bestProgress=500;
   for(const c of sim.cars)c.rewardBreakdown.penalties.slip=c.penalty;
-  sim.evolve();assert.equal(sim.history[0].laps,0);assert.deepEqual(sim.cars[0].genome,completed.genome);assert.equal(sim.championStats.laps,0);
+  sim.evolve();assert.equal(sim.history[0].laps,0);assert.deepEqual(sim.cars[0].genome,completed.genome);assert.equal(sim.championStats.laps,1);assert.deepEqual(sim.champion,completed.genome);
 });
 test('Safe learning selection advances physical progress before the first lap and optimizes reward afterward',()=>{
   const oneLap={fitness:12000,laps:1,bestLapTime:240,bestProgress:6000};
