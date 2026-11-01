@@ -34,7 +34,7 @@ class Archive {
     const candidates=[{weights:this.champion.weights.slice(),kind:'protected-champion'}];
     while(candidates.length<this.population){
       const u=random(),pool=u<.7?frontier:u<.85?[this.champion]:all,p=pick(pool),q=pick(frontier),sigma=pick(scales),line=normal(random)*.25;
-      const weights=p.weights.map((v,j)=>Math.max(-8,Math.min(8,v+sigma*normal(random)+line*(q.weights[j]-v))));
+      const weights=p.weights.map((v,j)=>j%2===0?v:Math.max(-8,Math.min(8,v+sigma*normal(random)+line*(q.weights[j]-v))));
       candidates.push({weights,kind:'learned-parameter-mutation',parentProgress:p.progress,parentCategory:unsafe.has(p.reason)?'unsafe':'clean',sigma});
     }
     return candidates;
