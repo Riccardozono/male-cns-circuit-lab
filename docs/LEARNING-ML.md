@@ -603,3 +603,19 @@ Confronto a freddo del ranking corrente con una variante di ricerca che consente
 | 7718 | 13,341 m | 18,926 m | 16 / 21 | 112 / 107 |
 
 Il progresso sicuro aumenta in entrambi i seed, ma con più urti e meno episodi sicuri; nessun ramo completa un giro. Una variante che attiva la riparazione solo dopo tre generazioni stagnanti non si attiva sul seed 7717 e pareggia il controllo. Sul seed 7718 si attiva nelle gen. 6–8, porta il fronte da 13,341 a 14,522 m e gli urti da 16 a 18, sempre senza giri. Campione breve, due seed e un circuito: il risultato non dimostra un miglioramento robusto e la modifica non viene integrata nell'app.
+
+### Sweep a freddo V3/Monza: intensità di mutazione (1 novembre 2026)
+
+Benchmark headless a freddo con V3 storico (7.721 nodi, 242.486 archi; readout da 64 neuroni e 202 parametri), 16 auto e 12 generazioni per caso. Seed 7717 confronta mutazione 8%, 16% e 32%; holdout seed 7718 confronta 16% e 32%. Ogni caso ha completato 12 aggiornamenti ES, senza warm start.
+
+| Seed | Mutazione | Progresso grezzo massimo | Frontiera sicura massima | Giri |
+|---:|---:|---:|---:|---:|
+| 7717 | 8% | 695,581 m | 27,928 m | 0 |
+| 7717 | 16% | 736,381 m | 158,340 m | 0 |
+| 7717 | 32% | 633,581 m | 66,545 m | 0 |
+| 7718 | 16% | 757,963 m | 228,866 m | 0 |
+| 7718 | 32% | 311,547 m | 68,551 m | 0 |
+
+Il 16% supera la frontiera sicura del 32% in entrambi i seed (+91,795 m e +160,315 m). L’8% è sotto il 16% nel solo seed misurato. È un segnale preliminare su due seed e un circuito, non una prova di convergenza: nessun caso completa un giro. Non viene cambiato il preset e il problema di apprendimento V3/Monza resta aperto.
+
+I cinque report JSON grezzi, inclusi configurazione, progressi per generazione e hash sorgente, sono in [`outputs/research/v3-monza-mutation-sweep-2026-11-01/`](../outputs/research/v3-monza-mutation-sweep-2026-11-01/). Gli hash di `simulation.js` e `neural-learning.js` coincidono fra i report. Verifica già eseguita sul branch `dev`: suite completa 478/478 test, 170,529 s. La prova è headless CPU e non misura il throughput WebGPU della build desktop.
