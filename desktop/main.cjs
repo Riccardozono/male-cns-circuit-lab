@@ -42,6 +42,8 @@ const trainingCopyV3Baseline=process.argv.includes('--male-cns-training-copy-v3-
 const trainingCopyV3Current=process.argv.includes('--male-cns-training-copy-v3-current');
 const trainingCopyProfile=trainingCopyV3||trainingCopyV3Baseline||trainingCopyV3Current;
 const trainingCopyProgressArg=process.argv.find(argument=>argument.startsWith('--training-copy-progress='));
+const trainingCopyExpectedGenerationArg=process.argv.find(argument=>argument.startsWith('--training-copy-expected-generation='));
+const trainingCopyExpectedGeneration=trainingCopyExpectedGenerationArg?Number(trainingCopyExpectedGenerationArg.slice('--training-copy-expected-generation='.length)):null;
 const trainingCopyLearningSmoke=process.argv.includes('--training-copy-learning-smoke');
 const trackSmoke = process.argv.includes('--track-smoke');
 const performanceSmoke=process.argv.includes('--performance-test');
@@ -188,7 +190,7 @@ function createWindow() {
     mainWindow.webContents.once('did-finish-load',()=>{
       const outputArg=process.argv.find(argument=>argument.startsWith('--training-copy-output-dir='));
       const output=outputArg?path.resolve(outputArg.slice('--training-copy-output-dir='.length)):path.join(app.getPath('temp'),'male-cns-training-copy-'+app.getVersion());
-      require('./training-copy-smoke.cjs').run(mainWindow,{output,version:app.getVersion(),expectMigrated:Boolean(trainingCopyProgressArg),wide:trainingCopyV3,sensorMode:trainingCopyV3Current?'current':'legacy'}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
+      require('./training-copy-smoke.cjs').run(mainWindow,{output,version:app.getVersion(),expectMigrated:Boolean(trainingCopyProgressArg),expectedGeneration:trainingCopyExpectedGeneration,wide:trainingCopyV3,sensorMode:trainingCopyV3Current?'current':'legacy'}).then(result=>app.exit(result.passed?0:1)).catch(async error=>{
         console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'training-copy-error.json'),JSON.stringify({error:error.stack||String(error),version:app.getVersion()},null,2));app.exit(1);
       });
     });

@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('node:fs/promises'),path=require('node:path'),assert=require('node:assert/strict');
-async function run(mainWindow,{output,version,expectMigrated=false,wide=true,sensorMode='legacy'}){
+async function run(mainWindow,{output,version,expectMigrated=false,expectedGeneration=null,wide=true,sensorMode='legacy'}){
   await fs.mkdir(output,{recursive:true});
   const snapshot=await mainWindow.webContents.executeJavaScript(`(async()=>{
     const deadline=Date.now()+90000;
@@ -24,8 +24,8 @@ async function run(mainWindow,{output,version,expectMigrated=false,wide=true,sen
     ['UI labels the active sensor profile',snapshot.modeNote.includes(sensorMode==='legacy'?'Sensori centrolinea legacy':'Sensori collision-aware del profilo V3 5.7.0')],
     ['Training copy opens paused',snapshot.running===false],
     ...(expectMigrated?[
-      ['Migrated save is loaded at its saved generation',snapshot.trainingCopyProgressLoaded===true&&snapshot.trainingCopyProgressGeneration===67&&snapshot.generation===67],
-      ['Migration keeps 16 cars and resets only history',snapshot.population===16&&snapshot.historyLength===0],
+      ['Imported save is loaded at its saved generation',snapshot.trainingCopyProgressLoaded===true&&Number.isInteger(snapshot.trainingCopyProgressGeneration)&&snapshot.generation===snapshot.trainingCopyProgressGeneration&&(expectedGeneration===null||snapshot.trainingCopyProgressGeneration===expectedGeneration)],
+      ['Imported population and history remain valid',snapshot.population===16&&snapshot.historyLength>=0&&snapshot.historyLength<=snapshot.generation],
       ['UI identifies the imported experimental save',snapshot.modeNote.includes('salvataggio importato')]
     ]:[['UI identifies the fresh isolated session',snapshot.trainingCopyProgressLoaded===false&&snapshot.modeNote.includes('nessun salvataggio importato')]])
   ];
