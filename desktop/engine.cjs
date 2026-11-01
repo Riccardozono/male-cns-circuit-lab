@@ -5,7 +5,7 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 const os = require('node:os');
 const {Worker} = require('node:worker_threads');
-const F=require('../outputs/simulation.js'),{compareAgents}=F;
+const F=require('../outputs/simulation.js'),{compareAgents,compareLearningAgents}=F;
 const Progress=require('../outputs/progress-save.js');
 
 const MAX_WORKERS = Math.max(1, Number(os.availableParallelism?.() || os.cpus().length || 1));
@@ -49,6 +49,7 @@ class DesktopEngine {
     this.globalChampionFitness = -Infinity;
     this.globalChampionWorker = null;
     this.globalChampionStats = null;
+    this.globalChampionNeedsRevalidation = false;
     this.progressRequests=new Map();this.sessionId=null;this.restoring=false;
   }
 
@@ -129,6 +130,7 @@ class DesktopEngine {
     this.globalChampionFitness = -Infinity;
     this.globalChampionWorker = null;
     this.globalChampionStats = null;
+    this.globalChampionNeedsRevalidation = false;
     const modelId = ['v2', 'v3', 'v4', 'v5'].includes(rawOptions.modelId) ? rawOptions.modelId : 'v5';
     const bundle = await this.loadBundle(modelId);
     this.bundle = bundle;
@@ -163,6 +165,7 @@ class DesktopEngine {
     this.globalChampionFitness = -Infinity;
     this.globalChampionWorker = null;
     this.globalChampionStats = null;
+    this.globalChampionNeedsRevalidation = false;
     this.seenGenerations.fill(0);
   }
 
@@ -171,14 +174,17 @@ class DesktopEngine {
     const generation=Number(state?.generation);
     if(!Number.isInteger(generation)||generation<1)return;
     const seen=this.seenGenerations[index]??0;
-    if(this.options?.running===false&&generation<=seen)return;
+    if(generation<=seen)return;
     this.seenGenerations[index]=Math.max(seen,generation);
     const fitness = Number(state?.bestEver);
-    if (!Number.isFinite(fitness) || !state?.champion || !state.championStats || (this.globalChampionStats&&compareAgents(state.championStats,this.globalChampionStats)>=0)) return;
+    if (!Number.isFinite(fitness) || !state?.champion || !state.championStats) return;
+    const compare=this.globalChampion?.policyWeights&&state.champion.policyWeights?compareLearningAgents:compareAgents;
+    if (!this.globalChampionNeedsRevalidation&&this.globalChampionStats&&compare(state.championStats,this.globalChampionStats)>=0) return;
     this.globalChampionFitness = fitness;
     this.globalChampion = state.champion;
     this.globalChampionWorker = index;
     this.globalChampionStats=state.championStats;
+    this.globalChampionNeedsRevalidation=false;
     this.broadcastGlobalChampion();
   }
 
@@ -346,6 +352,7 @@ class DesktopEngine {
       const s=p.workers[0].state;await this.start({modelId:p.modelId,circuitId:p.circuitId,population:s.population,mutation:s.mutation,speedMultiplier:s.speedMultiplier,mode:'connectome',running:false,rendererToken:token},p.workers);
       const g=p.globalChampion;this.globalChampion=g?.genome||null;this.globalChampionStats=g?.stats||null;
       this.globalChampionFitness=g?.stats?.fitness??-Infinity;this.globalChampionWorker=g?.workerIndex??null;
+      this.globalChampionNeedsRevalidation=Boolean(g?.genome);
       return this.info();
     };
     try{return await apply(payload,rendererToken);}catch(error){try{if(previous)await apply(previous,previousOptions?.rendererToken);else if(previousOptions)await this.start({...previousOptions,running:false});}catch(rollback){this.emitError(rollback);}throw error;}
