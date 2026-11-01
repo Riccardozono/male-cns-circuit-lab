@@ -511,6 +511,42 @@ test('Functional policy crossover keeps each sensor and action block intact',()=
   assert.equal(child.policyWeights.at(-1),1,'longitudinal bias stays with longitudinal weights');
   assert.deepEqual(draws,[],'each functional block makes exactly one parent choice');
 });
+test('V3 evolution filters functional crossover donors by sensor mapping',()=>{
+  const Legacy=require('../legacy-models.js');
+  const makeMixedSimulation=matchingTopPolicies=>{
+    const v3=Legacy.tagV3(JSON.parse(JSON.stringify(data))),sim=new F.Simulation(v3,{population:16,mutation:.12});
+    for(const [index,car] of sim.cars.entries()){
+      car.genome.sensorMappingVersion=index<matchingTopPolicies?1:2;
+      car.alive=false;car.reason='ferma / senza progresso';car.laps=0;car.bestLapTime=Infinity;
+      car.bestProgress=1000-index*10;car.fitness=car.reward=car.baseFitness=100-index;car.penalty=0;
+      car.rewardState.finalized=true;
+    }
+    sim.optimizerSampleIds=null;
+    const optimizerMappings=[],update=sim.optimizer.update.bind(sim.optimizer);
+    sim.optimizer.update=(agents,compare)=>{optimizerMappings.push([...new Set(agents.map(agent=>agent.genome.sensorMappingVersion??1))]);return update(agents,compare);};
+    // Select rank zero as parent and force the functional-crossover family.
+    sim.random=()=>.3;
+    return {sim,optimizerMappings};
+  };
+  const {sim:incompatible,optimizerMappings:incompatibleMappings}=makeMixedSimulation(1);
+  assert.doesNotThrow(()=>incompatible.evolve());
+  assert.equal(incompatible.lastFunctionalCrossoverCount,0,'a mismatched donor is skipped in favor of mutation');
+  assert.ok(incompatibleMappings.every(mappings=>mappings.length===1&&mappings[0]===2),'ES updates only use the dominant compatible sensor mapping');
+  assert.ok([...incompatible.optimizerSampleIds].every(index=>incompatible.cars[index].genome.sensorMappingVersion===2),'new ES samples retain the optimizer mapping');
+
+  const {sim:compatible,optimizerMappings:compatibleMappings}=makeMixedSimulation(2);
+  assert.doesNotThrow(()=>compatible.evolve());
+  assert.ok(compatible.lastFunctionalCrossoverCount>0,'same-mapping policies still use functional crossover');
+  assert.ok(compatibleMappings.every(mappings=>mappings.length===1&&mappings[0]===2));
+  assert.ok([...compatible.optimizerSampleIds].every(index=>compatible.cars[index].genome.sensorMappingVersion===2));
+
+  const {sim:singleSample,optimizerMappings:singleSampleMappings}=makeMixedSimulation(2);
+  singleSample.optimizerSampleIds=new Set([0]);
+  assert.doesNotThrow(()=>singleSample.evolve());
+  assert.ok(singleSample.optimizer.updates>0,'one safe ES sample falls back to the safe same-mapping group');
+  assert.ok(singleSampleMappings.every(mappings=>mappings.length===1&&mappings[0]===1));
+  assert.ok([...singleSample.optimizerSampleIds].every(index=>singleSample.cars[index].genome.sensorMappingVersion===1));
+});
 test('Dynamic vehicle physics exposes inertia, slip and G forces',()=>{
   const car=F.makeCar(track);for(let i=0;i<60;i++)F.drive(track,car,[0,.8,0]);
   assert.ok(car.speed>0);assert.ok(Math.abs(car.longitudinalVelocity)>0);assert.equal(car.lateralVelocity,0);assert.ok(car.longitudinalG>0);

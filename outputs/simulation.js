@@ -448,9 +448,14 @@
     if(a.policyWeights){const inputVersion=a.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;if(inputVersion!==(b.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION))throw Error('Non si possono incrociare policy con mappature sensoriali diverse.');child.adapterVersion=a.adapterVersion;child.sensorMappingVersion=inputVersion;child.policyWeights=a.policyWeights.map((v,i)=>pick(v,b.policyWeights?.[i]??v));}
     return child;
   }
+  function compatiblePolicyPair(graph,a,b) {
+    const policy=ensureLearning(graph),sensorMapping=genome=>genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+    return a?.adapterVersion===policy.version&&b?.adapterVersion===policy.version&&sensorMapping(a)===sensorMapping(b)&&
+      Learning.valid(graph,a.policyWeights)&&Learning.valid(graph,b.policyWeights);
+  }
   function crossoverPolicyBlocks(graph,a,b,random) {
     const policy=ensureLearning(graph);
-    if(a?.adapterVersion!==policy.version||b?.adapterVersion!==policy.version||(a?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)!==(b?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)||!Learning.valid(graph,a.policyWeights)||!Learning.valid(graph,b.policyWeights))throw Error('Policy MaleCNS incompatibile per la ricombinazione funzionale.');
+    if(!compatiblePolicyPair(graph,a,b))throw Error('Policy MaleCNS incompatibile per la ricombinazione funzionale.');
     const weights=a.policyWeights.slice(),pick=()=>random()<.5?a.policyWeights:b.policyWeights;
     // Preserve complete functional groups: each sensor's gain/bias block,
     // shared synaptic gains, and each complete action readout with its bias.
@@ -713,8 +718,22 @@
       const usesLearningOutcome=Boolean(this.optimizer&&winner.genome.policyWeights),noSafeLearningCandidate=usesLearningOutcome&&safeEligible.length===0;
       const learningRanked=usesLearningOutcome?(safeEligible.length?safeEligible.slice().sort(compareLearningAgents):this.mutation===0?ranked:[]):ranked,selectionWinner=learningRanked[0]||null;
       const optimizerSampleIds=this.optimizerSampleIds,hasOptimizerSamples=optimizerSampleIds instanceof Set&&optimizerSampleIds.size>0;
+      const optimizerSampleLineage=hasOptimizerSamples?eligible.filter(agent=>optimizerSampleIds.has(agent.id)&&agent.genome?.policyWeights):[];
+      const optimizerMappingCounts=new Map(),mappingOf=genome=>genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+      for(const agent of learningRanked)if(agent.genome?.policyWeights){const mapping=mappingOf(agent.genome);optimizerMappingCounts.set(mapping,(optimizerMappingCounts.get(mapping)||0)+1);}
+      // One evolution-strategy mean cannot represent policy weights whose
+      // sensor channels have different meanings. Keep its samples and parent
+      // inside one mapping family; after restore, choose the largest safe
+      // family, with the safe rank as a deterministic tie-breaker.
+      const dominantOptimizerMapping=learningRanked.find(agent=>agent.genome?.policyWeights&&optimizerMappingCounts.get(mappingOf(agent.genome))===Math.max(0,...optimizerMappingCounts.values()))?.genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+      const optimizerMappingVersion=optimizerSampleLineage[0]?mappingOf(optimizerSampleLineage[0].genome):dominantOptimizerMapping;
+      const optimizerParent=learningRanked.find(agent=>agent.genome?.policyWeights&&mappingOf(agent.genome)===optimizerMappingVersion)||selectionWinner||winner;
+      // Preserve crash outcomes as negative ES feedback when a complete sample
+      // pair exists. A lone sample cannot define a direction, so fall back to
+      // safe candidates from that same mapping instead of freezing updates.
+      const optimizerSourceRanked=optimizerSampleLineage.length>=2?optimizerSampleLineage:learningRanked;
       const optimizerRanked=usesLearningOutcome
-        ?hasOptimizerSamples?eligible.filter(agent=>optimizerSampleIds.has(agent.id)).sort(compareOptimizerAgents):learningRanked
+        ?optimizerSourceRanked.filter(agent=>agent.genome?.policyWeights&&mappingOf(agent.genome)===optimizerMappingVersion).sort(compareOptimizerAgents)
         :learningRanked;
       const safeProgressTolerance=Math.max(.5*(this.track.pixelsPerMeter||1),this.track.total*.0001),riskRepairWindow=Math.max(12*(this.track.pixelsPerMeter||1),this.track.total*EVOLUTION_RULES.riskRepairWindowFraction);
       const riskRepairMinimumProgress=Math.max(100*(this.track.pixelsPerMeter||1),(this.learningFrontier?.progress||0)*EVOLUTION_RULES.riskRepairMinimumProgressFraction);
@@ -939,13 +958,13 @@
           continue;
         }
         if(optimizerSampleCount<optimizerSampleTarget&&this.optimizer&&winner.genome.policyWeights){
-          const child=cloneGenome(selectionWinner?.genome||winner.genome);
+          const child=cloneGenome(optimizerParent?.genome||selectionWinner?.genome||winner.genome);
           child.policyWeights=this.optimizer.sample(this.random,mutationAmount*.35,this.stagnation,optimizerSampleCount===1?optimizerPairSeed:null);
           if(optimizerSampleCount===0)optimizerPairSeed=child.policyWeights.slice();
            optimizerSampleIdsForNext.push(genomes.length);genomes.push(child);optimizerSampleCount++;continue;
         }
         if(this.optimizer&&winner.genome.policyWeights){
-          let child=cloneGenome(winner.genome),sampledByOptimizer=false;
+          let child=cloneGenome(baseMutation===0?winner.genome:(optimizerParent?.genome||winner.genome)),sampledByOptimizer=false;
           if(baseMutation===0)child.policyWeights=winner.genome.policyWeights.slice();
           else if(mirrored){child=cloneGenome(mirrored.genome);child.policyWeights=mirrored.weights;mirrored=null;}
           else {
@@ -957,7 +976,12 @@
             const family=this.random(),eliteCount=Math.min(learningRanked.length,Math.max(1,eliteBudget));
             const parent=learningRanked[Math.min(eliteCount-1,Math.floor(Math.pow(this.random(),1.6)*eliteCount))];
             if(family<.7){
-              const donorCandidates=learningRanked.slice(0,eliteCount).filter(agent=>agent.id!==parent.id&&JSON.stringify(agent.genome.policyWeights)!==JSON.stringify(parent.genome.policyWeights));
+              // Sensor mapping is part of a saved policy's meaning. A legacy
+              // genome may be evolved beside a current one, but they cannot
+              // exchange functional blocks unless both mappings agree.
+              const donorCandidates=learningRanked.slice(0,eliteCount).filter(agent=>agent.id!==parent.id&&
+                JSON.stringify(agent.genome.policyWeights)!==JSON.stringify(parent.genome.policyWeights)&&
+                compatiblePolicyPair(this.graph,parent.genome,agent.genome));
               const useFunctionalCrossover=this.modelId==='v3'&&donorCandidates.length>0&&this.random()<EVOLUTION_RULES.functionalCrossoverRate;
               if(useFunctionalCrossover){
                 const donor=donorCandidates[Math.floor(this.random()*donorCandidates.length)],recombined=crossoverPolicyBlocks(this.graph,parent.genome,donor.genome,this.random);
