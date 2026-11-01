@@ -74,6 +74,7 @@
     progressTieTolerance:0,
     riskRepairOffspringRate:.06,
     riskRepairWindowFraction:.02,
+    riskRepairMinimumProgressFraction:.1,
     hallOfFameCount:4,
     explorerRate:.14,
     hyperMutationRate:.12,
@@ -646,10 +647,10 @@
       this.population=clamp(Math.round(options.population??18),1,MAX_POPULATION);this.mutation=clamp(Number(options.mutation??0.32),0,EVOLUTION_RULES.mutationCeiling);this.speedMultiplier=clamp(options.speedMultiplier??1,.5,30);
       // Research-only V3 branch: unsafe near-frontier policies may seed
       // mutated repair candidates, but are never retained or promoted as-is.
-      this.riskRepairEnabled=options.riskRepairEnabled===true;
+      this.riskRepairEnabled=options.riskRepairEnabled===undefined?this.modelId==='v3':options.riskRepairEnabled===true;
       this.riskRepairOffspringRate=clamp(Number(options.riskRepairOffspringRate??EVOLUTION_RULES.riskRepairOffspringRate),0,.25);
       this.mode='connectome';this.running=true;this.generation=1;this.elapsed=0;this.accumulator=0;
-      this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.ticks=0;this.lastFunctionalCrossoverCount=0;
+      this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.archiveRevalidationPending=false;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.ticks=0;this.lastFunctionalCrossoverCount=0;
       this.random=rng(this.seed);this.reset();
     }
     configureCircuit(id) {
@@ -678,7 +679,7 @@
       this.elapsed=0; this.ticks=0;
     }
     reset() {
-      this.rewardRevision=Rewards.REVISION;this.random=rng(this.seed);this.generation=1;this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.accumulator=0;
+      this.rewardRevision=Rewards.REVISION;this.random=rng(this.seed);this.generation=1;this.history=[];this.bestEver=-Infinity;this.champion=null;this.championStats=null;this.archiveRevalidationPending=false;this.externalChampion=null;this.pendingExternalChampion=null;this.hallOfFame=[];this.stagnation=0;this.accumulator=0;
       this.learningFrontier={progress:0,laps:0,lapTime:null};this.safeLearningFrontier={progress:0,laps:0,lapTime:null};
       this.optimizer=this.learningEnabled?new Learning.EvolutionStrategy(this.graph):null;
       const genomes=Array.from({length:this.population},()=>this.learningEnabled?makeLearningGenome(this.graph,this.random):makeGenome(this.random,this.graph.outputs.length));
@@ -713,7 +714,8 @@
         ?hasOptimizerSamples?eligible.filter(agent=>optimizerSampleIds.has(agent.id)).sort(compareOptimizerAgents):learningRanked
         :learningRanked;
       const safeProgressTolerance=Math.max(.5*(this.track.pixelsPerMeter||1),this.track.total*.0001),riskRepairWindow=Math.max(12*(this.track.pixelsPerMeter||1),this.track.total*EVOLUTION_RULES.riskRepairWindowFraction);
-      const riskRepairCandidate=this.riskRepairEnabled&&this.modelId==='v3'&&usesLearningOutcome&&safeProgressLeader
+      const riskRepairMinimumProgress=Math.max(100*(this.track.pixelsPerMeter||1),(this.learningFrontier?.progress||0)*EVOLUTION_RULES.riskRepairMinimumProgressFraction);
+      const riskRepairCandidate=this.riskRepairEnabled&&this.modelId==='v3'&&usesLearningOutcome&&safeProgressLeader&&safeProgressLeader.bestProgress>=riskRepairMinimumProgress
         ?eligible.filter(car=>!isSafeLearningOutcome(car)&&!car.censored&&!car.overlap&&car.genome?.policyWeights&&
           (car.reason==='urto'||car.reason==='collision')&&!(Number(car.rewardBreakdown?.penalties?.offTrack)>0)&&!(Number(car.rewardBreakdown?.penalties?.invalid)>0)&&
           car.bestProgress>safeProgressLeader.bestProgress+safeProgressTolerance&&car.bestProgress<=safeProgressLeader.bestProgress+riskRepairWindow)
@@ -736,17 +738,23 @@
       // that lineage on its just-completed result before it can affect ranking
       // or offspring selection; keep the separate historical high-water target.
       const historicalArchiveRecords=[...this.hallOfFame,...(this.champion&&this.championStats?[{...this.championStats,genome:this.champion}]:[])];
-      const trustedArchiveRecords=historicalArchiveRecords.filter(entry=>!evaluatedGenomeKeys.has(JSON.stringify(entry.genome)));
+      const unverifiedArchiveRecords=historicalArchiveRecords.filter(entry=>!evaluatedGenomeKeys.has(JSON.stringify(entry.genome)));
+      const replayedUnsafeArchiveRecords=historicalArchiveRecords.filter(entry=>evaluatedGenomeKeys.has(JSON.stringify(entry.genome))&&!currentSafeByGenome.has(JSON.stringify(entry.genome)));
+      const archiveRevalidationRepairNeeded=replayedUnsafeArchiveRecords.some(entry=>
+        (Number(entry.bestProgress)||0)>(safeProgressLeader?.bestProgress??0)+safeProgressTolerance||
+        (Number(entry.laps)||0)>(safeProgressLeader?.laps??0)||
+        (Number.isFinite(entry.bestLapTime)&&entry.bestLapTime<(safeProgressLeader?.bestLapTime??Infinity)*.999));
       const championKey=this.champion?JSON.stringify(this.champion):null;
       if(championKey&&evaluatedGenomeKeys.has(championKey)){
         const replayedChampion=currentSafeByGenome.get(championKey);
         if(replayedChampion){this.champion=cloneGenome(replayedChampion.genome);this.championStats=Rewards.recordStats(replayedChampion);this.bestEver=this.championStats.fitness;}
         else {this.champion=null;this.championStats=null;this.bestEver=-Infinity;}
+        this.archiveRevalidationPending=false;
       }
-      const improved=Boolean(recordWinner&&(!this.championStats||compareAgents(recordWinner,this.championStats)<0));
+      const improved=Boolean(recordWinner&&(!this.championStats||this.archiveRevalidationPending||compareAgents(recordWinner,this.championStats)<0));
       // Keep raw motion for diagnostics. Only safe physical outcomes may clear
       // stagnation or advance the learning frontier used by mutation logic.
-      const frontier=this.learningFrontier,maxLaps=Math.max(...eligible.map(c=>c.laps));
+      const frontier=this.learningFrontier,searchTargetBeforeGeneration={...frontier},maxLaps=Math.max(...eligible.map(c=>c.laps));
       const rawDrivingImproved=progressLeader.bestProgress>frontier.progress+Math.max(this.track.pixelsPerMeter||1,this.track.total*.0005)||maxLaps>frontier.laps||
         (Number.isFinite(fastestLapTime)&&(frontier.lapTime===null||fastestLapTime<frontier.lapTime*.999));
       if(rawDrivingImproved)this.learningFrontier={progress:Math.max(frontier.progress,progressLeader.bestProgress),laps:Math.max(frontier.laps,maxLaps),lapTime:Number.isFinite(fastestLapTime)?Math.min(frontier.lapTime??Infinity,fastestLapTime):frontier.lapTime};
@@ -755,7 +763,10 @@
       // with no safe result, retain the prior frontier so a crash-only batch
       // cannot reset the learning clock.
       const priorSafeFrontier=this.safeLearningFrontier||{progress:0,laps:0,lapTime:null};
-      const frontierEvidence=safeRecords.length?[...safeRecords,...trustedArchiveRecords]:null;
+      // Historical archive rows contain no terminal reason or collision data.
+      // They remain available for re-evaluation, but cannot certify current
+      // safety or hold the live frontier above what this runtime just observed.
+      const frontierEvidence=safeRecords.length?safeRecords:null;
       let safeFrontier={...priorSafeFrontier},frontierRebased=false;
       if(frontierEvidence?.length&&historicalArchiveRecords.length){
         const evidenceBestLapTime=frontierEvidence.reduce((best,record)=>Number.isFinite(record.bestLapTime)?Math.min(best,record.bestLapTime):best,Infinity);
@@ -775,10 +786,19 @@
         (Number.isFinite(safeFastestLapTime)&&(safeFrontier.lapTime===null||safeFastestLapTime<safeFrontier.lapTime*.999))));
       if(safeDrivingImproved)this.safeLearningFrontier={progress:Math.max(safeFrontier.progress,safeProgressLeader.bestProgress),laps:Math.max(safeFrontier.laps,safeMaxLaps),lapTime:Number.isFinite(safeFastestLapTime)?Math.min(safeFrontier.lapTime??Infinity,safeFastestLapTime):safeFrontier.lapTime};
       else if(frontierRebased)this.safeLearningFrontier=safeFrontier;
-      const drivingImproved=safeDrivingImproved;
+      // Keep exploration pressure until a safe episode exceeds the previous
+      // raw search record. The raw record may have ended in a crash: it is a
+      // mutation target only, never a safe frontier, champion, or fitness row.
+      const searchFloor={progress:Math.max(safeFrontier.progress,searchTargetBeforeGeneration.progress),
+        laps:Math.max(safeFrontier.laps,searchTargetBeforeGeneration.laps),
+        lapTime:Number.isFinite(searchTargetBeforeGeneration.lapTime)
+          ?Math.min(safeFrontier.lapTime??Infinity,searchTargetBeforeGeneration.lapTime)
+          :safeFrontier.lapTime};
+      const drivingImproved=Boolean(safeProgressLeader&&(safeProgressLeader.bestProgress>searchFloor.progress+safeProgressTolerance||safeMaxLaps>searchFloor.laps||
+        (Number.isFinite(safeFastestLapTime)&&(searchFloor.lapTime===null||safeFastestLapTime<searchFloor.lapTime*.999))));
       this.stagnation=drivingImproved?0:this.stagnation+1;
       if(this.mutation>0)this.optimizer?.explore(this.stagnation);
-      if(improved) {this.bestEver=recordWinner.fitness;this.champion=cloneGenome(recordWinner.car.genome);this.championStats=Rewards.recordStats(recordWinner.car);}
+      if(improved) {this.bestEver=recordWinner.fitness;this.champion=cloneGenome(recordWinner.car.genome);this.championStats=Rewards.recordStats(recordWinner.car);this.archiveRevalidationPending=false;}
       const baseMutation=clamp(Number(this.mutation)||0,0,EVOLUTION_RULES.mutationCeiling);
       const mutationSchedule=this.stagnation>=EVOLUTION_RULES.prolongedStagnationWindow
         ?EVOLUTION_RULES.prolongedStagnationMutationMultiplier
@@ -807,7 +827,6 @@
       // longitudinal head (throttle/brake). This isolates the missing
       // propulsion signal instead of changing cornering and acceleration at
       // the same time.
-      const frontierMutationFocus=stagnantFrontier&&safeLeaderStopped?'longitudinal':null;
       let frontierParent=progressExplorer||(stagnantFrontier?safeProgressLeader:null);
       let frontierParentSource=progressExplorer?'live-progress-explorer':frontierParent?'live-safe-leader':null;
       const archiveEntries=[...currentSafeByGenome.values()].map(car=>({genome:cloneGenome(car.genome),...Rewards.recordStats(car),progress:car.bestProgress}));
@@ -816,7 +835,7 @@
       // Current replays take precedence over historical stats for the same
       // genome. Keep unevaluated historical lineages as-is, but never preserve
       // a stale score beside a fresh result for an identical policy.
-      for(const candidate of [...archiveEntries.sort(compareSafeFrontier),...trustedArchiveRecords.sort(compareAgents)]){
+      for(const candidate of [...archiveEntries.sort(compareSafeFrontier),...unverifiedArchiveRecords.sort(compareAgents)]){
         const key=JSON.stringify(candidate.genome);if(!uniqueArchive.has(key))uniqueArchive.set(key,candidate);
       }
       const archive=[...uniqueArchive.values()],retained=new Map();
@@ -826,16 +845,19 @@
       keep(archive.filter(entry=>Number.isFinite(entry.bestLapTime)).sort((a,b)=>a.bestLapTime-b.bestLapTime||compareAgents(a,b))[0]);
       for(const record of archive.sort(compareAgents)){if(retained.size>=EVOLUTION_RULES.hallOfFameCount)break;keep(record);}
       this.hallOfFame=[...retained.values()].sort(compareAgents).slice(0,EVOLUTION_RULES.hallOfFameCount);
-      // A restored save can have a stronger safe genotype in its archive than
-      // any car that survived into this generation. Once stagnant, breed from
-      // that evaluated lineage instead of repeatedly mutating a regressed one.
-      if(stagnantFrontier){
-        const archivedFrontier=this.hallOfFame.slice().sort(compareSafeFrontier)[0];
-        if(archivedFrontier&&(!frontierParent||compareSafeFrontier(archivedFrontier,frontierParent)<0)){
-          frontierParent=archivedFrontier;frontierParentSource='hall-of-fame';
-        }
+      // Historical archive scores cannot certify safety, but an unverified
+      // genome can still be explored as a repair seed. Its offspring are fresh
+      // episodes and only those live outcomes can enter safe ranking/frontiers.
+      // A replayed archive genome may be absent from the refreshed safe HOF
+      // precisely because it crashed under current physics. It can still seed
+      // fresh repair mutations; its historical score never enters safe ranking.
+      const archiveRepairParent=stagnantFrontier||archiveRevalidationRepairNeeded
+        ?(archiveRevalidationRepairNeeded?replayedUnsafeArchiveRecords:historicalArchiveRecords.filter(entry=>!currentSafeByGenome.has(JSON.stringify(entry.genome)))).sort(compareSafeFrontier)[0]||null
+        :null;
+      if(archiveRepairParent&&(!frontierParent||compareSafeFrontier(archiveRepairParent,frontierParent)<0)){
+        frontierParent=archiveRepairParent;frontierParentSource='unverified-archive-repair';
       }
-
+      const frontierMutationFocus=(stagnantFrontier||archiveRevalidationRepairNeeded)&&safeLeaderStopped?'longitudinal':null;
       // Very small populations need room for a pair of independent ES
       // rollouts; immigrants would otherwise consume the only sample slots.
       const immigrantCount=baseMutation>0?Math.min(Math.max(1,Math.floor(this.population*(this.stagnation>=EVOLUTION_RULES.stagnationWindow?EVOLUTION_RULES.immigrantRate:.08))),Math.max(0,this.population-4)):0;
@@ -853,7 +875,10 @@
        // Keep the furthest real trajectory as a separate exploration lineage.
        // It does not replace the penalized-fitness winner or become champion.
        if(progressExplorer&&genomes.length<this.population-2&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(progressExplorer.genome)))genomes.push(cloneGenome(progressExplorer.genome));
-       if(frontierParentSource==='hall-of-fame'&&genomes.length<this.population-2&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(frontierParent.genome)))genomes.push(cloneGenome(frontierParent.genome));
+       // Probe one unevaluated archived genome as a normal population member.
+       // Its saved score is not used for safety, ranking, or frontier breeding.
+       const archiveProbe=this.hallOfFame.filter(entry=>!evaluatedGenomeKeys.has(JSON.stringify(entry.genome))&&!genomes.some(g=>JSON.stringify(g)===JSON.stringify(entry.genome))).sort(compareSafeFrontier)[0];
+       if(archiveProbe&&genomes.length<this.population-2)genomes.push(cloneGenome(archiveProbe.genome));
       const eliteCandidates=learningRanked;
       const eliteGenomes=new Set(genomes.map(g=>JSON.stringify(g)));
       // Small batches need new evaluated policies, not four copied elites.
@@ -973,7 +998,11 @@
        this.lastRiskRepairOffspringCount=riskRepairOffspringCount;
        this.lastRiskRepairParentProgress=riskRepairCandidate?.bestProgress??null;
         this.lastFunctionalCrossoverCount=functionalCrossoverCount;
-       this.lastFrontierDiagnostics={frontierOffspringCount,frontierParentId:frontierParent?.id??null,frontierParentSource,frontierParentProgress:frontierParent?.bestProgress??null,frontierMutationFocus,progressExplorerId:progressExplorer?.id??null,riskRepairOffspringCount,riskRepairParentProgress:riskRepairCandidate?.bestProgress??null};
+       this.lastFrontierDiagnostics={frontierOffspringCount,frontierParentId:frontierParent?.id??null,frontierParentSource,
+         frontierParentProgress:frontierParentSource==='unverified-archive-repair'?null:frontierParent?.bestProgress??null,
+         archiveRepairParentProgress:frontierParentSource==='unverified-archive-repair'?frontierParent.bestProgress:null,
+         frontierMutationFocus,archiveRepairCause:archiveRevalidationRepairNeeded?'archive-revalidation':stagnantFrontier?'stagnation':null,
+         progressExplorerId:progressExplorer?.id??null,riskRepairOffspringCount,riskRepairParentProgress:riskRepairCandidate?.bestProgress??null};
         this.generation++;this.spawn(genomes,false,optimizerSampleIdsForNext);
     }
     tick(neuralOverrides=null,sensorsReady=false) {

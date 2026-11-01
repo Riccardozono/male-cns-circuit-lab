@@ -209,7 +209,7 @@ test('A farther collision stays in raw metrics but cannot advance safe learning 
 test('Research V3 risk repair mutates a near-frontier crash seed without retaining or promoting the unsafe genome',()=>{
   const Legacy=require('../legacy-models.js'),v3=Legacy.tagV3(JSON.parse(JSON.stringify(data)));
   const ordinary=new F.Simulation(v3,{population:4}),highDose=new F.Simulation(v3,{population:4,riskRepairEnabled:true,riskRepairOffspringRate:.18});
-  assert.equal(ordinary.riskRepairEnabled,false,'risk repair is off in ordinary app sessions');assert.equal(ordinary.riskRepairOffspringRate,.06);
+  assert.equal(ordinary.riskRepairEnabled,true,'V3 evaluates targeted risk repair as ordinary evolutionary offspring');assert.equal(ordinary.riskRepairOffspringRate,.06);
   assert.equal(highDose.riskRepairOffspringRate,.18,'headless experiments can vary only the reserved mutation branch');
   const sim=new F.Simulation(v3,{population:16,mutation:.12,riskRepairEnabled:true}),unsafe=sim.cars[2],unsafeGenome=JSON.stringify(unsafe.genome);
   const scored=(car,fitness,bestProgress,reason)=>{
@@ -223,7 +223,7 @@ test('Research V3 risk repair mutates a near-frontier crash seed without retaini
   scored(unsafe,150,125,'urto');
   sim.safeLearningFrontier={progress:120,laps:0,lapTime:null};sim.learningFrontier={progress:125,laps:0,lapTime:null};sim.stagnation=6;
   sim.evolve();
-  assert.equal(sim.lastRiskRepairOffspringCount,1,'a small branch is reserved for repair offspring');
+  assert.equal(sim.lastRiskRepairOffspringCount,1,'the default branch reserves one risk-repair mutation at 6% of a 16-car population');
   assert.equal(sim.lastRiskRepairParentProgress,125);
   assert.equal(sim.safeLearningFrontier.progress,120,'unsafe progress does not move the safe frontier');
   assert.equal(sim.champion&&F.isSafeLearningOutcome(sim.championStats),true,'unsafe policies cannot become champion');
@@ -286,26 +286,28 @@ test('Safe archive preserves progress, lap-count and fastest-lap frontiers outsi
   assert.ok(archived.includes(6),'fastest safe lap survives in the safe archive');
   assert.deepEqual(sim.safeLearningFrontier,{progress:1000,laps:2,lapTime:80});
 });
-test('Prolonged stagnation breeds from and preserves the best archived safe-progress lineage',()=>{
+test('Stagnation repairs from a replayed unsafe archive without trusting its score as safe progress',()=>{
   const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],liveLeader=sim.cars[2];
-  const archivedGenome=F.cloneGenome(sim.cars[15].genome);archivedGenome.encoder[0]+=.01;
+  const archivedCar=sim.cars[15],archivedGenome=F.cloneGenome(archivedCar.genome);
   const scored=(car,fitness,bestProgress)=>{
     car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
     car.rewardBreakdown.rewards.progress=fitness;car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
   };
   scored(winner,100,150);
-  for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],80-i,100+i);
+  for(let i=1;i<sim.cars.length;i++)if(i!==2&&i!==15)scored(sim.cars[i],80-i,100+i);
   scored(liveLeader,50,700);liveLeader.speed=0;liveLeader.outputs=[.0206,0,.2541];
+  scored(archivedCar,-500,790);archivedCar.reason='urto';
   sim.hallOfFame=[{genome:archivedGenome,fitness:10,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
   sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};
   sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
   sim.evolve();
-  assert.equal(sim.safeLearningFrontier.progress,900,'an unevaluated safe archive lineage remains authoritative frontier evidence');
-  assert.equal(sim.lastFrontierDiagnostics.frontierParentSource,'hall-of-fame');
-  assert.equal(sim.lastFrontierDiagnostics.frontierParentProgress,900);
-  assert.equal(sim.lastFrontierDiagnostics.frontierMutationFocus,'longitudinal','a stopped no-gas leader explores throttle/brake while preserving its steering response');
+  assert.equal(sim.safeLearningFrontier.progress,700,'only the current generation can establish the safe frontier');
+  assert.equal(sim.lastFrontierDiagnostics.frontierParentSource,'unverified-archive-repair','a current crash must not erase the genome as a repair seed');
+  assert.equal(sim.lastFrontierDiagnostics.frontierParentProgress,null,'historical archive progress is not presented as a safe rollout');
+  assert.equal(sim.lastFrontierDiagnostics.archiveRepairParentProgress,900,'the old distance is used only to choose a genome for fresh repair mutations');
+  assert.equal(sim.lastFrontierDiagnostics.frontierMutationFocus,'longitudinal','a stopped no-gas frontier still explores throttle/brake outputs in the repair lineage');
   assert.ok(sim.lastFrontierOffspringCount>0,'the archived safe controller is explored with mutations');
-  assert.ok(sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(archivedGenome)),'the archive controller remains available for future generations');
+  assert.ok(sim.lastFrontierOffspringCount>0,'the unsafe archive genome produces fresh repair candidates instead of replaying its stale score');
   assert.deepEqual(sim.cars[0].genome,liveLeader.genome,'the furthest safe no-lap rollout remains the learning seed');
 });
 test('Replayed archive genomes replace stale progress and unsafe lineages are removed',()=>{
@@ -322,7 +324,7 @@ test('Replayed archive genomes replace stale progress and unsafe lineages are re
     sim.hallOfFame=[{genome:archivedGenome,fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
     sim.champion=F.cloneGenome(archivedGenome);sim.championStats={fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity};sim.bestEver=1000;
     sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};
-    sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+    sim.stagnation=0;
     sim.evolve();
     const refreshed=sim.hallOfFame.find(entry=>JSON.stringify(entry.genome)===JSON.stringify(archivedGenome));
     if(replaySafe){
@@ -333,9 +335,33 @@ test('Replayed archive genomes replace stale progress and unsafe lineages are re
     assert.equal(sim.bestEver,sim.championStats.fitness,'the visible best score follows the re-evaluated safe champion');
     assert.equal(sim.safeLearningFrontier.progress,700,'re-evaluated historical scores are replaced by the current safe population frontier');
     assert.deepEqual(sim.safeLearningFrontier,{progress:700,laps:0,lapTime:null});
-    assert.equal(sim.stagnation,F.EVOLUTION_RULES.prolongedStagnationWindow+1,'no progress against the real historical record remains stagnant');
+    assert.equal(sim.stagnation,1,'archive revalidation happens before ordinary stagnation accrues');
+    if(replaySafe){
+      assert.notEqual(sim.lastFrontierDiagnostics.archiveRepairCause,'archive-revalidation','a safe replay does not activate stale-archive repair');
+    }else{
+      assert.equal(sim.lastFrontierDiagnostics.archiveRepairCause,'archive-revalidation');
+      assert.equal(sim.lastFrontierDiagnostics.frontierParentSource,'unverified-archive-repair');
+      assert.equal(sim.lastFrontierDiagnostics.archiveRepairParentProgress,900);
+    }
     assert.notEqual(sim.lastFrontierDiagnostics.frontierParentSource,'hall-of-fame','an evaluated stale genome cannot become the special parent');
   }
+});
+test('A restored champion score is replaced by live evidence while its old genome is probed',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],liveLeader=sim.cars[2];
+  const archivedGenome=F.cloneGenome(sim.cars[15].genome);archivedGenome.encoder[0]+=.01;
+  const scored=(car,fitness,bestProgress)=>{
+    car.fitness=fitness;car.baseFitness=fitness;car.reward=fitness;car.penalty=0;car.bestProgress=bestProgress;car.laps=0;car.bestLapTime=Infinity;
+    car.rewardBreakdown.rewards.progress=fitness;car.rewardState.finalized=true;car.alive=false;car.reason='ferma / senza progresso';
+  };
+  scored(winner,100,150);for(let i=1;i<sim.cars.length;i++)if(i!==2)scored(sim.cars[i],80-i,100+i);
+  scored(liveLeader,50,700);
+  sim.champion=F.cloneGenome(archivedGenome);sim.championStats={fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity};sim.bestEver=1000;
+  sim.hallOfFame=[{genome:archivedGenome,fitness:1000,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
+  sim.archiveRevalidationPending=true;sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+  sim.evolve();
+  assert.notDeepEqual(sim.champion,archivedGenome,'an unevaluated historical champion cannot hold the current champion slot');
+  assert.ok(sim.championStats.fitness<1000);assert.equal(sim.bestEver,sim.championStats.fitness);
+  assert.ok(sim.cars.some(car=>JSON.stringify(car.genome)===JSON.stringify(archivedGenome)),'the old champion remains available for a new physical evaluation');
 });
 test('Evolution preserves a live practice snapshot and never fabricates one from a stopped car',()=>{
   const sim=new F.Simulation(data,{population:8,mutation:0}),cars=sim.cars.slice();
@@ -427,6 +453,20 @@ test('A sub-coarse-threshold safe gain advances the frontier and resets stagnati
   sim.evolve();
   assert.equal(sim.safeLearningFrontier.progress,100+gain,'the incremental safe gain is recorded');
   assert.equal(sim.stagnation,0,'accepted safe progress resets the stagnation counter');
+});
+test('Safe incremental gains do not clear stagnation below the saved raw search target',()=>{
+  const sim=new F.Simulation(data,{population:16,mutation:.12});
+  sim.safeLearningFrontier={progress:100,laps:0,lapTime:null};
+  sim.learningFrontier={progress:1000,laps:0,lapTime:null};sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+  for(const [index,car] of sim.cars.entries()){
+    car.alive=false;car.reason='ferma / senza progresso';car.laps=0;car.bestLapTime=Infinity;
+    car.bestProgress=index===0?200:100+index;car.fitness=car.reward=car.baseFitness=car.bestProgress;
+    car.penalty=0;car.rewardState.finalized=true;
+  }
+  sim.evolve();
+  assert.equal(sim.safeLearningFrontier.progress,200,'the measured safe frontier still records every verified gain');
+  assert.equal(sim.stagnation,F.EVOLUTION_RULES.prolongedStagnationWindow+1,'the old raw high-water mark remains a search target until safe driving exceeds it');
+  near(sim.history.at(-1).mutationAmount,.24);
 });
 test('Prolonged stagnation widens mutation and assigns half the population to the physical frontier',()=>{
   const legacy=require('../legacy-models.js');

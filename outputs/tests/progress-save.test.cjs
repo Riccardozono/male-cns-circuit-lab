@@ -6,7 +6,6 @@ const VERSION=require('../../package.json').version,clone=x=>JSON.parse(JSON.str
 function simulation(options={}){return new F.Simulation(Legacy.buildV2(data),{population:4,circuits:catalog,circuitId:'monza',...options});}
 function learned(){const s=simulation();for(let i=0;i<3;i++){s.advance(.2);for(const car of s.cars){car.alive=false;car.reason='ferma / senza progresso';car.rewardState.finalized=true;}s.evolve();}s.running=false;return s;}
 function validate(p,s){return P.validatePayload(p,{graph:s.graph,circuits:s.circuits});}
-function archivedSafeFrontier(state){const records=[...state.hallOfFame,...(state.championStats?[state.championStats]:[])],times=records.map(record=>record.bestLapTime).filter(Number.isFinite);return {progress:Math.max(0,...records.map(record=>record.bestProgress)),laps:Math.max(0,...records.map(record=>record.laps)),lapTime:times.length?Math.min(...times):null};}
 test('File round-trip preserves exact app version, format, model and checksum',async()=>{
   const s=learned(),p=P.fromSimulation(s),text=await P.encode(p,VERSION),file=await P.decode(text,VERSION);
   assert.equal(file.appVersion,VERSION);assert.equal(file.format,P.FORMAT);assert.equal(file.schema,1);assert.equal(file.checksum.value.length,64);assert.deepEqual(file.payload,p);validate(file.payload,s);
@@ -43,7 +42,8 @@ test('Restore keeps optimizer, all genomes, archive, champion, history and setti
   assert.equal(target.mutation,.23,'restoring an existing session keeps its saved mutation instead of adopting the fresh-session default');
   assert.ok(target.optimizerSampleIds instanceof Set);assert.equal(target.optimizerSampleIds.size,0,'saved genomes have no serialized ES sample provenance');
   assert.equal(target.running,false);assert.equal(target.mode,'connectome');assert.equal(target.elapsed,0);assert.equal(target.ticks,0);assert.equal(target.accumulator,0);assert.ok(state.elapsedAtSave>0);
-  assert.deepEqual(target.safeLearningFrontier,archivedSafeFrontier(state),'the safe frontier is rebuilt from safe-only archived records');
+  assert.deepEqual(target.safeLearningFrontier,{progress:0,laps:0,lapTime:null},'saved archive scores must be revalidated by live episodes before advancing the safe frontier');
+  assert.equal(target.archiveRevalidationPending,true,'the imported champion score is not trusted until its genome is re-evaluated');
   assert.equal(target.optimizer.updates,source.optimizer.updates);assert.equal(target.history.length,3);assert.equal(target.cars.length,4);assert.equal(target.circuitId,'monza');
   const start=F.makeCar(target.track,0);assert.equal(target.cars[0].x,start.x);assert.equal(target.cars[0].y,start.y);assert.equal(target.cars[0].vehicle.speedMps,0);
   assert.equal(target.championStats.bestLapTime,Infinity);assert.equal(target.hallOfFame[0].bestLapTime,Infinity);
@@ -60,7 +60,7 @@ test('Safe progress metrics are validated, round-trip, and remain optional for o
   const incomplete=clone(state);delete incomplete.history.at(-1).meanSafeProgress;
   assert.throws(()=>P.validateTraining(incomplete,s.graph,s.circuits),/incompleto/);
 });
-test('Restore recovers safe progress/lap frontiers from the archive, not raw crash progress',()=>{
+test('Restore does not infer current safety from archive rows that omit terminal outcomes',()=>{
   const source=learned(),state=P.capture(source),target=simulation(),genome=clone(state.genomes[0]);
   state.learningFrontier={progress:1200,laps:2,lapTime:40};
   state.hallOfFame=[
@@ -69,7 +69,7 @@ test('Restore recovers safe progress/lap frontiers from the archive, not raw cra
     {genome:clone(genome),fitness:-30,progress:500,bestProgress:500,laps:1,bestLapTime:90}
   ];
   P.restore(target,state);
-  assert.deepEqual(target.safeLearningFrontier,{progress:500,laps:2,lapTime:90});
+  assert.deepEqual(target.safeLearningFrontier,{progress:0,laps:0,lapTime:null});
 });
 test('A progress-3 save remains loadable and continues its original reward revision',()=>{
   const source=learned(),state=P.capture(source);state.rewardRevision=F.Rewards.LEGACY_REVISION;for(const entry of state.history)entry.rewardRevision=F.Rewards.LEGACY_REVISION;

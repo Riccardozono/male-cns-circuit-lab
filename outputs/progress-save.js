@@ -25,15 +25,6 @@
     if(v.bestLapTime!==null)finite(v.bestLapTime,label+' tempo',.001);
     if(withGenome){finite(v.progress,label+' progresso archivio',0);genome(v.genome,graph);}
   }
-  function deriveSafeLearningFrontier(state){
-    // 5.6.0 saves predate a dedicated frontier field. The champion and hall
-    // of fame contain only collision-free records, unlike learningFrontier,
-    // which may include a faster but crashed rollout.
-    const records=[...(state.hallOfFame||[]),...(state.championStats?[state.championStats]:[])];
-    const lapTimes=records.map(record=>record.bestLapTime).filter(value=>Number.isFinite(value)&&value>0);
-    return {progress:records.reduce((best,record)=>Math.max(best,record.bestProgress||0),0),
-      laps:records.reduce((best,record)=>Math.max(best,record.laps||0),0),lapTime:lapTimes.length?Math.min(...lapTimes):null};
-  }
   const HISTORY_KEYS=['generation','best','mean','reward','penalty','laps','maxLaps','bestProgress','meanProgress','bestSafeProgress','meanSafeProgress','bestLapTime','noLapCount','slowerLapCount','stagnation','mutationAmount','immigrantCount','hallOfFame','learning','rewardRevision','baseBest','previousBestLapTime','rewardBreakdown'];
   function breakdown(v){
     keys(v,['rewards','penalties'],'Dettaglio punteggio');
@@ -96,9 +87,10 @@
     sim.configureCircuit(s.circuitId);sim.rewardRevision=s.rewardRevision;sim.population=s.population;sim.mutation=s.mutation;sim.speedMultiplier=s.speedMultiplier;sim.mode='connectome';sim.running=false;
     sim.seed=s.seed;sim.random=F.rng(s.rngState);sim.generation=s.generation;sim.stagnation=s.stagnation;sim.history=s.history;
     sim.learningFrontier=s.learningFrontier;
-    // Keep the exact current-version file schema. Older/newer-version files rebuild
-    // the safe frontier from safe-only archive statistics, never raw progress.
-    sim.safeLearningFrontier=deriveSafeLearningFrontier(s);
+    // Archive rows omit their terminal reason and collision penalties. Keep
+    // their genomes, but rebuild safety and progress from the next live runs.
+    sim.safeLearningFrontier={progress:0,laps:0,lapTime:null};
+    sim.archiveRevalidationPending=Boolean(s.champion&&s.championStats);
     sim.bestEver=s.bestEver===null?-Infinity:s.bestEver;sim.champion=s.champion;sim.championStats=s.championStats;
     if(sim.championStats&&sim.championStats.bestLapTime===null)sim.championStats.bestLapTime=Infinity;
     sim.hallOfFame=s.hallOfFame;for(const entry of sim.hallOfFame)if(entry.bestLapTime===null)entry.bestLapTime=Infinity;
