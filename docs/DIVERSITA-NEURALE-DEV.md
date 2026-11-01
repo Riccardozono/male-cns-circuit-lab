@@ -105,12 +105,32 @@ controllando **tutti i 1920 vettori proposti** e l'intero archivio finale
 contro il registro fisico precedente. Non riproduce azioni di guida, non
 ricrea ricompense e non ripristina posizioni di veicoli.
 
-È stata avviata una continuazione di 100 iterazioni con lo stesso archivio e
-lo stesso stato casuale recuperato. `neural-diversity-resume-40/progress.json`
-e `verified-champion.json` contengono risultati intermedi: non sono il report
-finale e non cambiano automaticamente il modello congelato del launcher,
-che resta a 2982 m. Verificare processo/sessione reale prima di riprendere:
-non lanciare una seconda copia perché il file di avanzamento è fermo.
+La continuazione di 100 iterazioni con lo stesso archivio e lo stato casuale
+recuperato è conclusa: 4800 campioni valutati, popolazione 48. Il campione
+protetto finale raggiunge **3298,280493659503 m**, zero giri, punteggio
+**−1069,1686353869754** e si ferma per `ferma / senza progresso`. L'episodio è
+completo, dura 392,4 s simulati e non ha sovrapposizioni gas/freno. Due replay
+completi indipendenti coincidono esattamente. È un miglioramento di circa
+316,09 m sul modello da 2982,19 m, ma non completa un giro.
+
+Il confronto abbinato è stato ripetuto nello stesso runtime Node 24.19.0, con
+due episodi completi per modello e CPU. Il baseline da 2982,192214727352 m
+termina per `troppo lenta / senza progresso`; il nuovo candidato raggiunge
+3298,280493659503 m e termina per `ferma / senza progresso`. La differenza
+osservata è **+316,088278932151 m (+10,5992%)**. Entrambi hanno zero giri e
+zero sovrapposizioni gas/freno; il candidato non ha ancora completato Monza.
+
+Il candidato è stato esportato separatamente in
+`neural-diversity-resume-40-native-model/` con 10 pesi e decoder privato
+`learned-projected-frontier-v2`. Due replay nativi Node 24.19.0 hanno
+confermato il risultato identico in 23544 tick ciascuno. SHA-256 del modello:
+`35410d5df3d55dc83e8567146e3777c0af13581e8998ddbe092c83598dc30dc6`.
+
+Questo export resta un artefatto sperimentale locale: non è stato collegato
+alla finestra Electron, ai salvataggi o all'app corrente 5.7.0. Il launcher
+Windows della copia inferenza continua quindi a usare il modello da 2982 m;
+non avviare una seconda ricerca dalla vecchia progress file e non presentare
+il nuovo export come modello integrato.
 
 ## Evidenze locali
 
@@ -121,6 +141,14 @@ Sotto `.impeccable/review/neural-sacl`:
   due ripetizioni complete e punteggi distinti dal progresso.
 - `neural-diversity-first/optimizer-recovery.json`: ricostruzione esatta
   dei parametri e dello stato casuale.
+- `neural-diversity-resume-40/report.json`: continuazione completata,
+  campione protetto finale e replay indipendente.
+- `neural-diversity-resume-40-native-model/model.malecns-neural-diversity.json`:
+  nuovo export locale, SHA-256 riportato sopra.
+- `neural-diversity-resume-40-native-model/verification.json`: due replay
+  nativi completi identici, zero sovrapposizioni gas/freno.
+- `neural-diversity-resume-40-native-model/paired-comparison.json`: confronto
+  abbinato fra i modelli da 2982 m e 3298 m, due replay per modello, CPU.
 - `diversity-native-model/model.malecns-neural-diversity.json`: export privato,
   SHA-256 `eeb141b90ad35cb9a8a5ab9cb0104c81589d47a0a5312a2e45624ceff338225e`.
 - `diversity-native-model/verification.json`: due episodi dati-only completi.
@@ -141,7 +169,8 @@ node work/run-context-native.cjs --stage=3 --diversity --functional-only
 node work/verify-frontier-preservation.cjs
 ```
 
-**Lavoro ancora aperto:** zero giri nel modello esportato; nessuna prova di
-due giri, convergenza da zero o addestramento di tutti i modelli su tutti i
-circuiti. L'archivio non è ancora il motore di training della normale app
-distribuita. L'obiettivo complessivo non viene dichiarato raggiunto.
+**Lavoro ancora aperto:** il nuovo candidato fa zero giri e non è integrato
+nella normale app; nessuna prova di due giri, convergenza da zero o
+addestramento di tutti i modelli su tutti i circuiti. L'archivio non è ancora
+il motore di training della normale app distribuita. L'obiettivo complessivo
+non viene dichiarato raggiunto.
