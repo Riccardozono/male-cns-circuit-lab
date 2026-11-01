@@ -60,16 +60,33 @@ test('Local safety reports a real off-track ending separately from an on-track t
   assert.ok(['urto','fuori pista','progresso non valido'].includes(offTrack.reason));assert.equal(offTrack.safe,false);
 });
 
-test('Local practice cannot promote a crash under current or legacy rewards',()=>{
-  // This relation occurred in an offline replay of a real stopped elite:
-  // the stall incurred 1,400 points while the short crash incurred 900+impact.
-  const baseline={progress:0,fitness:-4407,safe:true},best=baseline;
-  const crash={progress:8.8,fitness:-3910,safe:false},safeProgress={progress:4.5,fitness:-3006,safe:true};
-  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,best,1,F.Rewards.REVISION),false);
-  assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,best,1,F.Rewards.REVISION),true);
-  assert.equal(F.shouldPromotePracticeCandidate({...safeProgress,progress:.5},baseline,best,1,F.Rewards.REVISION),false);
-  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,best,1,F.Rewards.LEGACY_REVISION),false);
-  assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,best,1,F.Rewards.LEGACY_REVISION),true);
+test('Local practice ranks safe no-lap progress before reward and never promotes a crash',()=>{
+  const baseline={progress:0,fitness:-4407,safe:true,laps:0};
+  const crash={progress:8.8,fitness:-3910,safe:false,laps:0},safeProgress={progress:4.5,fitness:-4410,safe:true,laps:0};
+  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,baseline,1,F.Rewards.REVISION),false);
+  assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,baseline,1,F.Rewards.REVISION),true,'real safe progress can be kept even when its score is lower');
+  assert.equal(F.shouldPromotePracticeCandidate({...safeProgress,progress:3,fitness:10000},baseline,safeProgress,1,F.Rewards.REVISION),false,'a higher score cannot replace a farther safe no-lap policy');
+  assert.equal(F.shouldPromotePracticeCandidate({...safeProgress,progress:.5},baseline,baseline,1,F.Rewards.REVISION),false);
+  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,baseline,1,F.Rewards.LEGACY_REVISION),false);
+  assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,baseline,1,F.Rewards.LEGACY_REVISION),true);
+  const oneLap={progress:1200,fitness:-9000,safe:true,laps:1};
+  assert.equal(F.shouldPromotePracticeCandidate(oneLap,baseline,baseline,1,F.Rewards.REVISION),true,'a completed lap outranks a zero-lap baseline');
+  assert.equal(F.shouldPromotePracticeCandidate({...oneLap,fitness:-9500},oneLap,oneLap,1,F.Rewards.REVISION),false,'same lap count still needs a better real score');
+  assert.equal(F.shouldPromotePracticeCandidate({...oneLap,laps:2,fitness:-20000},oneLap,oneLap,1,F.Rewards.REVISION),true,'more completed laps outrank score');
+  assert.equal(F.shouldPromotePracticeCandidate({...oneLap,laps:0,progress:3000,fitness:10000},oneLap,oneLap,1,F.Rewards.REVISION),false,'fewer laps are never promoted');
+});
+
+test('V3 practice captures a real braking stall near the safe frontier once',()=>{
+  const car={alive:true,bestProgress:95,pixelsPerMeter:1,speed:0,vehicle:{speedMps:.78},outputs:[0,.02,.1],
+    practiceState:{bestProgress:94,vehicle:{speedMps:5}}};
+  const options={stagnation:3,frontierProgress:100,pixelsPerMeter:1};
+  assert.equal(F.shouldCapturePracticeSnapshot(car,options),true);
+  assert.equal(F.shouldCapturePracticeSnapshot({...car,outputs:[0,.5,0]},options),false,'a low-speed state without neural braking is not a brake-lock snapshot');
+  assert.equal(F.shouldCapturePracticeSnapshot({...car,practiceState:{bestProgress:95,vehicle:{speedMps:.78}}},options),false,'the same stopped state is not recaptured every tick');
+  assert.equal(F.shouldCapturePracticeSnapshot({...car,bestProgress:89},options),false,'practice remains gated near the safe frontier');
+  assert.equal(F.shouldCapturePracticeSnapshot(car,{...options,stagnation:2}),false);
+  const moving={...car,bestProgress:96,vehicle:{speedMps:6},outputs:[0,.2,0],practiceState:{bestProgress:94,vehicle:{speedMps:5}}};
+  assert.equal(F.shouldCapturePracticeSnapshot(moving,options),true,'a newly reached moving state remains capturable');
 });
 
 test('The transient practice phase is not written into the shareable save',()=>{

@@ -376,11 +376,26 @@
     return {fitness:car.fitness,progress:car.bestProgress,laps:car.laps,reason:car.reason,brakeMax,steeringMax,safe:isSafeLearningOutcome(car)};
   }
   function shouldPromotePracticeCandidate(result,baseline,best,pixelsPerMeter,rewardRevision){
-    // A legacy reward score can rank a short collision above a stalled
-    // baseline. Safety is a physical outcome, so it must gate local promotion
-    // for every supported reward revision.
-    return result.safe===true&&
-      result.progress>baseline.progress+pixelsPerMeter&&result.fitness>best.fitness;
+    // Match the evolutionary objective: safety first, then completed laps,
+    // then safe distance while no lap has been completed. Reward penalties
+    // must not discard a genuine safe restart when its numeric score is lower.
+    if(result.safe!==true)return false;
+    const resultLaps=Number(result.laps)||0,bestLaps=Number(best.laps)||0;
+    if(resultLaps!==bestLaps)return resultLaps>bestLaps;
+    if(resultLaps===0)return result.progress>best.progress+Math.max(0,Number(pixelsPerMeter)||0);
+    return result.fitness>best.fitness;
+  }
+  const PRACTICE_STALL_SPEED_MPS=.8;
+  function shouldCapturePracticeSnapshot(car,{stagnation=0,frontierProgress=0,pixelsPerMeter=1}={}){
+    if(!car?.alive||stagnation<3)return false;
+    const ppm=Math.max(1e-9,Number(pixelsPerMeter)||1),progress=Number(car.bestProgress)||0;
+    if(frontierProgress<50*ppm||progress<frontierProgress*.9)return false;
+    const speed=car.vehicle?.speedMps??car.speed/(car.pixelsPerMeter||1);
+    const hasProgress=!car.practiceState||progress>(car.practiceState.bestProgress??-Infinity)+.02*ppm;
+    if(speed>2&&hasProgress)return true;
+    const outputs=car.outputs||car.slowOutputs||[],throttle=Number(outputs[1])||0,brake=Number(outputs[2])||0;
+    const savedSpeed=car.practiceState?.vehicle?.speedMps??Infinity;
+    return speed<=PRACTICE_STALL_SPEED_MPS&&brake>=.05&&throttle<=.05&&savedSpeed>PRACTICE_STALL_SPEED_MPS;
   }
   function compileGraph(data) {
     if(!data) throw Error('Dataset MaleCNS mancante o vuoto. Nessun controller sostitutivo.');
@@ -842,8 +857,28 @@
       // branch disappears exactly when the population has converged on it.
       const stagnantFrontier=baseMutation>0&&safeProgressLeader&&this.stagnation>=EVOLUTION_RULES.stagnationWindow&&safeMaxLaps<Rewards.RULES.maxLapsPerGeneration;
       const safeLeaderStopped=Boolean(safeProgressLeader&&['troppo lenta / senza progresso','ferma / senza progresso'].includes(safeProgressLeader.reason)&&
-        Math.abs(safeProgressLeader.vehicle?.speedMps??safeProgressLeader.speed??0)<Rewards.RULES.brakeLockSpeedFloorMps&&
-        (Number(safeProgressLeader.outputs?.[1])||0)<=.05);
+        Math.abs(safeProgressLeader.vehicle?.speedMps??safeProgressLeader.speed??0)<Math.max(Rewards.RULES.brakeLockSpeedFloorMps,PRACTICE_STALL_SPEED_MPS)&&
+        (Number(safeProgressLeader.outputs?.[1])||0)<=.05&&(Number(safeProgressLeader.outputs?.[2])||0)>=.05);
+      let stalledPracticeGenome=null;
+      if(this.modelId==='v3'&&usesLearningOutcome&&this.stagnation>=3&&safeLeaderStopped&&safeProgressLeader?.practiceState&&
+        !this.graph.full&&this.practiceEvaluations+5<=32){
+        const parent=safeProgressLeader;
+        const practiceSpeed=parent.practiceState.vehicle?.speedMps??parent.practiceState.speed/(parent.pixelsPerMeter||1);
+        const practiceTicks=practiceSpeed<=PRACTICE_STALL_SPEED_MPS?1800:720;
+        const baseline=evaluatePractice(this.track,this.graph,parent.genome,parent.practiceState,practiceTicks);this.practiceEvaluations++;
+        let best=baseline,bestWeights=null;
+        const practiceFactors=practiceSpeed<=PRACTICE_STALL_SPEED_MPS?[.25,-.25,1,-1]:[1,-1,3,-3];
+        const proposal=Learning.safeMotorMutation(this.graph,parent.genome.policyWeights,this.random,mutationAmount,parent.brain?.policyExperience,'longitudinal');
+        for(const factor of practiceFactors){
+          const candidate=cloneGenome(parent.genome);candidate.policyWeights=Learning.scaleMutation(parent.genome.policyWeights,proposal,factor);
+          const result=evaluatePractice(this.track,this.graph,candidate,parent.practiceState,practiceTicks);this.practiceEvaluations++;
+          if(shouldPromotePracticeCandidate(result,baseline,best,this.track.pixelsPerMeter||1,this.rewardRevision)){
+            best=result;bestWeights=candidate.policyWeights;
+          }
+        }
+        this.practiceResults.push({parentId:parent.id,baseline,best,improved:Boolean(bestWeights)});
+        if(bestWeights){stalledPracticeGenome=cloneGenome(parent.genome);stalledPracticeGenome.policyWeights=bestWeights;}
+      }
       // When a safe frontier stops with no throttle, preserve the already
       // demonstrated steering response and explore only the signed
       // longitudinal head (throttle/brake). This isolates the missing
@@ -928,20 +963,24 @@
        let mirrored=null;const practiceBases=new Map();
        const riskRepairReservedSlots=riskRepairCandidate&&baseMutation>0&&this.riskRepairOffspringRate>0
          ?Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)):0;
-       const optimizerSampleCapacity=Math.max(0,this.population-genomes.length-immigrantCount-riskRepairReservedSlots);
+       const practiceReservedSlots=stalledPracticeGenome?1:0;
+       const optimizerSampleCapacity=Math.max(0,this.population-genomes.length-immigrantCount-riskRepairReservedSlots-practiceReservedSlots);
        // The evolution strategy needs at least two ranked samples to learn a
        // direction. A singleton produces no comparative signal, so reserve a
        // pair even at the default 16-car population instead of silently
        // leaving the optimizer frozen after its initial batch.
        const optimizerSampleTarget=usesLearningOutcome&&baseMutation>0&&!noSafeLearningCandidate&&optimizerSampleCapacity>=2
          ?Math.min(Math.max(2,Math.ceil(this.population*.1)),optimizerSampleCapacity):0;
-       const frontierOffspringTarget=frontierParent?Math.min(Math.ceil(this.population*frontierOffspringRate),Math.max(0,this.population-immigrantCount-genomes.length-optimizerSampleTarget-riskRepairReservedSlots)):0;
+       const frontierOffspringTarget=frontierParent?Math.min(Math.ceil(this.population*frontierOffspringRate),Math.max(0,this.population-immigrantCount-genomes.length-optimizerSampleTarget-riskRepairReservedSlots-practiceReservedSlots)):0;
        const riskRepairOffspringTarget=riskRepairCandidate&&baseMutation>0&&this.riskRepairOffspringRate>0
-         ?Math.min(Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)),Math.max(0,this.population-genomes.length-immigrantCount-frontierOffspringTarget-optimizerSampleTarget)):0;
-        let frontierOffspringCount=0,riskRepairOffspringCount=0,optimizerSampleCount=0,functionalCrossoverCount=0,optimizerPairSeed=null;
+         ?Math.min(Math.max(1,Math.ceil(this.population*this.riskRepairOffspringRate)),Math.max(0,this.population-genomes.length-immigrantCount-frontierOffspringTarget-optimizerSampleTarget-practiceReservedSlots)):0;
+        let frontierOffspringCount=0,riskRepairOffspringCount=0,optimizerSampleCount=0,functionalCrossoverCount=0,optimizerPairSeed=null,stalledPracticeOffspringAdded=false;
         const optimizerSampleIdsForNext=[];
       while(genomes.length<this.population) {
          if(noSafeLearningCandidate&&baseMutation>0){genomes.push(makeLearningGenome(this.graph,this.random));continue;}
+         if(stalledPracticeGenome&&!stalledPracticeOffspringAdded&&genomes.length<this.population-immigrantCount){
+           genomes.push(cloneGenome(stalledPracticeGenome));stalledPracticeOffspringAdded=true;continue;
+         }
          if(frontierOffspringCount<frontierOffspringTarget&&genomes.length<this.population-immigrantCount) {
            let child=cloneGenome(frontierParent.genome);
            if(child.policyWeights)child.policyWeights=Learning.safeMotorMutation(this.graph,frontierParent.genome.policyWeights,this.random,childMutationAmount(),frontierParent.brain?.policyExperience,frontierMutationFocus);
@@ -994,11 +1033,13 @@
                 else child.policyWeights=Learning.safeMotorMutation(this.graph,parent.genome.policyWeights,this.random,mutationAmount,parent.brain.policyExperience);
                 mirrored={genome:parent.genome,weights:Learning.mirroredMutation(parent.genome.policyWeights,child.policyWeights)};
               }
-              if(!useFunctionalCrossover&&this.stagnation>=3&&!this.graph.full&&parent.practiceState&&this.practiceEvaluations+5<=32){
+              if(!useFunctionalCrossover&&!this.practiceResults.some(result=>result.parentId===parent.id)&&this.stagnation>=3&&!this.graph.full&&parent.practiceState&&this.practiceEvaluations+5<=32){
                 let baseline=practiceBases.get(parent.id);
                 if(!baseline){baseline=evaluatePractice(this.track,this.graph,parent.genome,parent.practiceState);practiceBases.set(parent.id,baseline);this.practiceEvaluations++;}
                 let best=baseline,bestWeights=null;
-                for(const factor of [1,-1,3,-3]){
+                const practiceSpeed=parent.practiceState.vehicle?.speedMps??parent.practiceState.speed/(parent.pixelsPerMeter||1);
+                const practiceFactors=practiceSpeed<=PRACTICE_STALL_SPEED_MPS?[.25,-.25,1,-1]:[1,-1,3,-3];
+                for(const factor of practiceFactors){
                   const candidate=cloneGenome(parent.genome);candidate.policyWeights=Learning.scaleMutation(parent.genome.policyWeights,child.policyWeights,factor);
                   const result=evaluatePractice(this.track,this.graph,candidate,parent.practiceState);this.practiceEvaluations++;
                   // A short timeout must not select parking instead of
@@ -1054,8 +1095,9 @@
         if(CONSISTENT_PRACTICE_REVISIONS.includes(car.rewardRevision)&&this.learningEnabled&&this.mode==='connectome'&&!this.graph.full){
           car.practiceNextControlPhase=(this.ticks+1)%this.neuralInterval;car.practiceControlInterval=this.neuralInterval;
         }
-        if(car.alive&&this.learningEnabled&&this.mode==='connectome'&&!this.graph.full&&car.speed/(car.pixelsPerMeter||1)>2&&(!car.practiceState||car.bestProgress>(car.practiceState.bestProgress??-Infinity)+.02*(car.pixelsPerMeter||1))&&
-          this.stagnation>=3&&this.safeLearningFrontier.progress>=50*(this.track.pixelsPerMeter||1)&&car.bestProgress>=this.safeLearningFrontier.progress*.9){car.practiceState=capturePracticeState(car);car.practiceState.bestProgress=car.bestProgress;}
+        if(this.modelId==='v3'&&this.mode==='connectome'&&this.learningEnabled&&!this.graph.full&&shouldCapturePracticeSnapshot(car,{stagnation:this.stagnation,frontierProgress:this.safeLearningFrontier.progress,pixelsPerMeter:this.track.pixelsPerMeter||1})){
+          car.practiceState=capturePracticeState(car);car.practiceState.bestProgress=car.bestProgress;
+        }
         if(this.ticks%6===0) {car.trail.push([car.x,car.y]);if(car.trail.length>160) car.trail.shift();}
       }
       this.ticks++;
@@ -1134,6 +1176,6 @@
     const aTime=Number.isFinite(a?.bestLapTime)?a.bestLapTime:Infinity,bTime=Number.isFinite(b?.bestLapTime)?b.bestLapTime:Infinity;
     return aTime-bTime;
   }
-  const api={Rewards,Vehicle,Simulation,makeTrack,makeCar,drive,capturePracticeState,mutateSensoryBlock,evaluatePractice,shouldPromotePracticeCandidate,locate,trackWidthAt,onRoad,sense,sensorDistances,physicsSense,roadSense,raycast,collided,compileGraph,makeBrain,sensorDrive,synapticGains:Learning.synapticGains,applyNeuralState,neuralOutputsFromBrain,normalizeDriveCommands,neuralStateStep,neuralStep,neuralStepForTrack,fastNeuralStep,ensureLearning,compareAgents,compareLearningAgents,compareOptimizerAgents,isSafeLearningOutcome,makeGenome,crossoverGenome,crossoverPolicyBlocks,mutateGenome,cloneGenome,normalizeGenome,rng,checkpointKey,validCheckpoint,DT,SENSOR_MAX,MAX_SPEED,MAX_POPULATION,ANGLES,VISUAL_SENSOR_COUNT,VEHICLE_PHYSICS_SENSOR_COUNT,ROAD_PHYSICS_SENSOR_COUNT,PHYSICS_SENSOR_COUNT,SENSOR_COUNT,PHYSICS_RELAY_COUNT,ROAD_RELAY_COUNT,PHYSICS_ADAPTER_GAIN,MAP_PHYSICS_ADAPTER_GAIN,NEURAL_MOTOR_GAIN,NEURAL_MOTOR_LAUNCH_BIAS,MAP_NEURAL_MOTOR_LAUNCH_BIAS,SCORE_RULES,EVOLUTION_RULES,PHYSICS,clamp};
+  const api={Rewards,Vehicle,Simulation,makeTrack,makeCar,drive,capturePracticeState,mutateSensoryBlock,evaluatePractice,shouldPromotePracticeCandidate,shouldCapturePracticeSnapshot,locate,trackWidthAt,onRoad,sense,sensorDistances,physicsSense,roadSense,raycast,collided,compileGraph,makeBrain,sensorDrive,synapticGains:Learning.synapticGains,applyNeuralState,neuralOutputsFromBrain,normalizeDriveCommands,neuralStateStep,neuralStep,neuralStepForTrack,fastNeuralStep,ensureLearning,compareAgents,compareLearningAgents,compareOptimizerAgents,isSafeLearningOutcome,makeGenome,crossoverGenome,crossoverPolicyBlocks,mutateGenome,cloneGenome,normalizeGenome,rng,checkpointKey,validCheckpoint,DT,SENSOR_MAX,MAX_SPEED,MAX_POPULATION,ANGLES,VISUAL_SENSOR_COUNT,VEHICLE_PHYSICS_SENSOR_COUNT,ROAD_PHYSICS_SENSOR_COUNT,PHYSICS_SENSOR_COUNT,SENSOR_COUNT,PHYSICS_RELAY_COUNT,ROAD_RELAY_COUNT,PHYSICS_ADAPTER_GAIN,MAP_PHYSICS_ADAPTER_GAIN,NEURAL_MOTOR_GAIN,NEURAL_MOTOR_LAUNCH_BIAS,MAP_NEURAL_MOTOR_LAUNCH_BIAS,SCORE_RULES,EVOLUTION_RULES,PHYSICS,clamp};
   if(typeof module!=='undefined'&&module.exports) module.exports=api; else root.FlySim=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
