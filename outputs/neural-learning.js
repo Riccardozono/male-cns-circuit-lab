@@ -137,7 +137,7 @@
     for(let j=0;j<features.length;j++)nearest.values[j]+=(features[j]-nearest.values[j])*rate;
     return true;
   }
-  function motorVector(features){const norm=1/Math.sqrt(features.length);return [...features.map(v=>v*norm),1];}
+  function motorVector(features,normalizationCount=features.length){const norm=1/Math.sqrt(normalizationCount);return [...features.map(v=>v*norm),1];}
   const dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0);
   function orthogonal(vector,basis){
     const result=vector.slice();
@@ -157,10 +157,10 @@
     // Protecting several correlated contexts also froze the failing corner
     // response. One anchor keeps the dominant behaviour without that lock.
     for(const centre of sorted.slice(0,1)){
-      const v=orthogonal(motorVector(centre.values),basis),length=Math.sqrt(dot(v,v));
+      const v=orthogonal(motorVector(centre.values,p.normalizationCount??p.nodes.length),basis),length=Math.sqrt(dot(v,v));
       if(length>1e-7)basis.push(v.map(x=>x/length));
     }
-    const contrasts=(centres||[]).map(c=>{const v=orthogonal(motorVector(c.values),basis);return {v,norm2:dot(v,v)};}).filter(c=>c.norm2>1e-5);
+    const contrasts=(centres||[]).map(c=>{const v=orthogonal(motorVector(c.values,p.normalizationCount??p.nodes.length),basis);return {v,norm2:dot(v,v)};}).filter(c=>c.norm2>1e-5);
     let direction,target;
     if(contrasts.length){
       // Sample genuinely different neural contexts preferentially. Tiny

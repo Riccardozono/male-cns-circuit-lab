@@ -61,3 +61,20 @@ test('mapped decoder reproduces V3 actions even when only appended neurons are a
   assert.deepEqual(Learning.commands(original,{activity:activity.slice()},{adapterVersion:oldPolicy.version,policyWeights:oldWeights}),[0,0,0]);
   assert.deepEqual(Learning.commands(expanded,{activity:activity.slice()},{adapterVersion:newPolicy.version,policyWeights:newWeights}),[0,0,0]);
 });
+
+test('wide-readout safe motor mutation preserves actions using the configured 64-neuron normalization',()=>{
+  const simulation=new F.Simulation(Legacy.tagV3WideReadout(source),{population:1,running:false});
+  const graph=simulation.graph,policy=graph.learning,features=Array.from({length:policy.nodes.length},(_,j)=>Math.sin(j*.19)*.2+Math.cos(j*.07)*.1);
+  const experience={centres:[{values:features,count:100}]},values=mappedWeights()[1];
+  const actionAt=weights=>{
+    const brain=F.makeBrain(graph);brain.policyFeatures=Float64Array.from(features);
+    for(let j=0;j<features.length;j++)brain.activity[policy.nodes[j]]=Math.atanh(features[j])/8;
+    return Learning.commands(graph,brain,{adapterVersion:policy.version,policyWeights:weights});
+  };
+  const incumbent=actionAt(values);
+  for(let seed=1;seed<=24;seed++){
+    const child=Learning.safeMotorMutation(graph,values,F.rng(seed),.24,experience);
+    assert.ok(Learning.valid(graph,child));assert.notDeepEqual(child,values);
+    actionAt(child).forEach((action,index)=>assert.ok(Math.abs(action-incumbent[index])<1e-12,`seed ${seed}, action ${index} changed`));
+  }
+});
