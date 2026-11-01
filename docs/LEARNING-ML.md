@@ -619,3 +619,27 @@ Benchmark headless a freddo con V3 storico (7.721 nodi, 242.486 archi; readout d
 Il 16% supera la frontiera sicura del 32% in entrambi i seed (+91,795 m e +160,315 m). L’8% è sotto il 16% nel solo seed misurato. È un segnale preliminare su due seed e un circuito, non una prova di convergenza: nessun caso completa un giro. Non viene cambiato il preset e il problema di apprendimento V3/Monza resta aperto.
 
 I cinque report JSON grezzi, inclusi configurazione, progressi per generazione e hash sorgente, sono in [`outputs/research/v3-monza-mutation-sweep-2026-11-01/`](../outputs/research/v3-monza-mutation-sweep-2026-11-01/). Gli hash di `simulation.js` e `neural-learning.js` coincidono fra i report. Verifica già eseguita sul branch `dev`: suite completa 478/478 test, 170,529 s. La prova è headless CPU e non misura il throughput WebGPU della build desktop.
+
+### A/B V3/Monza: readout 128 e popolazione 100 (1 novembre 2026)
+
+Confronti headless a freddo, senza warm start, 12 generazioni, mutazione 16% e due seed appaiati. Il V3 standard usa il readout da 64 neuroni e 202 parametri; la variante sperimentale usa 128 neuroni e 330 parametri, mantenendo i sensori della versione 5.7. Ogni caso è stato eseguito con il runner CPU headless: questi tempi non misurano il percorso WebGPU dell'app desktop. Gli hash di simulation.js, neural-learning.js e model-profiles.js nei report coincidono con i sorgenti verificati su dev.
+
+| Seed | Readout | Progresso sicuro massimo | Progresso grezzo massimo | Tempo CPU |
+|---:|---:|---:|---:|---:|
+| 7717 | V3 standard, 64 / 202 | 158,340 m | 736,381 m | 128,869 s |
+| 7717 | V3 sperimentale, 128 / 330 | 26,116 m | 712,162 m | 112,763 s |
+| 7718 | V3 standard, 64 / 202 | 228,866 m | 757,963 m | 123,184 s |
+| 7718 | V3 sperimentale, 128 / 330 | 139,972 m | 640,297 m | 123,293 s |
+
+Il readout più ampio resta sotto il V3 standard in entrambi i seed e non completa giri; non viene promosso.
+
+| Seed | Auto | Progresso sicuro massimo | Progresso grezzo massimo | Tempo CPU | Giri |
+|---:|---:|---:|---:|---:|---:|
+| 7717 | 16 | 158,340 m | 736,381 m | 128,869 s | 0 |
+| 7717 | 100 | 287,005 m | 751,952 m | 717,500 s | 0 |
+| 7718 | 16 | 228,866 m | 757,963 m | 123,184 s | 0 |
+| 7718 | 100 | 737,355 m | 760,553 m | 1.048,171 s | 0 |
+
+Con 100 auto la frontiera sicura cresce in entrambi i seed (+81,3% e +222,2%), ma il tempo CPU è 5,57× e 8,51× quello del confronto a 16 auto. Nessun caso completa un giro. È un segnale preliminare su Monza e due seed, non prova convergenza o generalizzazione; non giustifica un aumento del valore iniziale a 100. L'impostazione di 16 auto e i modelli applicativi restano invariati.
+
+I quattro report JSON completi, con configurazione, risultati per generazione e hash sorgente, sono in [outputs/research/v3-monza-readout-population-ab-2026-11-01/](../outputs/research/v3-monza-readout-population-ab-2026-11-01/). Nessun sorgente applicativo o salvataggio è stato modificato.

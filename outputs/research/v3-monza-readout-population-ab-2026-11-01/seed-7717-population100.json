@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-01T15:23:57.906Z",
+  "benchmarkMode": "headless recurrent MaleCNS policy trained through reward-ranked evolution strategies; V4/V5 use the sparse CPU path, not desktop WebGPU",
+  "progressUnits": "track metric units; catalogued real circuits are calibrated in metres",
+  "sourceSha256": {
+    "simulation.js": "ed47ef66b707ab6d7b7685f870cfae4d9db663e182f8deb9ad44efc8ad419c22",
+    "neural-learning.js": "29eac7379568a6acaa08ef43804cf005a3f3f284848a6f518da38c4e612bbb1a",
+    "model-profiles.js": "b530564fe37ec85225a536d8b867b5de6a9f1205547a220e49507ca6eefa86bb"
+  },
+  "stoppingRule": "stop each model/circuit case after the first agent completes at least one lap",
+  "safetyGuard": "maxGenerations is a benchmark guard only; the simulation has no global simulated-time limit",
+  "configuration": {
+    "seed": 7717,
+    "population": 100,
+    "mutation": 0.16,
+    "evaluationTicks": 0,
+    "minimumEpisodeSeconds": 60,
+    "targetSurvivalSpeed": 8,
+    "maxGenerations": 12,
+    "learningEnabled": true
+  },
+  "scope": {
+    "models": [
+      "v3"
+    ],
+    "circuits": [
+      "monza"
+    ]
+  },
+  "models": [
+    "v3"
+  ],
+  "circuits": [
+    "monza"
+  ],
+  "summary": {
+    "totalCases": 1,
+    "measuredCases": 1,
+    "completedCases": 0,
+    "pendingCases": 1,
+    "notRunCases": 0
+  },
+  "results": [
+    {
+      "modelId": "v3",
+      "modelLabel": "MaleCNS V3 storico",
+      "circuitId": "monza",
+      "circuitName": "Monza",
+      "nodes": 7721,
+      "edges": 242486,
+      "fullGraph": false,
+      "adapter": "reward-trained recurrent MaleCNS policy; no driving assistance",
+      "learning": {
+        "neurons": 64,
+        "parameters": 202,
+        "warmStart": false,
+        "stats": {
+          "algorithm": "diagonal evolution strategy",
+          "version": 3,
+          "updates": 12,
+          "episodes": 254,
+          "parameters": 202,
+          "meanExploration": 0.3804603934122487,
+          "warmStart": false
+        }
+      },
+      "population": 100,
+      "mutation": 0.16,
+      "evaluationTicks": 49965,
+      "evaluationTicksUsed": 2885,
+      "lapDetectedDuringEvaluation": false,
+      "maxGenerations": 12,
+      "firstLapGeneration": null,
+      "completedAgentCountAtFirstLap": 0,
+      "firstLapBestScore": null,
+      "firstLapBestProgress": null,
+      "firstLapTime": null,
+      "reachedOneLap": false,
+      "generationsEvaluated": 12,
+      "finalBest": -3329.922,
+      "finalBestProgress": 633.387,
+      "finalBestSafeProgress": 287.005,
+      "maximumObservedProgress": 751.952,
+      "maximumSafeProgress": 287.005,
+      "generations": [
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 1,
+          "best": -3291.849,
+          "bestProgress": 677.594,
+          "bestSafeProgress": 25.266,
+          "meanSafeProgress": 2.319,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 0
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 2,
+          "best": -3336.342,
+          "bestProgress": 617.875,
+          "bestSafeProgress": 28.922,
+          "meanSafeProgress": 14.605,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 1
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 3,
+          "best": -3690.873,
+          "bestProgress": 254.851,
+          "bestSafeProgress": 39.83,
+          "meanSafeProgress": 22.398,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 2
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 4,
+          "best": -3711.474,
+          "bestProgress": 245.901,
+          "bestSafeProgress": 42.404,
+          "meanSafeProgress": 21.26,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 3
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 5,
+          "best": -3194.814,
+          "bestProgress": 751.952,
+          "bestSafeProgress": 42.404,
+          "meanSafeProgress": 18.596,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 4
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 6,
+          "best": -3451.494,
+          "bestProgress": 519.834,
+          "bestSafeProgress": 42.404,
+          "meanSafeProgress": 14.047,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 5
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 7,
+          "best": -3655.841,
+          "bestProgress": 300.379,
+          "bestSafeProgress": 43.562,
+          "meanSafeProgress": 13.104,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 6
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 8,
+          "best": -3266.893,
+          "bestProgress": 702.413,
+          "bestSafeProgress": 45.91,
+          "meanSafeProgress": 15.678,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 7
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 9,
+          "best": -3683.037,
+          "bestProgress": 255.889,
+          "bestSafeProgress": 46.498,
+          "meanSafeProgress": 19.569,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 8
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 10,
+          "best": -3751.965,
+          "bestProgress": 215.065,
+          "bestSafeProgress": 46.498,
+          "meanSafeProgress": 14.818,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 9
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 11,
+          "best": -3320.306,
+          "bestProgress": 633.812,
+          "bestSafeProgress": 104.111,
+          "meanSafeProgress": 20.822,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 10
+        },
+        {
+          "model": "v3",
+          "circuit": "monza",
+          "generation": 12,
+          "best": -3329.922,
+          "bestProgress": 633.387,
+          "bestSafeProgress": 287.005,
+          "meanSafeProgress": 37.993,
+          "completedAgentCount": 0,
+          "fastestLap": null,
+          "stagnation": 11
+        }
+      ],
+      "finalStagnation": 11,
+      "wallTimeSeconds": 717.5
+    }
+  ]
+}
