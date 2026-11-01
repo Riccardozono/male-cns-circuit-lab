@@ -238,7 +238,8 @@
       // mirrored trials stay opposite even at the parameter bounds.
       return this.mean.map((v,j)=>{const radius=Math.max(0,8-Math.abs(v));return v+clamp(normal(r)*this.sigma[j]*scale,-radius,radius);});
     }
-    adopt(values){if(!valid(this.graph,values))throw Error('Checkpoint RL incompatibile.');this.mean=values.slice();this.sigma=this.graph.learning.scales.slice();}
+    recenter(values){if(!valid(this.graph,values))throw Error('Checkpoint RL incompatibile.');this.mean=values.slice();}
+    adopt(values){this.recenter(values);this.sigma=this.graph.learning.scales.slice();}
     explore(stagnation){
       // A population of nearly identical local improvements must not collapse
       // the search radius while the car is stuck at the same corner.

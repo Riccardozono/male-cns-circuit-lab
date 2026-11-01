@@ -97,9 +97,9 @@
     // Any pending shared champion is reconstructed from the desktop-level
     // global champion when the restored session resumes, not serialized here.
     sim.externalChampion=s.externalChampion;sim.pendingExternalChampion=null;sim.optimizer=new Learning.EvolutionStrategy(sim.graph);
-    // A save omits transient ES sample IDs. An empty lineage uses the safe
-    // compatibility ranking for this resumed generation; offspring then get
-    // fresh sample IDs on the next natural spawn.
+    // A save omits transient ES sample IDs. Resume re-centers from the safe
+    // compatible policy rather than treating saved genomes as ES samples;
+    // offspring then establish fresh sample IDs on the next natural spawn.
     Object.assign(sim.optimizer,s.optimizer);sim.spawn(s.genomes,false,[]);sim.accumulator=0;return sim;
   }
   function validatePayload(p,{graph,circuits,maxWorkers=MAX_WORKERS}){

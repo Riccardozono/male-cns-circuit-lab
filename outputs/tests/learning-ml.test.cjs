@@ -52,6 +52,13 @@ test('Mirrored trials remain symmetric and bounded at the parameter limits',()=>
   for(let i=0;i<center.length;i++)assert.ok(Math.abs(a[i]+b[i]-2*center[i])<1e-12);
   assert.equal(a[1],-8);assert.equal(b[1],-8);assert.deepEqual(s.optimizer.sample(F.rng(1),0),center);
 });
+test('Re-centering an ES distribution preserves exploration scale and counters',()=>{
+  const s=simulation(),target=s.cars[0].genome.policyWeights.slice(),sigma=s.optimizer.sigma.slice(),updates=s.optimizer.updates,episodes=s.optimizer.episodes;
+  target[0]=F.clamp(target[0]+.1,-8,8);s.optimizer.recenter(target);
+  assert.deepEqual(s.optimizer.mean,target);assert.deepEqual(s.optimizer.sigma,sigma);
+  assert.equal(s.optimizer.updates,updates);assert.equal(s.optimizer.episodes,episodes);
+  assert.throws(()=>s.optimizer.recenter([1]),/Checkpoint RL incompatibile/);
+});
 test('New generation still reevaluates the incumbent and reserves independent exploration',()=>{
   const s=simulation({population:8}),winner=s.cars[0];
   for(const car of s.cars)car.reward=200-car.id;
@@ -61,7 +68,7 @@ test('New generation still reevaluates the incumbent and reserves independent ex
   assert.equal(s.cars.filter(c=>originals.has(JSON.stringify(c.genome))).length,1);
   assert.ok(s.cars.every(c=>L.valid(s.graph,c.genome.policyWeights)));
 });
-test('Learning checkpoints preserve exact tensors and resume ES updates without changing the save schema',()=>{
+test('Learning checkpoints preserve exact tensors and do not invent ES lineage on resume',()=>{
   const a=simulation({population:8}),b=simulation({population:8});
   for(const car of a.cars)car.rewardBreakdown.rewards.progress=car.reward=300-car.id;
   a.evolve();const checkpoint=P.capture(a);P.restore(b,checkpoint);
@@ -69,8 +76,15 @@ test('Learning checkpoints preserve exact tensors and resume ES updates without 
   a.running=true;b.running=true;
   for(let i=0;i<30;i++){a.tick();b.tick();}
   assert.deepEqual(a.cars.map(car=>[car.x,car.y,car.speed]),b.cars.map(car=>[car.x,car.y,car.speed]),'restored cars continue the same physical rollout');
-  const updatesBefore=b.optimizer.updates;b.evolve();
-  assert.equal(b.optimizer.updates,updatesBefore+1,'legacy checkpoints still provide learning feedback during resume');
+  for(const [i,car] of b.cars.entries()){
+    car.alive=false;car.reason='ferma / senza progresso';car.laps=0;car.bestLapTime=Infinity;car.bestProgress=1000-i;
+    car.fitness=car.reward=car.baseFitness=1000-i;car.penalty=0;car.rewardState.finalized=true;
+  }
+  b.optimizerSampleIds=new Set();const expectedMean=b.cars[0].genome.policyWeights.slice(),updatesBefore=b.optimizer.updates,episodesBefore=b.optimizer.episodes;
+  b.evolve();
+  assert.equal(b.optimizer.updates,updatesBefore,'unpaired saved population genomes are not misclassified as ES samples');
+  assert.equal(b.optimizer.episodes,episodesBefore,'no fabricated ES episodes are counted on resume');
+  assert.deepEqual(b.optimizer.mean,expectedMean,'the ES mean is re-centered on the selected safe policy');
   assert.equal(b.optimizerSampleIds instanceof Set,true,'the next generation establishes fresh in-memory ES lineage');
   assert.ok(b.optimizerSampleIds.size>=2);
 });

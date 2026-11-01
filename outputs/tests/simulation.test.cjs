@@ -527,26 +527,30 @@ test('V3 evolution filters functional crossover donors by sensor mapping',()=>{
     sim.optimizer.update=(agents,compare)=>{optimizerMappings.push([...new Set(agents.map(agent=>agent.genome.sensorMappingVersion??1))]);return update(agents,compare);};
     // Select rank zero as parent and force the functional-crossover family.
     sim.random=()=>.3;
-    return {sim,optimizerMappings};
+    const expectedMean=sim.cars.filter(car=>(car.genome.sensorMappingVersion??1)===2).slice().sort(F.compareLearningAgents)[0].genome.policyWeights.slice();
+    return {sim,optimizerMappings,expectedMean};
   };
-  const {sim:incompatible,optimizerMappings:incompatibleMappings}=makeMixedSimulation(1);
+  const {sim:incompatible,optimizerMappings:incompatibleMappings,expectedMean:incompatibleMean}=makeMixedSimulation(1);
   assert.doesNotThrow(()=>incompatible.evolve());
   assert.equal(incompatible.lastFunctionalCrossoverCount,0,'a mismatched donor is skipped in favor of mutation');
-  assert.ok(incompatibleMappings.every(mappings=>mappings.length===1&&mappings[0]===2),'ES updates only use the dominant compatible sensor mapping');
+  assert.ok(incompatibleMappings.every(mappings=>mappings.length===0),'a saved population without ES lineage is not passed to the optimizer as a fake sample set');
+  assert.deepEqual(incompatible.optimizer.mean,incompatibleMean,'resume re-centers on the dominant safe sensor mapping');
   assert.ok([...incompatible.optimizerSampleIds].every(index=>incompatible.cars[index].genome.sensorMappingVersion===2),'new ES samples retain the optimizer mapping');
 
-  const {sim:compatible,optimizerMappings:compatibleMappings}=makeMixedSimulation(2);
+  const {sim:compatible,optimizerMappings:compatibleMappings,expectedMean:compatibleMean}=makeMixedSimulation(2);
   assert.doesNotThrow(()=>compatible.evolve());
   assert.ok(compatible.lastFunctionalCrossoverCount>0,'same-mapping policies still use functional crossover');
-  assert.ok(compatibleMappings.every(mappings=>mappings.length===1&&mappings[0]===2));
+  assert.ok(compatibleMappings.every(mappings=>mappings.length===0));
+  assert.deepEqual(compatible.optimizer.mean,compatibleMean);
   assert.ok([...compatible.optimizerSampleIds].every(index=>compatible.cars[index].genome.sensorMappingVersion===2));
 
-  const {sim:singleSample,optimizerMappings:singleSampleMappings}=makeMixedSimulation(2);
+  const {sim:singleSample,optimizerMappings:singleSampleMappings,expectedMean:singleSampleMean}=makeMixedSimulation(2);
   singleSample.optimizerSampleIds=new Set([0]);
   assert.doesNotThrow(()=>singleSample.evolve());
-  assert.ok(singleSample.optimizer.updates>0,'one safe ES sample falls back to the safe same-mapping group');
-  assert.ok(singleSampleMappings.every(mappings=>mappings.length===1&&mappings[0]===1));
-  assert.ok([...singleSample.optimizerSampleIds].every(index=>singleSample.cars[index].genome.sensorMappingVersion===1));
+  assert.equal(singleSample.optimizer.updates,0,'a single sample cannot form an ES comparison pair');
+  assert.ok(singleSampleMappings.every(mappings=>mappings.length===0));
+  assert.deepEqual(singleSample.optimizer.mean,singleSampleMean,'an incomplete legacy mapping does not pull the ES mean away from the dominant safe family');
+  assert.ok([...singleSample.optimizerSampleIds].every(index=>singleSample.cars[index].genome.sensorMappingVersion===2));
 });
 test('Dynamic vehicle physics exposes inertia, slip and G forces',()=>{
   const car=F.makeCar(track);for(let i=0;i<60;i++)F.drive(track,car,[0,.8,0]);

@@ -734,19 +734,24 @@
       const learningRanked=usesLearningOutcome?(safeEligible.length?safeEligible.slice().sort(compareLearningAgents):this.mutation===0?ranked:[]):ranked,selectionWinner=learningRanked[0]||null;
       const optimizerSampleIds=this.optimizerSampleIds,hasOptimizerSamples=optimizerSampleIds instanceof Set&&optimizerSampleIds.size>0;
       const optimizerSampleLineage=hasOptimizerSamples?eligible.filter(agent=>optimizerSampleIds.has(agent.id)&&agent.genome?.policyWeights):[];
-      const optimizerMappingCounts=new Map(),mappingOf=genome=>genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+      const optimizerSampleMappingCounts=new Map(),mappingOf=genome=>genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+      for(const agent of optimizerSampleLineage){const mapping=mappingOf(agent.genome);optimizerSampleMappingCounts.set(mapping,(optimizerSampleMappingCounts.get(mapping)||0)+1);}
+      const optimizerMappingCounts=new Map();
       for(const agent of learningRanked)if(agent.genome?.policyWeights){const mapping=mappingOf(agent.genome);optimizerMappingCounts.set(mapping,(optimizerMappingCounts.get(mapping)||0)+1);}
       // One evolution-strategy mean cannot represent policy weights whose
       // sensor channels have different meanings. Keep its samples and parent
       // inside one mapping family; after restore, choose the largest safe
       // family, with the safe rank as a deterministic tie-breaker.
       const dominantOptimizerMapping=learningRanked.find(agent=>agent.genome?.policyWeights&&optimizerMappingCounts.get(mappingOf(agent.genome))===Math.max(0,...optimizerMappingCounts.values()))?.genome?.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
-      const optimizerMappingVersion=optimizerSampleLineage[0]?mappingOf(optimizerSampleLineage[0].genome):dominantOptimizerMapping;
+      const lineageMappingVersion=optimizerSampleLineage[0]?mappingOf(optimizerSampleLineage[0].genome):null;
+      const hasCompleteOptimizerLineage=optimizerSampleLineage.length>=2&&optimizerSampleMappingCounts.get(lineageMappingVersion)>=2;
+      const optimizerMappingVersion=hasCompleteOptimizerLineage?lineageMappingVersion:dominantOptimizerMapping;
       const optimizerParent=learningRanked.find(agent=>agent.genome?.policyWeights&&mappingOf(agent.genome)===optimizerMappingVersion)||selectionWinner||winner;
-      // Preserve crash outcomes as negative ES feedback when a complete sample
-      // pair exists. A lone sample cannot define a direction, so fall back to
-      // safe candidates from that same mapping instead of freezing updates.
-      const optimizerSourceRanked=optimizerSampleLineage.length>=2?optimizerSampleLineage:learningRanked;
+      // ES ranks only genomes sampled from the same saved distribution. Save
+      // files omit transient sample IDs, so resumed population members cannot
+      // stand in for ES trials. Recenter on a safe compatible policy and wait
+      // for a fresh pair instead of learning a direction from unrelated genes.
+      const optimizerSourceRanked=hasCompleteOptimizerLineage?optimizerSampleLineage:[];
       const optimizerRanked=usesLearningOutcome
         ?optimizerSourceRanked.filter(agent=>agent.genome?.policyWeights&&mappingOf(agent.genome)===optimizerMappingVersion).sort(compareOptimizerAgents)
         :learningRanked;
@@ -766,7 +771,10 @@
       if(usesLearningOutcome&&this.stagnation>=3&&!this.graph.full&&safeMaxLaps<Rewards.RULES.maxLapsPerGeneration){
         for(const parent of learningRanked.slice(0,practiceEliteBudget))if(parent.alive&&!parent.practiceState)parent.practiceState=capturePracticeState(parent);
       }
-      if(this.mutation>0&&!noSafeLearningCandidate)this.optimizer?.update(optimizerRanked,usesLearningOutcome?compareOptimizerAgents:undefined);
+      if(this.mutation>0&&!noSafeLearningCandidate){
+        if(usesLearningOutcome&&!hasCompleteOptimizerLineage&&optimizerParent?.genome.policyWeights)this.optimizer?.recenter(optimizerParent.genome.policyWeights);
+        else this.optimizer?.update(optimizerRanked,usesLearningOutcome?compareOptimizerAgents:undefined);
+      }
       const records=eligible.map(car=>({car,...Rewards.recordStats(car)})).sort(compareAgents);
       // Persist the same safe learning objective used by the ES and next-generation seed.
       // Fitness-only champion selection can discard the farthest safe no-lap policy when
