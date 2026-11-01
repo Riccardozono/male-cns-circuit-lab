@@ -60,7 +60,7 @@ test('Local safety reports a real off-track ending separately from an on-track t
   assert.ok(['urto','fuori pista','progresso non valido'].includes(offTrack.reason));assert.equal(offTrack.safe,false);
 });
 
-test('Current local selection cannot promote a crash merely because a stall scores worse',()=>{
+test('Local practice cannot promote a crash under current or legacy rewards',()=>{
   // This relation occurred in an offline replay of a real stopped elite:
   // the stall incurred 1,400 points while the short crash incurred 900+impact.
   const baseline={progress:0,fitness:-4407,safe:true},best=baseline;
@@ -68,7 +68,8 @@ test('Current local selection cannot promote a crash merely because a stall scor
   assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,best,1,F.Rewards.REVISION),false);
   assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,best,1,F.Rewards.REVISION),true);
   assert.equal(F.shouldPromotePracticeCandidate({...safeProgress,progress:.5},baseline,best,1,F.Rewards.REVISION),false);
-  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,best,1,F.Rewards.LEGACY_REVISION),true);
+  assert.equal(F.shouldPromotePracticeCandidate(crash,baseline,best,1,F.Rewards.LEGACY_REVISION),false);
+  assert.equal(F.shouldPromotePracticeCandidate(safeProgress,baseline,best,1,F.Rewards.LEGACY_REVISION),true);
 });
 
 test('The transient practice phase is not written into the shareable save',()=>{

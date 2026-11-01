@@ -376,7 +376,10 @@
     return {fitness:car.fitness,progress:car.bestProgress,laps:car.laps,reason:car.reason,brakeMax,steeringMax,safe:isSafeLearningOutcome(car)};
   }
   function shouldPromotePracticeCandidate(result,baseline,best,pixelsPerMeter,rewardRevision){
-    return (!CONSISTENT_PRACTICE_REVISIONS.includes(rewardRevision)||result.safe===true)&&
+    // A legacy reward score can rank a short collision above a stalled
+    // baseline. Safety is a physical outcome, so it must gate local promotion
+    // for every supported reward revision.
+    return result.safe===true&&
       result.progress>baseline.progress+pixelsPerMeter&&result.fitness>best.fitness;
   }
   function compileGraph(data) {
