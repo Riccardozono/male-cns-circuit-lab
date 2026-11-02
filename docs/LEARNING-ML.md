@@ -643,3 +643,23 @@ Il readout più ampio resta sotto il V3 standard in entrambi i seed e non comple
 Con 100 auto la frontiera sicura cresce in entrambi i seed (+81,3% e +222,2%), ma il tempo CPU è 5,57× e 8,51× quello del confronto a 16 auto. Nessun caso completa un giro. È un segnale preliminare su Monza e due seed, non prova convergenza o generalizzazione; non giustifica un aumento del valore iniziale a 100. L'impostazione di 16 auto e i modelli applicativi restano invariati.
 
 I quattro report JSON completi, con configurazione, risultati per generazione e hash sorgente, sono in [outputs/research/v3-monza-readout-population-ab-2026-11-01/](../outputs/research/v3-monza-readout-population-ab-2026-11-01/). Nessun sorgente applicativo o salvataggio è stato modificato.
+
+### Diagnosi V3 wide/Monza: sterzo debole e pratica locale (2 novembre 2026)
+
+Attribuzione dello sviluppo riferita dall'autore: GPT-6 Luna. Replay CPU-only dal checkpoint V3 wide/Monza gen.83, 16 auto, seed 107720; nessun teacher o percorso prescritto. Le prove non modificano il sorgente applicativo, il salvataggio personale o la portable 5.7.0.
+
+- Screening del bias Monza 0,30 contro 0,02, sei generazioni: progresso sicuro massimo 786,681 m, massimo grezzo 800,896 m, zero giri. Il report originale ha `passed=false` per un controllo che pretendeva 16 generazioni anche dal trattamento da sei; un audit separato verifica hash e protocollo (`correctedAuditPass=true`). `learningSucceeded=false` resta corretto.
+- Audit readout alla gen.87: l'auto si ferma a 798,326 m con sterzo 0,00988, gas 0 e freno 0,0823. Sui 25 campioni il logit longitudinale medio è +0,047 mentre il bias longitudinale è −0,147; il bias domina la somma. È un comando della policy, non un guasto comune dell'attuatore.
+- Controfattuale con bias longitudinale +0,25 a 780,093 m: il gas previsto sale a 0,156, la vettura raggiunge 800,549 m e urta. Il solo aumento del gas non risolve la curva.
+- Pratica combinata: una proposta casuale su quattro fattori non migliora il progresso locale di 18,026 m. Estendendo la ricerca a 32 proposte/128 rollout, una variante sicura arriva a 23,189 m (+5,162 m), zero giri. Inserita nel replay completo allo stesso tick e stato, porta la gen.87 a 803,252 m sicuri, ma la gen.88 torna a 753,876 m e zero giri. Il guadagno locale non generalizza in modo dimostrato; l'overfit al contesto è un'interpretazione compatibile con questa prova, non una causa universale confermata.
+
+Nessun modello è promosso e il problema V3/Monza resta aperto. Versione app 5.7.0 invariata; nessun tag, nuova release, portable o installer sostituito. Il branch remoto `dev` esisteva già ed era allineato al commit `79b28dfa086ae89736bfd9db04ea0d82616fe659`; la presente annotazione viene pubblicata sullo stesso branch.
+
+I report e le tracce completi restano locali e sono esclusi da Git tramite `.impeccable/`:
+- Audit integrità p372: `progress372-v3-map-launch-bias-030-ab-6gen-20261102/corrected-audit.json`, SHA-256 `A8B3CB4D1F757CB43700F2F8BBECD5670041E2151E3BA518E850CADE0B17C9C9`.
+- Readout p373: `progress373-v3-wide-readout-audit-20261102/report.json`, SHA-256 `D385484F3323024C5F5E661B34B7955A6617DB77A2635CB4052D73BA23A0E12A`.
+- Controfattuale bias p375: `progress375-v3-wide-readout-bias-counterfactual-rerun-20261102/report.json`, SHA-256 `D958DD6B5DBD5F2ACCFACE94AD1E11D1C5EDDAE84B0FF21E611D86DDE66F07B6`.
+- Ricerca locale p378: `progress378-v3-local-practice-32-proposal-search-20261102/report.json`, SHA-256 `8A3B5ABDF8F9406D5287742F3493F448B18736492B307699CA64868001B83C42`.
+- Validazione live p379: `progress379-v3-practice-winner-live-validation-20261102/report.json`, SHA-256 `672F36EC600A46FDB3857CB5CFFA7C5FAFDF254AAD0819C5B24571EABC3E44E4`.
+
+Prossimo test utile: cercare mutazioni del readout che migliorino il settore conservando il comportamento acquisito prima dei 780 m, quindi ripetere il replay completo su seed indipendente prima di toccare l'app.
