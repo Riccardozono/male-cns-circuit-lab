@@ -122,14 +122,15 @@ class DesktopEngine {
       gpu: {...this.gpu},
       sessionId:this.sessionId,
       rendererToken:this.options?.rendererToken||null,
-      imitationTrialAvailable:Boolean(this.imitationModel)
+      imitationTrialAvailable:Boolean(this.imitationModel),
+      imitationTrialCircuitId:this.imitationModel?.circuitId??null
     };
   }
 
   async start(rawOptions = {}, restoredWorkers = null) {
     const imitation = rawOptions.trialProfile === IMITATION_PROFILE;
-    if (rawOptions.trialProfile && (!imitation || !this.imitationModel || restoredWorkers || rawOptions.modelId !== 'v3' || rawOptions.circuitId !== 'monza')) {
-      throw Error('La prova V3 addestrata è disponibile solo per Monza con un decoder compatibile.');
+    if (rawOptions.trialProfile && (!imitation || !this.imitationModel || restoredWorkers || rawOptions.modelId !== 'v3' || rawOptions.circuitId !== this.imitationModel.circuitId)) {
+      throw Error('Il circuito della prova deve corrispondere al decoder V3 caricato.');
     }
     await this.stop();
     this.stopping = false;

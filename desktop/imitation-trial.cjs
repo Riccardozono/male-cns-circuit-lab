@@ -5,7 +5,7 @@ const path = require('node:path');
 const { createHash } = require('node:crypto');
 const { gunzipSync } = require('node:zlib');
 
-const PROFILE = 'v3-imitation';
+const { IMITATION_PROFILE: PROFILE, IMITATION_CIRCUITS } = require('../outputs/model-test.js');
 const FORMAT = 'male-cns-v3-imitation-trial-v1';
 const MODEL_FORMAT = 'male-cns-neural-imitation-actor-v1';
 const RUNTIME_FILES = [
@@ -21,7 +21,7 @@ function vector(value, length) {
 
 function validate(bundle) {
   const { actor, genome } = bundle ?? {};
-  if (bundle?.format !== FORMAT || bundle.circuitId !== 'monza' ||
+  if (bundle?.format !== FORMAT || !IMITATION_CIRCUITS.includes(bundle.circuitId) ||
       actor?.format !== MODEL_FORMAT || actor.featureCount !== 332 ||
       actor.featureLayout?.descending !== 128 || actor.featureLayout?.inputGroupMeans !== 38 ||
       actor.featureLayout?.adjacentDifference !== 166 ||
@@ -30,6 +30,14 @@ function validate(bundle) {
       !Array.isArray(genome?.readout) || genome.readout.length > 2048 || !vector(genome.readout, genome.readout.length) ||
       !Number.isFinite(genome.gain) || !Array.isArray(actor.layers) || actor.layers.length !== 3) {
     throw Error('Decoder V3 di prova non valido.');
+  }
+  if (actor.actuatorRefinement !== undefined) {
+    const {steeringScale, pedalScale, accelerationBias} = actor.actuatorRefinement ?? {};
+    if (!Number.isFinite(steeringScale) || steeringScale < .94 || steeringScale > 1.06 ||
+        !Number.isFinite(pedalScale) || pedalScale < .9 || pedalScale > 1.18 ||
+        !Number.isFinite(accelerationBias) || accelerationBias < 0 || accelerationBias > .075) {
+      throw Error('Affinamento dei comandi del V3 incompatibile.');
+    }
   }
   const sizes = [332, 112, 80, 2];
   for (const [index, layer] of actor.layers.entries()) {
@@ -59,7 +67,7 @@ async function load(file, outputsDir) {
   if (RUNTIME_FILES.some(name => bundle.runtimeHashes?.[name] !== hashes[name])) {
     throw Error('Decoder V3 incompatibile con questo motore. Serve il bundle della stessa build.');
   }
-  return { actor: bundle.actor, genome: bundle.genome, sha256: digest(bytes) };
+  return { actor: bundle.actor, genome: bundle.genome, circuitId: bundle.circuitId, sha256: digest(bytes) };
 }
 
 function createDecoder(actor, graph) {
@@ -108,7 +116,14 @@ function createDecoder(actor, graph) {
       }
       inputs = next;
     }
-    return [inputs[0], Math.max(0, inputs[1]), Math.max(0, -inputs[1])];
+    let [steering, pedal] = inputs;
+    if (actor.actuatorRefinement) {
+      const {steeringScale, pedalScale, accelerationBias} = actor.actuatorRefinement;
+      const bias = pedal > 0 ? accelerationBias * Math.exp(-7 * Math.abs(steering)) : 0;
+      steering = Math.max(-1, Math.min(1, steering * steeringScale));
+      pedal = Math.max(-1, Math.min(1, pedal * pedalScale + bias));
+    }
+    return [steering, Math.max(0, pedal), Math.max(0, -pedal)];
   };
 }
 

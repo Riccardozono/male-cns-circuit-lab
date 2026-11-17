@@ -92,7 +92,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
 }
 module.exports={run,reportDialog};
 
-async function runImitation(window,{output,engine,version}){
+async function runImitation(window,{output,engine,version,refined=false,circuitId='monza'}){
   await fs.mkdir(output,{recursive:true});
   const wc=window.webContents,checks=[],errors=[];
   wc.on('console-message',details=>{if(details.level==='error'||details.level===3)errors.push(details.message);});
@@ -111,21 +111,21 @@ async function runImitation(window,{output,engine,version}){
   await until('!normalV3TrialSim.running&&normalV3TrialSim._pendingRunning===null');
   const session=engine.sessionId;
   const storage=await js('JSON.stringify(Object.keys(localStorage).sort().map(key=>[key,localStorage.getItem(key)]))');
-  await js("document.getElementById('speed-range').value='30';normalV3TrialSim.speedMultiplier=30;void 0");
-  await until('normalV3TrialSim.speedMultiplier===30');
+  await js('normalV3TrialSim.speedMultiplier=6;void 0');
+  await until('normalV3TrialSim.speedMultiplier===6');
   await engine.exportProgress();
   const normalWithSpeed=hash(await engine.exportProgress());
   await js("document.getElementById('open-model-test').click();document.getElementById('model-test-imitation').click();void 0");
   await until("circuitLab.sim.modelTest?.status==='running'&&circuitLab.sim.cars[0]?.lifetime>.2");
   const running=await js("({model:circuitLab.sim.modelId,circuit:circuitLab.sim.circuitId,population:circuitLab.sim.cars.length,speed:circuitLab.sim.speedMultiplier,readouts:circuitLab.sim.graph.learning?.nodes.length,paused:!normalV3TrialSim.running,persistDisabled:document.getElementById('save-progress').disabled})");
-  check('Real desktop trial uses Monza, one car, V3 wide and CPU at 30×',running.model==='v3'&&running.circuit==='monza'&&running.population===1&&running.speed===30&&running.readouts===128,running);
+  check('Real desktop trial uses its chosen circuit, one car, V3 wide and 30× requested',running.model==='v3'&&running.circuit===circuitId&&running.population===1&&running.speed===30&&running.readouts===128,running);
   check('Ordinary session is paused and persistence is locked during the trial',running.paused&&running.persistDisabled&&engine.sessionId===session,running);
   await until("globalThis.circuitLab?.tests?.suite?.finishedAt&&!circuitLab.tests.busy");
   const report=await js('circuitLab.tests.suite.report()');
   const row=report.cases[0];
   check('The car completes two timed laps on the real desktop worker',report.execution==='pretrained-v3-trial'&&row.status==='completed'&&row.maxLaps===2&&row.generations===1&&row.backend==='CPU'&&/^[0-9a-f]{64}$/.test(row.decoderSha256),row);
-  const expectedEnvelope=[292,300];
-  check('Both lap times are in the range measured on Monza',row.hit?.lapTimes?.length===2&&row.hit.lapTimes.every(time=>time>=expectedEnvelope[0]&&time<=expectedEnvelope[1]),row.hit);
+  const expectedEnvelope=circuitId==='le-mans'?[740,805]:refined?[270,288]:[292,300];
+  check('Both lap times are in the verified range for the circuit',row.hit?.lapTimes?.length===2&&row.hit.lapTimes.every(time=>time>=expectedEnvelope[0]&&time<=expectedEnvelope[1]),row.hit);
   check('Recorded lap sum matches the worker’s fixed-tick episode',Math.abs(row.hit.twoLapSimSeconds-row.simSeconds)<1/60,row);
   await until("document.querySelector('#model-test-results tr:not([hidden])')?.textContent.includes('V3 addestrato')&&!document.getElementById('model-test-export').disabled");
   const visible=await js("Array.from(document.querySelectorAll('#model-test-results tr:not([hidden])')).map(row=>Array.from(row.cells,cell=>cell.textContent))");
@@ -136,7 +136,7 @@ async function runImitation(window,{output,engine,version}){
   if(!wc.debugger.isAttached())wc.debugger.attach('1.3');
   const shot=await wc.debugger.sendCommand('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
   await fs.writeFile(path.join(output,'imitation-result.png'),Buffer.from(shot.data,'base64'));
-  check('Ordinary engine session and progress restore byte for byte',engine.sessionId===session&&hash(await engine.exportProgress())===normalWithSpeed&&await js('circuitLab.sim===normalV3TrialSim&&!circuitLab.sim.running'));
+  check('Ordinary engine session and progress restore byte for byte',engine.sessionId===session&&hash(await engine.exportProgress())===normalWithSpeed&&await js('circuitLab.sim===normalV3TrialSim&&!circuitLab.sim.running&&circuitLab.sim.speedMultiplier===6'));
   check('Local storage is preserved',await js('JSON.stringify(Object.keys(localStorage).sort().map(key=>[key,localStorage.getItem(key)]))')===storage);
   await js("document.getElementById('model-test-export').click();void 0");
   await until("document.getElementById('model-test-status').textContent.startsWith('Rapporto salvato')");

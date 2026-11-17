@@ -80,8 +80,9 @@ test('Reports are independent snapshots, not live references to test state',asyn
 });
 
 test('A trained V3 episode uses one car and stops on the first terminal result',()=>{
-  const trial=new T.Trial({...options,trialProfile:T.IMITATION_PROFILE,circuitId:'monaco'},0);
-  assert.equal(trial.settings.circuitId,'monza');
+  const trial=new T.Trial({...options,trialProfile:T.IMITATION_PROFILE,circuitId:'le-mans'},0);
+  assert.equal(trial.settings.circuitId,'le-mans');
+  assert.throws(()=>T.settings({...options,trialProfile:T.IMITATION_PROFILE,circuitId:'lab'}));
   assert.equal(trial.settings.population,1);
   assert.equal(trial.settings.mutation,0);
   trial.observe(state([car({alive:false,reason:'urto'})]),100,F.DT);

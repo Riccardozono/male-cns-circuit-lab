@@ -573,7 +573,7 @@ function syncModelTestControls(){
   const currentSettings=modelTestSuite?.settings;
   const s=modelTestBusy||currentSettings?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE?currentSettings:null;
   $('model-test-settings').textContent=s?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
-    ? `Monza · V3 addestrato offline · 1 auto · CPU · ${s.speedMultiplier}× richiesti`
+    ? `${sim.circuits.find(c=>c.id===s.circuitId)?.name||s.circuitId} · V3 addestrato offline · 1 auto · CPU · ${s.speedMultiplier}× richiesti`
     : `V2 → V3 → V4 → V5 · ${s?sim.circuits.find(c=>c.id===s.circuitId)?.name:sim.circuit.name} · ${s?.population??sim.population} agenti · mutazione ${Math.round((s?.mutation??sim.mutation)*100)}% · ${s?.speedMultiplier??sim.speedMultiplier}× richiesti · seed 7717 · un worker. Partenza da zero, nessun campione importato.`;
 }
 function updateModelTestResults(suite){
@@ -596,7 +596,7 @@ function updateModelTestResults(suite){
     const config=suite.settings,name=sim.circuits.find(c=>c.id===config.circuitId)?.name||config.circuitId;
     const limitLabel=config.limitSeconds===0?'senza limite':config.limitSeconds<60?`${config.limitSeconds.toLocaleString('it-IT')} s reali per modello`:`${(config.limitSeconds/60).toLocaleString('it-IT',{maximumFractionDigits:2})} min reali per modello`;
     $('model-test-caption').textContent=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
-      ? `V3 addestrato · Monza · 1 auto · ${config.speedMultiplier}× richiesti · ${limitLabel}.`
+      ? `V3 addestrato · ${name} · 1 auto · ${config.speedMultiplier}× richiesti · ${limitLabel}.`
       : `Risultati: ${name} · ${config.population} agenti · mutazione ${Math.round(config.mutation*100)}% · ${config.speedMultiplier}× richiesti · ${limitLabel}.`;
     const current=suite.cases.find(c=>c.status==='running'||c.status==='loading'),done=suite.cases.filter(c=>c.status==='completed').length;
     const imitation=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE;
@@ -672,10 +672,17 @@ function initModelTestControls(){
   modelTestRows=MaleCNSModelTest.MODELS.map(modelId=>{const row=document.createElement('tr'),heading=document.createElement('th');heading.scope='row';heading.textContent=modelId.toUpperCase();row.append(heading);for(let i=0;i<6;i++)row.append(document.createElement('td'));body.append(row);return row;});
   $('model-test-start').onclick=()=>runModelTest().catch(error=>{$('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';});
   const imitationButton=$('model-test-imitation');
-  globalThis.desktopTest?.info().then(info=>{imitationButton.hidden=!info.imitationTrialAvailable;}).catch(()=>{});
+  let imitationCircuitId=null;
+  globalThis.desktopTest?.info().then(info=>{
+    const circuit=MALE_CNS_CIRCUITS.circuits.find(entry=>entry.id===info.imitationTrialCircuitId);
+    if(!info.imitationTrialAvailable||!circuit)return;
+    imitationCircuitId=circuit.id;
+    imitationButton.textContent='Prova V3 addestrato · '+circuit.name;
+    imitationButton.hidden=false;
+  }).catch(()=>{});
   imitationButton.onclick=()=>{
     if(!$('model-test-limit').reportValidity())return;
-    runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE}).catch(error=>{
+    runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE,circuitId:imitationCircuitId,speedMultiplier:30}).catch(error=>{
       $('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';
     });
   };

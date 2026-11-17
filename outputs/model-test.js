@@ -7,10 +7,12 @@
   'use strict';
   const MODELS=Object.freeze(['v2','v3','v4','v5']);
   const IMITATION_PROFILE='v3-imitation';
+  const IMITATION_CIRCUITS=Object.freeze(['monza','monaco','le-mans']);
   const TERMINAL=new Set(['completed','failed','limit','stopped','error']);
   function settings(raw={}){
     const imitation=raw.trialProfile===IMITATION_PROFILE;
-    const value={...(imitation?{trialProfile:IMITATION_PROFILE}:{}),circuitId:imitation?'monza':raw.circuitId||'lab',population:imitation?1:Number(raw.population??16),mutation:imitation?0:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
+    const value={...(imitation?{trialProfile:IMITATION_PROFILE}:{}),circuitId:raw.circuitId||(imitation?'monza':'lab'),population:imitation?1:Number(raw.population??16),mutation:imitation?0:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
+    if(imitation&&!IMITATION_CIRCUITS.includes(value.circuitId))throw Error('Circuito incompatibile con la prova addestrata.');
     if(!imitation&&(!Number.isInteger(value.population)||value.population<4||value.population>100))throw Error('Scegli da 4 a 100 agenti.');
     if(!Number.isFinite(value.mutation)||value.mutation<0||value.mutation>.35)throw Error('Mutazione non valida (0–35%).');
     if(!Number.isFinite(value.speedMultiplier)||value.speedMultiplier<.5||value.speedMultiplier>30)throw Error('Velocità non valida (0,5–30×).');
@@ -98,10 +100,10 @@
     stop(){this.stopRequested=true;}
     report(){
       if(this.settings.trialProfile===IMITATION_PROFILE){
-        return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'pretrained-v3-trial',goal:'Una vettura completa due giri misurati di Monza.',boundary:'Decoder addestrato offline. La prova esegue un solo episodio CPU senza aggiornare i pesi.',cases:JSON.parse(JSON.stringify(this.cases))};
+        return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'pretrained-v3-trial',goal:'Una vettura completa due giri misurati del circuito del decoder.',boundary:'Decoder addestrato offline. La prova esegue un solo episodio CPU senza aggiornare i pesi.',cases:JSON.parse(JSON.stringify(this.cases))};
       }
       return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'sequential-cold-start',goal:'One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.',timing:'Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.',boundary:'One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.',cases:JSON.parse(JSON.stringify(this.cases))};
     }
   }
-  return Object.freeze({MODELS,IMITATION_PROFILE,settings,Trial,Suite});
+  return Object.freeze({MODELS,IMITATION_PROFILE,IMITATION_CIRCUITS,settings,Trial,Suite});
 });

@@ -746,3 +746,17 @@ Il runner di ricerca e il percorso del worker producono gli stessi tempi se eseg
 La prova Windows usa pesi fissi su Monza. Rimangono aperte l’evoluzione per ricompense del decoder, le altre piste e la validazione di una candidata distribuibile.
 
 [Rapporto della verifica desktop](../outputs/research/v3-male-cns-imitation-2026-11-17/desktop-report.json).
+
+### Affinamento per ricompense a Monza e prova Windows a Le Mans
+
+L’ottimizzazione successiva al preaddestramento modifica tre coefficienti del decoder V3. Su due aggiornamenti con un élite e tre figli, la selezione privilegia sicurezza, giri completati e punteggio dell’app. La prova nominale nel simulatore CPU scende da 593,499 a 556,269 s per due giri. Due partenze escluse dall’ottimizzazione confermano guadagni di 36,877 e 35,955 s senza urti. Il decoder riceve attività MaleCNS durante la guida. L’aggiornamento dei coefficienti è stato eseguito offline.
+
+A Le Mans e Monaco, il controllore di riferimento ha completato due giri in almeno una prova per pista. Il decoder comune alle tre piste completa due giri in due partenze di Monza su tre. A Le Mans registra un giro prima di urtare in una partenza su tre. Monaco resta a zero giri. Un secondo addestramento usa esempi correttivi raccolti nelle situazioni in cui la policy commette errori. Il decoder specializzato di Le Mans completa 27.252 m senza urti nelle tre prove indipendenti, compresa una con disturbi sui comandi. La specializzazione provata a Monaco ha zero giri.
+
+I lanciatori locali `Avvia-prova-V3-Monza.cmd` e `Avvia-prova-V3-Le-Mans.cmd` aprono profili separati. Nel pannello **Confronto modelli**, la prova del V3 addestrato seleziona la pista del bundle e richiede 30×. Possiede un report JSON separato, con tempi fisici e identificativo del decoder. Il confronto da zero V2–V5 usa le impostazioni della sessione.
+
+La verifica dell’app Windows da sorgente misura a Monza 279,595 e 276,835 s dopo l’affinamento, per un totale di 556,430 s. La prova precedente misura 592,222 s. A Le Mans misura 760,558 e 755,370 s. Su entrambe le piste il worker termina al secondo giro e il pannello mostra i tempi misurati. I controlli verificano anche esportazione, interruzione e ripristino della sessione ordinaria.
+
+Il test Windows riproduce i decoder a pesi fissi. L’aggiornamento per ricompense dentro l’app, un giro autonomo a Monaco e la verifica della candidata distribuibile restano aperti.
+
+[Evidenze per pista e tempi effettivi nell’app](../outputs/research/v3-circuit-adaptation-2026-11-17/report.json).
