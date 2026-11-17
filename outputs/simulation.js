@@ -670,6 +670,7 @@
     constructor(data,options={}) {
       this.graph=compileGraph(data);this.modelId=options.modelId||data.modelId||this.graph.modelId;this.modelLabel=options.modelLabel||data.modelLabel||this.graph.modelLabel;this.seed=options.seed??7717;this.rewardRevision=Rewards.REVISION;
       this.learningEnabled=options.learningEnabled!==false;if(this.learningEnabled)ensureLearning(this.graph);
+      this.motorDecoder=options.motorDecoder??null;
       this.brainFactory=typeof options.brainFactory==='function'?options.brainFactory:makeBrain;
       this.circuits=[{id:'lab',name:'Laboratorio',revision:1,description:'Circuito originale per confrontare i controller.',landmarks:[]},...(options.circuits?.circuits||[])];
       this.configureCircuit(options.circuitId||'lab');
@@ -1108,6 +1109,7 @@
           const override=neuralOverrides?.get?.(car.id) || neuralOverrides?.[car.id];
           const speedMps=car.vehicle?.speedMps??car.speed/(car.pixelsPerMeter||1),launchBias=neuralLaunchBias(this.track,speedMps);
           car.slowOutputs=override?neuralStateStep(this.graph,car.brain,car.genome,override.active,override.values,launchBias):neuralStepForTrack(this.track,this.graph,car.brain,car.genome,car.sensorVector,this.mode!=='off',true,speedMps);
+          if(this.motorDecoder&&this.mode==='connectome')car.slowOutputs=this.motorDecoder(car);
           if(this.modelId==='v3'&&this.mode==='connectome'&&this.learningEnabled&&car.genome.policyWeights)Learning.rememberActivity(car.brain,car.vehicle?.speedMps??0);
           if(this.mode==='connectome'&&this.learningEnabled&&!this.graph.full&&car.lifetime>=1&&!car.encodingContext){car.encodingContext={sensors:car.sensorVector.slice(),activity:car.brain.activity.slice()};}
         }
@@ -1126,7 +1128,7 @@
       // replace the final cars. Absent in ordinary training.
       this.onTrialTick?.(this);
       if(this.cars.every(c=>!c.alive)) {
-        if(this.mode==='connectome') this.evolve(); else this.running=false;
+        if(this.mode==='connectome'&&!this.motorDecoder) this.evolve(); else this.running=false;
       }
     }
     advance(seconds) {

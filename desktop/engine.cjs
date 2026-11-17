@@ -7,6 +7,7 @@ const os = require('node:os');
 const {Worker} = require('node:worker_threads');
 const F=require('../outputs/simulation.js'),{compareAgents,compareLearningAgents}=F;
 const Progress=require('../outputs/progress-save.js');
+const { PROFILE: IMITATION_PROFILE } = require('./imitation-trial.cjs');
 
 const MAX_WORKERS = Math.max(1, Number(os.availableParallelism?.() || os.cpus().length || 1));
 // The connectome workers are deliberately CPU-heavy even when worker 0 sends
@@ -36,6 +37,7 @@ class DesktopEngine {
     this.trainingCopyV3=options.trainingCopyV3===true;
     this.trainingCopyV3Baseline=options.trainingCopyV3Baseline===true;
     this.trainingCopyV3Current=options.trainingCopyV3Current===true;
+    this.imitationModel=options.imitationModel??null;
     this.workers = [];
     this.states = [];
     this.seenGenerations = [];
@@ -53,9 +55,10 @@ class DesktopEngine {
     this.progressRequests=new Map();this.sessionId=null;this.restoring=false;
   }
 
-  async loadBundle(modelId = 'v5') {
+  async loadBundle(modelId = 'v5', imitation = false) {
     const id = ['v2', 'v3', 'v4', 'v5'].includes(modelId) ? modelId : 'v5';
-    if (this.bundles.has(id)) return this.bundles.get(id);
+    const cacheKey = imitation ? IMITATION_PROFILE : id;
+    if (this.bundles.has(cacheKey)) return this.bundles.get(cacheKey);
     const circuits = JSON.parse(await fs.readFile(path.join(this.outputsDir, 'data', 'circuits.json'), 'utf8')).circuits;
     if(id==='v5'){
       const original=await this.loadBundle('v4'),profiles=require(path.join(this.outputsDir,'model-profiles.js'));
@@ -66,7 +69,7 @@ class DesktopEngine {
     if (id !== 'v4') {
       const legacyModels = require(path.join(this.outputsDir, 'legacy-models.js'));
       const source = JSON.parse(await fs.readFile(path.join(this.outputsDir, 'data', 'connectome.json'), 'utf8'));
-      const modelData = id === 'v2' ? legacyModels.buildV2(source) : this.trainingCopyV3?legacyModels.tagV3WideReadout(source):this.trainingCopyV3Baseline?legacyModels.tagV3TrainingBaseline(source):this.trainingCopyV3Current?legacyModels.tagV3TrainingCurrent(source):legacyModels.tagV3(source);
+      const modelData = id === 'v2' ? legacyModels.buildV2(source) : (imitation||this.trainingCopyV3)?legacyModels.tagV3WideReadout(source):this.trainingCopyV3Baseline?legacyModels.tagV3TrainingBaseline(source):this.trainingCopyV3Current?legacyModels.tagV3TrainingCurrent(source):legacyModels.tagV3(source);
       const bundle = {
         modelId: id,
         full: false,
@@ -82,7 +85,7 @@ class DesktopEngine {
         shared: null,
         circuits
       };
-      this.bundles.set(id, bundle);
+      this.bundles.set(cacheKey, bundle);
       return bundle;
     }
     const metadataPath = path.join(this.outputsDir, 'data', 'connectome-full.json');
@@ -118,11 +121,16 @@ class DesktopEngine {
       edgeCount: this.bundle?.metadata?.edgeCount || 6242118,
       gpu: {...this.gpu},
       sessionId:this.sessionId,
-      rendererToken:this.options?.rendererToken||null
+      rendererToken:this.options?.rendererToken||null,
+      imitationTrialAvailable:Boolean(this.imitationModel)
     };
   }
 
   async start(rawOptions = {}, restoredWorkers = null) {
+    const imitation = rawOptions.trialProfile === IMITATION_PROFILE;
+    if (rawOptions.trialProfile && (!imitation || !this.imitationModel || restoredWorkers || rawOptions.modelId !== 'v3' || rawOptions.circuitId !== 'monza')) {
+      throw Error('La prova V3 addestrata è disponibile solo per Monza con un decoder compatibile.');
+    }
     await this.stop();
     this.stopping = false;
     this.sessionId=crypto.randomUUID();
@@ -132,22 +140,23 @@ class DesktopEngine {
     this.globalChampionStats = null;
     this.globalChampionNeedsRevalidation = false;
     const modelId = ['v2', 'v3', 'v4', 'v5'].includes(rawOptions.modelId) ? rawOptions.modelId : 'v5';
-    const bundle = await this.loadBundle(modelId);
+    const bundle = await this.loadBundle(modelId, imitation);
     this.bundle = bundle;
     this.gpu = {state: bundle.full ? 'waiting' : 'not-used', backend: null, workerCount: 0, error: null, adapter: null};
     const recommendedWorkers = bundle.full ? DEFAULT_FULL_WORKERS : this.defaultWorkerCount();
-    const workerCount = restoredWorkers?restoredWorkers.length:clampInteger(rawOptions.workerCount ?? recommendedWorkers, 1, MAX_WORKERS);
+    const workerCount = imitation?1:restoredWorkers?restoredWorkers.length:clampInteger(rawOptions.workerCount ?? recommendedWorkers, 1, MAX_WORKERS);
     this.options = {
-      population: clampInteger(rawOptions.population ?? DEFAULT_POPULATION, 4, MAX_POPULATION),
-      mutation: Math.max(0, Math.min(.35, Number(rawOptions.mutation ?? .32))),
+      population: imitation ? 1 : clampInteger(rawOptions.population ?? DEFAULT_POPULATION, 4, MAX_POPULATION),
+      mutation: imitation?0:Math.max(0, Math.min(.35, Number(rawOptions.mutation ?? .32))),
       speedMultiplier: Math.max(.5, Math.min(30, Number(rawOptions.speedMultiplier ?? 1))),
       circuitId: rawOptions.circuitId || 'lab',
       mode: rawOptions.mode || 'connectome',
       modelId,
       workerCount,
+      ...(imitation?{trialProfile:IMITATION_PROFILE}:{}),
       rendererToken:typeof rawOptions.rendererToken==='string'?rawOptions.rendererToken.slice(0,64):null
     };
-    this.options.running=rawOptions.running??true;
+    this.options.running=imitation?false:(rawOptions.running??true);
     this.states = Array(workerCount).fill(null);
     // Restored paused workers may report their existing champion merely
     // because the UI inspects a car. That is not a new scored generation.
@@ -204,6 +213,7 @@ class DesktopEngine {
           circuits: bundle.circuits,
           simulationPath: path.join(this.outputsDir, 'simulation.js'),
           ...this.options,
+          ...(this.options.trialProfile===IMITATION_PROFILE?{imitationModel:this.imitationModel}:{}),
           gpuPreferred: index === 0 && bundle.full && typeof this.forwardGpuRequest === 'function',
           seed: 7717 + index * 100003,
           progressState

@@ -9,6 +9,8 @@ const F = require(workerData.simulationPath);
 const State=require(require('node:path').join(require('node:path').dirname(workerData.simulationPath),'desktop-state.js'));
 const Progress=require(require('node:path').join(require('node:path').dirname(workerData.simulationPath),'progress-save.js'));
 const ModelTest=require(require('node:path').join(require('node:path').dirname(workerData.simulationPath),'model-test.js'));
+const Imitation = require('./imitation-trial.cjs');
+const imitation = workerData.imitationModel;
 const data = workerData.modelData || {...workerData.metadata, compact: true};
 if (!workerData.modelData) {
   for (const [name, descriptor] of Object.entries(workerData.metadata.arrays)) {
@@ -243,6 +245,10 @@ async function loop() {
 }
 
 parentPort.on('message', message => {
+  if(imitation&&!['beginModelTest','cancelModelTest','inspectAgent','stop'].includes(message.type)){
+    if(message.type==='exportProgress')parentPort.postMessage({type:'progress-result',requestId:message.requestId,error:'Una prova V3 si esporta come rapporto, non come salvataggio.'});
+    return;
+  }
   if(message.type==='exportProgress'){
     try{parentPort.postMessage({type:'progress-result',requestId:message.requestId,state:Progress.capture(sim)});}
     catch(error){parentPort.postMessage({type:'progress-result',requestId:message.requestId,error:error.message});}
@@ -261,7 +267,8 @@ parentPort.on('message', message => {
     switch (message.type) {
       case 'beginModelTest':
         if(sim.generation!==1||sim.ticks!==0||sim.history.length)throw Error('Il test deve partire da zero.');
-        modelTest=new ModelTest.Trial({...message.options,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,circuitId:sim.circuitId},performance.now());
+        modelTest=new ModelTest.Trial({...message.options,trialProfile:workerData.trialProfile,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,circuitId:sim.circuitId},performance.now());
+        if(imitation)modelTest.decoderSha256=imitation.sha256;
         sim.onTrialTick=state=>{modelTest.backend=gpuEnabled?'WebGPU + CPU':'CPU';modelTest.observe(state,performance.now(),F.DT);};
         sim.running=true;sim.accumulator=0;last=performance.now();break;
       case 'cancelModelTest':modelTest?.finish('stopped',performance.now());sim.running=false;break;
@@ -300,12 +307,17 @@ parentPort.on('message', message => {
 try {
   sim = new F.Simulation(data, {
     population: workerData.population,
+    learningEnabled: !imitation,
     brainFactory:gpuPreferred&&workerData.mode==='connectome'?State.mirrorBrain:undefined,
     mutation: workerData.mutation,
     seed: workerData.seed,
     circuits: {circuits: workerData.circuits},
     circuitId: workerData.circuitId
   });
+  if(imitation){
+    sim.spawn([imitation.genome]);
+    sim.motorDecoder=Imitation.createDecoder(imitation.actor,sim.graph);
+  }
   sim.mode = workerData.mode;
   sim.running=workerData.running??true;
   sim.speedMultiplier = speed;

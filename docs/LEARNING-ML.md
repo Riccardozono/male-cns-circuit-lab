@@ -732,3 +732,17 @@ Nei primi cinque replay autonomi, tutti arrivano a 11.586 m senza urti e termina
 Il trasferimento diretto con gli stessi pesi a Le Mans e Monaco produce zero giri, rispettivamente un urto a 660,152 m e una terminazione per ritmo insufficiente a 210,268 m. I risultati riguardano un genoma V3 ampliato e il simulatore CPU fuori dall’interfaccia. Il decoder resta sperimentale. Serve ancora verificare la sua integrazione Windows e l’addestramento successivo per ricompense prima di preparare una candidata.
 
 [Protocollo, tempi, prove di controllo e SHA-256](../outputs/research/v3-male-cns-imitation-2026-11-17/report.json).
+
+### Prova Windows del V3 addestrato
+
+Nel pannello **Confronto modelli** il pulsante **Prova V3 addestrato · Monza** avvia un episodio isolato con un’auto, uno stato neurale iniziale vuoto e il decoder verificato. Il test usa il grafo V3 ampliato su CPU e registra i due tempi effettivi. Al termine torna alla sessione precedente. Il rapporto JSON include lo SHA-256 del decoder usato. Il confronto V2–V5 continua a partire da zero.
+
+Avviare `Avvia-prova-V3-Monza.cmd` dal checkout Windows con le dipendenze installate. Il lanciatore apre un profilo di prova dedicato e accetta il percorso del bundle come primo argomento. `work/make-v3-imitation-trial.cjs` prepara il bundle a partire dal decoder compresso, dal genoma corrispondente e dal motore di questo checkout. Il modello di ricerca e il genoma sono archivi locali.
+
+Nella verifica dell’app Windows da sorgente, l’episodio ha coperto 11.586 m e due giri in 592,222 s simulati. Il primo giro misura 298,416 s, il secondo 293,806 s. Il test ha controllato tabella, esportazione, interruzione e ripristino byte per byte del progresso della sessione precedente. Il confronto standard separato ha superato 37 verifiche e ha eseguito tutti e quattro i modelli.
+
+Il runner di ricerca e il percorso del worker producono gli stessi tempi se eseguiti nello stesso runtime. Electron 38.8.6 riproduce i tempi dell’app. Node 24.19.0 misura invece 298,415 e 295,084 s. La differenza osservata è riproducibile tra i due runtime provati.
+
+La prova Windows usa pesi fissi su Monza. Rimangono aperte l’evoluzione per ricompense del decoder, le altre piste e la validazione di una candidata distribuibile.
+
+[Rapporto della verifica desktop](../outputs/research/v3-male-cns-imitation-2026-11-17/desktop-report.json).

@@ -91,3 +91,65 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
   await fs.writeFile(path.join(output,'model-test-smoke.json'),JSON.stringify(result,null,2));return result;
 }
 module.exports={run,reportDialog};
+
+async function runImitation(window,{output,engine,version}){
+  await fs.mkdir(output,{recursive:true});
+  const wc=window.webContents,checks=[],errors=[];
+  wc.on('console-message',details=>{if(details.level==='error'||details.level===3)errors.push(details.message);});
+  const js=code=>wc.executeJavaScript(code,true);
+  const check=(name,passed,detail)=>{checks.push({name,passed,detail});if(!passed)throw Error(name+' '+JSON.stringify(detail));};
+  const until=async code=>{
+    const deadline=Date.now()+180000;
+    while(!await js(code)){
+      if(Date.now()>deadline)throw Error('Timeout '+code+' '+JSON.stringify(errors));
+      await wait(75);
+    }
+  };
+  const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  await until("Boolean(globalThis.circuitLab?.tests&&circuitLab.sim.cars.length&&!document.getElementById('model-test-imitation').hidden)");
+  await js("globalThis.normalV3TrialSim=circuitLab.sim;normalV3TrialSim.running=false;void 0");
+  await until('!normalV3TrialSim.running&&normalV3TrialSim._pendingRunning===null');
+  const session=engine.sessionId;
+  const storage=await js('JSON.stringify(Object.keys(localStorage).sort().map(key=>[key,localStorage.getItem(key)]))');
+  await js("document.getElementById('speed-range').value='30';normalV3TrialSim.speedMultiplier=30;void 0");
+  await until('normalV3TrialSim.speedMultiplier===30');
+  await engine.exportProgress();
+  const normalWithSpeed=hash(await engine.exportProgress());
+  await js("document.getElementById('open-model-test').click();document.getElementById('model-test-imitation').click();void 0");
+  await until("circuitLab.sim.modelTest?.status==='running'&&circuitLab.sim.cars[0]?.lifetime>.2");
+  const running=await js("({model:circuitLab.sim.modelId,circuit:circuitLab.sim.circuitId,population:circuitLab.sim.cars.length,speed:circuitLab.sim.speedMultiplier,readouts:circuitLab.sim.graph.learning?.nodes.length,paused:!normalV3TrialSim.running,persistDisabled:document.getElementById('save-progress').disabled})");
+  check('Real desktop trial uses Monza, one car, V3 wide and CPU at 30×',running.model==='v3'&&running.circuit==='monza'&&running.population===1&&running.speed===30&&running.readouts===128,running);
+  check('Ordinary session is paused and persistence is locked during the trial',running.paused&&running.persistDisabled&&engine.sessionId===session,running);
+  await until("globalThis.circuitLab?.tests?.suite?.finishedAt&&!circuitLab.tests.busy");
+  const report=await js('circuitLab.tests.suite.report()');
+  const row=report.cases[0];
+  check('The car completes two timed laps on the real desktop worker',report.execution==='pretrained-v3-trial'&&row.status==='completed'&&row.maxLaps===2&&row.generations===1&&row.backend==='CPU'&&/^[0-9a-f]{64}$/.test(row.decoderSha256),row);
+  const expectedEnvelope=[292,300];
+  check('Both lap times are in the range measured on Monza',row.hit?.lapTimes?.length===2&&row.hit.lapTimes.every(time=>time>=expectedEnvelope[0]&&time<=expectedEnvelope[1]),row.hit);
+  check('Recorded lap sum matches the worker’s fixed-tick episode',Math.abs(row.hit.twoLapSimSeconds-row.simSeconds)<1/60,row);
+  await until("document.querySelector('#model-test-results tr:not([hidden])')?.textContent.includes('V3 addestrato')&&!document.getElementById('model-test-export').disabled");
+  const visible=await js("Array.from(document.querySelectorAll('#model-test-results tr:not([hidden])')).map(row=>Array.from(row.cells,cell=>cell.textContent))");
+  const digit=value=>String(value).padStart(2,'0');
+  const clock=time=>digit(Math.floor(time/60))+':'+digit(Math.floor(time%60))+'.'+Math.floor(time%1*10);
+  check('Visible result shows two laps and both times on one row',visible.length===1&&visible[0][5]==='2'&&visible[0][6].includes(row.hit.lapTimes.map(clock).join(' + ')),visible);
+  await js("document.querySelector('#model-test-results tr:not([hidden])').scrollIntoView({block:'center'});void 0");
+  if(!wc.debugger.isAttached())wc.debugger.attach('1.3');
+  const shot=await wc.debugger.sendCommand('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+  await fs.writeFile(path.join(output,'imitation-result.png'),Buffer.from(shot.data,'base64'));
+  check('Ordinary engine session and progress restore byte for byte',engine.sessionId===session&&hash(await engine.exportProgress())===normalWithSpeed&&await js('circuitLab.sim===normalV3TrialSim&&!circuitLab.sim.running'));
+  check('Local storage is preserved',await js('JSON.stringify(Object.keys(localStorage).sort().map(key=>[key,localStorage.getItem(key)]))')===storage);
+  await js("document.getElementById('model-test-export').click();void 0");
+  await until("document.getElementById('model-test-status').textContent.startsWith('Rapporto salvato')");
+  check('Exported report equals the measured result',JSON.stringify(JSON.parse(await fs.readFile(path.join(output,'exported-report.json'),'utf8')))===JSON.stringify(report));
+  await js("document.getElementById('model-test-imitation').click();void 0");
+  await until("circuitLab.sim.modelTest?.status==='running'&&circuitLab.sim.cars[0]?.lifetime>.2");
+  await js("document.getElementById('model-test-stop').click();void 0");
+  await until("circuitLab.tests.suite?.stopRequested&&!circuitLab.tests.busy&&circuitLab.sim===normalV3TrialSim");
+  const stopped=await js('circuitLab.tests.suite.report()');
+  check('Cancel stops an independent trial and preserves the ordinary session',stopped.cases[0].status==='stopped'&&engine.sessionId===session&&hash(await engine.exportProgress())===normalWithSpeed,stopped.cases[0]);
+  check('No renderer errors during either trial',errors.length===0,errors);
+  const result={passed:true,version,generatedAt:new Date().toISOString(),checks,report,stopped};
+  await fs.writeFile(path.join(output,'imitation-smoke.json'),JSON.stringify(result,null,2)+'\n');
+  return result;
+}
+module.exports.runImitation=runImitation;

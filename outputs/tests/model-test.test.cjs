@@ -78,3 +78,23 @@ test('Stop during preparation does not begin training or run pending profiles',a
 test('Reports are independent snapshots, not live references to test state',async()=>{
   const suite=new T.Suite({options,version:'5.0.0',create:async id=>adapter([],id,{status:'completed'})});await suite.run();const r=suite.report();r.cases[0].status='invented';assert.equal(suite.cases[0].status,'completed');
 });
+
+test('A trained V3 episode uses one car and stops on the first terminal result',()=>{
+  const trial=new T.Trial({...options,trialProfile:T.IMITATION_PROFILE,circuitId:'monaco'},0);
+  assert.equal(trial.settings.circuitId,'monza');
+  assert.equal(trial.settings.population,1);
+  assert.equal(trial.settings.mutation,0);
+  trial.observe(state([car({alive:false,reason:'urto'})]),100,F.DT);
+  assert.equal(trial.status,'failed');
+  assert.equal(trial.snapshot(200).error,'urto');
+  assert.equal(trial.generations,1);
+  trial.observe(state([completed()]),200,F.DT);
+  assert.equal(trial.hit,null);
+});
+
+test('The trained V3 is reported separately from the four cold-start models',()=>{
+  const suite=new T.Suite({options:{...options,trialProfile:T.IMITATION_PROFILE},version:'5.7.0'});
+  assert.deepEqual(suite.cases.map(item=>item.modelId),['v3']);
+  assert.equal(suite.report().execution,'pretrained-v3-trial');
+  assert.equal(suite.report().settings.trialProfile,T.IMITATION_PROFILE);
+});

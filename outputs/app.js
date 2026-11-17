@@ -62,7 +62,7 @@ function initializeTrainingCopyDefaults(){
   }catch{}
   $('population-range').value='16';
 }
-async function loadModelData(modelId){
+async function loadModelData(modelId,trialProfile=null){
   if(modelId==='v5')return MaleCNSProfiles.buildV5(runtimeData);
   if(modelId==='v4')return runtimeData;
   if(!legacyDataPromise){
@@ -72,7 +72,7 @@ async function loadModelData(modelId){
     });
   }
   const source=await legacyDataPromise;
-  return modelId==='v2'?MaleCNSLegacy.buildV2(source):TRAINING_COPY_WIDE?MaleCNSLegacy.tagV3WideReadout(source):TRAINING_COPY_VARIANT==='verified-v3-baseline'?MaleCNSLegacy.tagV3TrainingBaseline(source):TRAINING_COPY_CURRENT_SENSORS?MaleCNSLegacy.tagV3TrainingCurrent(source):MaleCNSLegacy.tagV3(source);
+  return modelId==='v2'?MaleCNSLegacy.buildV2(source):(TRAINING_COPY_WIDE||trialProfile===MaleCNSModelTest.IMITATION_PROFILE)?MaleCNSLegacy.tagV3WideReadout(source):TRAINING_COPY_VARIANT==='verified-v3-baseline'?MaleCNSLegacy.tagV3TrainingBaseline(source):TRAINING_COPY_CURRENT_SENSORS?MaleCNSLegacy.tagV3TrainingCurrent(source):MaleCNSLegacy.tagV3(source);
 }
 function syncSpeedControl(){
   if(!sim)return;
@@ -559,7 +559,7 @@ function initProgressControls(){
     });
   };
 }
-const testLabels={pending:'In attesa',loading:'Caricamento',running:'In prova',completed:'2 giri + generazione',limit:'Limite reale raggiunto',stopped:'Interrotto',error:'Errore', 'not-run':'Non eseguito'};
+const testLabels={failed:'Due giri non completati',pending:'In attesa',loading:'Caricamento',running:'In prova',completed:'2 giri + generazione',limit:'Limite reale raggiunto',stopped:'Interrotto',error:'Errore', 'not-run':'Non eseguito'};
 function syncModelTestControls(){
   const locked=modelTestBusy||progressBusy||switchingModel;
   for(const id of ['controller-select','population-range','mutation-range','speed-range','circuit-select','reset-sim','toggle-run','vehicle-gearbox','vehicle-abs','vehicle-tc'])$(id).disabled=locked;
@@ -567,15 +567,22 @@ function syncModelTestControls(){
   $('next-generation').disabled=locked||sim.mode!=='connectome';
   $('save-progress').disabled=locked||sim.mode!=='connectome';$('load-progress').disabled=locked;
   if(locked){$('gear-up').disabled=true;$('gear-down').disabled=true;}
-  $('model-test-start').disabled=locked;$('model-test-limit').disabled=locked;
+  $('model-test-start').disabled=locked;$('model-test-imitation').disabled=locked;$('model-test-limit').disabled=locked;
   $('model-test-stop').disabled=!modelTestBusy||Boolean(modelTestSuite?.stopRequested);
   $('model-test-export').disabled=modelTestBusy||!modelTestSuite?.finishedAt;
-  const s=modelTestBusy?modelTestSuite?.settings:null;
-  $('model-test-settings').textContent=`V2 → V3 → V4 → V5 · ${s?sim.circuits.find(c=>c.id===s.circuitId)?.name:sim.circuit.name} · ${s?.population??sim.population} agenti · mutazione ${Math.round((s?.mutation??sim.mutation)*100)}% · ${s?.speedMultiplier??sim.speedMultiplier}× richiesti · seed 7717 · un worker. Partenza da zero, nessun campione importato.`;
+  const currentSettings=modelTestSuite?.settings;
+  const s=modelTestBusy||currentSettings?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE?currentSettings:null;
+  $('model-test-settings').textContent=s?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
+    ? `Monza · V3 addestrato offline · 1 auto · CPU · ${s.speedMultiplier}× richiesti`
+    : `V2 → V3 → V4 → V5 · ${s?sim.circuits.find(c=>c.id===s.circuitId)?.name:sim.circuit.name} · ${s?.population??sim.population} agenti · mutazione ${Math.round((s?.mutation??sim.mutation)*100)}% · ${s?.speedMultiplier??sim.speedMultiplier}× richiesti · seed 7717 · un worker. Partenza da zero, nessun campione importato.`;
 }
 function updateModelTestResults(suite){
   for(let i=0;i<modelTestRows.length;i++){
-    const item=suite?.cases[i]||{modelId:MaleCNSModelTest.MODELS[i],status:'pending'},cells=modelTestRows[i].cells;
+    const modelId=MaleCNSModelTest.MODELS[i],row=modelTestRows[i],cells=row.cells;
+    const imitation=suite?.settings.trialProfile===MaleCNSModelTest.IMITATION_PROFILE;
+    row.hidden=imitation&&modelId!=='v3';
+    cells[0].textContent=imitation&&modelId==='v3'?'V3 addestrato':modelId.toUpperCase();
+    const item=suite?.cases.find(candidate=>candidate.modelId===modelId)||{modelId,status:'pending'};
     modelTestRows[i].dataset.status=item.status;
     cells[1].textContent=testLabels[item.status]||item.status;
     if(item.hit)cells[1].textContent+=` · gen. ${item.hit.generation}, A-${pad(item.hit.agentId+1)}`;
@@ -588,9 +595,12 @@ function updateModelTestResults(suite){
   if(suite){
     const config=suite.settings,name=sim.circuits.find(c=>c.id===config.circuitId)?.name||config.circuitId;
     const limitLabel=config.limitSeconds===0?'senza limite':config.limitSeconds<60?`${config.limitSeconds.toLocaleString('it-IT')} s reali per modello`:`${(config.limitSeconds/60).toLocaleString('it-IT',{maximumFractionDigits:2})} min reali per modello`;
-    $('model-test-caption').textContent=`Risultati: ${name} · ${config.population} agenti · mutazione ${Math.round(config.mutation*100)}% · ${config.speedMultiplier}× richiesti · ${limitLabel}.`;
+    $('model-test-caption').textContent=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
+      ? `V3 addestrato · Monza · 1 auto · ${config.speedMultiplier}× richiesti · ${limitLabel}.`
+      : `Risultati: ${name} · ${config.population} agenti · mutazione ${Math.round(config.mutation*100)}% · ${config.speedMultiplier}× richiesti · ${limitLabel}.`;
     const current=suite.cases.find(c=>c.status==='running'||c.status==='loading'),done=suite.cases.filter(c=>c.status==='completed').length;
-    const text=suite.active?(suite.stopRequested?'Interruzione del test e ripristino della prova corrente…':`${current?.modelId.toUpperCase()||'Test'}: ${current?.status==='loading'?'caricamento escluso dal cronometro':`generazione ${current?.currentGeneration||1}, ${current?.maxLaps||0}/2 giri massimi`}. Addestramento normale in pausa.`):modelTestBusy?'Test terminato. Ripristino della prova precedente…':`Test ${suite.stopRequested?'interrotto':'concluso'}: ${done}/4 modelli hanno completato due giri e la generazione. Gli altri esiti non sono successi. Prova precedente ripristinata.`;
+    const imitation=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE;
+    const text=suite.active?(suite.stopRequested?'Interruzione del test e ripristino della prova corrente…':`${current?.modelId.toUpperCase()||'Test'}: ${current?.status==='loading'?'caricamento escluso dal cronometro':`generazione ${current?.currentGeneration||1}, ${current?.maxLaps||0}/2 giri massimi`}. Addestramento normale in pausa.`):modelTestBusy?'Test terminato. Ripristino della prova precedente…':`Test ${suite.stopRequested?'interrotto':'concluso'}: ${done}/${suite.cases.length} ${imitation?'prove del V3 addestrato':'modelli'} con due giri completati. Prova precedente ripristinata.`;
     if($('model-test-status').textContent!==text)$('model-test-status').textContent=text;
   }
   syncModelTestControls();
@@ -608,10 +618,11 @@ async function runModelTest(overrides=null){
   if(!overrides&&!$('model-test-limit').reportValidity())return;
   const normal=sim,normalModel=activeModelId,normalData=window.circuitLab.data,normalRunning=sim.running,normalMode=$('controller-select').value;
   const normalSelection={automatic:agentSelection.automatic,selectedId:agentSelection.selectedId};
+  if(overrides?.trialProfile&&(!globalThis.desktopTest||$('model-test-imitation').hidden))throw Error('Decoder V3 di prova non disponibile.');
   const options=MaleCNSModelTest.settings({circuitId:normal.circuitId,population:normal.population,mutation:normal.mutation,speedMultiplier:normal.speedMultiplier,limitSeconds:Number($('model-test-limit').value)*60,...overrides});
   modelTestBusy=true;$('model-test-panel').open=true;$('model-test-status').dataset.error='false';
   modelTestSuite=new MaleCNSModelTest.Suite({options,version:APP_VERSION,onChange:updateModelTestResults,create:async(modelId,shared)=>{
-    const data=await loadModelData(modelId),next=globalThis.desktopTest?new FlySim.DesktopSimulation(data,{...shared,circuits:MALE_CNS_CIRCUITS,modelId,modelLabel:modelOption(modelId).name,desktopClient:desktopTest,running:false}):new FlySim.Simulation(data,{...shared,circuits:MALE_CNS_CIRCUITS,modelId,modelLabel:modelOption(modelId).name});
+    const data=await loadModelData(modelId,shared.trialProfile),next=globalThis.desktopTest?new FlySim.DesktopSimulation(data,{...shared,circuits:MALE_CNS_CIRCUITS,modelId,modelLabel:modelOption(modelId).name,desktopClient:desktopTest,running:false}):new FlySim.Simulation(data,{...shared,circuits:MALE_CNS_CIRCUITS,modelId,modelLabel:modelOption(modelId).name});
     let trial=null;
     try{if(globalThis.desktopTest)await next.ready();else next.running=false;}
     catch(error){if(globalThis.desktopTest)await desktopTest.stop();next.dispose?.(false);throw error;}
@@ -660,6 +671,14 @@ function initModelTestControls(){
   const body=$('model-test-results');
   modelTestRows=MaleCNSModelTest.MODELS.map(modelId=>{const row=document.createElement('tr'),heading=document.createElement('th');heading.scope='row';heading.textContent=modelId.toUpperCase();row.append(heading);for(let i=0;i<6;i++)row.append(document.createElement('td'));body.append(row);return row;});
   $('model-test-start').onclick=()=>runModelTest().catch(error=>{$('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';});
+  const imitationButton=$('model-test-imitation');
+  globalThis.desktopTest?.info().then(info=>{imitationButton.hidden=!info.imitationTrialAvailable;}).catch(()=>{});
+  imitationButton.onclick=()=>{
+    if(!$('model-test-limit').reportValidity())return;
+    runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE}).catch(error=>{
+      $('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';
+    });
+  };
   $('model-test-stop').onclick=()=>{modelTestSuite?.stop();syncModelTestControls();};
   $('model-test-export').onclick=async()=>{
     try{const report=modelTestSuite.report();if(globalThis.desktopTest){const result=await desktopTest.saveReport(report);$('model-test-status').textContent=result.canceled?'Esportazione annullata. Risultati conservati.':`Rapporto salvato: ${result.name}. Risultati conservati.`;}

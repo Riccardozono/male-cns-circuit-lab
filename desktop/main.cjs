@@ -5,6 +5,7 @@ const fs = require('node:fs/promises');
 const {app, BrowserWindow, ipcMain, protocol, dialog} = require('electron');
 const {DesktopEngine} = require('./engine.cjs');
 const {ProgressFiles}=require('./progress-files.cjs');
+const Imitation=require('./imitation-trial.cjs');
 const Progress=require('../outputs/progress-save.js');
 
 // Configure Chromium before registering the local protocol or creating any
@@ -34,6 +35,8 @@ const metricSmoke=process.argv.includes('--metric-smoke');
 const rewardsSmoke=process.argv.includes('--rewards-smoke');
 const modelBenchmark=process.argv.includes('--model-benchmark');
 const modelTestSmoke=process.argv.includes('--model-test-smoke');
+const imitationTrialArg=process.argv.find(argument=>argument.startsWith('--imitation-trial='));
+const imitationSmokeDir=process.argv.find(argument=>argument.startsWith('--imitation-smoke-dir='))?.slice('--imitation-smoke-dir='.length);
 const learningSmoke = process.argv.includes('--learning-test');
 const uiSmoke = process.argv.includes('--ui-smoke');
 const trainingCopySmoke=process.argv.includes('--training-copy-smoke');
@@ -112,11 +115,16 @@ function createWindow() {
       backgroundThrottling: false
     }
   });
-  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trainingCopySmoke&&!trainingCopyLearningSmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!process.argv.includes('--smoke-test')) mainWindow.show();});
+  mainWindow.once('ready-to-show', () => {if (!modelTestSmoke&&!allBenchmark&&!modelBenchmark&&!learningSmoke&&!uiSmoke&&!trainingCopySmoke&&!trainingCopyLearningSmoke&&!trackSmoke&&!performanceSmoke&&!physicsSmoke&&!carVisualSmoke&&!progressSmoke&&!selectionSmoke&&!metricSmoke&&!rewardsSmoke&&!imitationSmokeDir&&!process.argv.includes('--smoke-test')) mainWindow.show();});
   mainWindow.on('closed', () => {mainWindow = null;});
   if(uiSmoke||trainingCopySmoke)mainWindow.webContents.on('console-message',details=>{if(details.level==='error'||details.level===3)console.error('UI_BOOT '+details.message);});
   const trainingCopyVariant=trainingCopyV3?'verified-v3-wide':trainingCopyV3Baseline?'verified-v3-baseline':'verified-v3-current';
   mainWindow.loadURL(trainingCopyProfile?'male-cns://app/index.html?training-copy='+trainingCopyVariant:'male-cns://app/index.html');
+  if(imitationSmokeDir){
+    const output=path.resolve(imitationSmokeDir);
+    const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
+    mainWindow.webContents.once('did-finish-load',()=>harness.runImitation(mainWindow,{output,engine,version:app.getVersion()}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
+  }
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));
     const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
@@ -518,6 +526,11 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  let imitationModel=null;
+  if(imitationTrialArg){
+    try{imitationModel=await Imitation.load(path.resolve(imitationTrialArg.slice('--imitation-trial='.length)),outputsDirectory());}
+    catch(error){console.error(error.message);if(!imitationSmokeDir)dialog.showErrorBox('Prova V3 addestrato',error.message);app.exit(1);return;}
+  }
   protocol.handle('male-cns', serveLocalAsset);
   engine = new DesktopEngine(outputsDirectory(), payload => {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('compute:snapshot', payload);
@@ -540,16 +553,18 @@ app.whenReady().then(async () => {
   ipcMain.handle('compute:command', (_event, command) => engine.command(command));
   ipcMain.handle('compute:info', () => engine.info());
   ipcMain.handle('compute:gpu-response', (_event, payload) => engine.gpuResponse(payload));
-  testEngine=new DesktopEngine(outputsDirectory(),payload=>mainWindow?.webContents.send('test:snapshot',payload),error=>mainWindow?.webContents.send('test:error',{message:error.message}),request=>mainWindow?.webContents.send('test:gpu-request',request));
+  testEngine=new DesktopEngine(outputsDirectory(),payload=>mainWindow?.webContents.send('test:snapshot',payload),error=>mainWindow?.webContents.send('test:error',{message:error.message}),request=>mainWindow?.webContents.send('test:gpu-request',request),{imitationModel});
   ipcMain.handle('test:start',(_event,options)=>testEngine.start({...options,workerCount:1,running:false,mode:'connectome'}));
   ipcMain.handle('test:command',(_event,command)=>testEngine.command(command));
   ipcMain.handle('test:info',()=>testEngine.info());
   ipcMain.handle('test:gpu-response',(_event,payload)=>testEngine.gpuResponse(payload));
   ipcMain.handle('test:stop',()=>testEngine.stop());
   ipcMain.handle('test:save-report',async (_event,report)=>{
-    if(report?.schema!==1||report?.execution!=='sequential-cold-start'||report?.cases?.length!==4)throw Error('Rapporto del test non valido.');
+    const comparison=report?.execution==='sequential-cold-start'&&report?.cases?.length===4;
+    const imitation=imitationModel&&report?.execution==='pretrained-v3-trial'&&report?.settings?.trialProfile===Imitation.PROFILE&&report?.settings?.circuitId==='monza'&&report?.cases?.length===1&&report.cases[0]?.modelId==='v3';
+    if(report?.schema!==1||(!comparison&&!imitation))throw Error('Rapporto del test non valido.');
     const text=JSON.stringify(report,null,2);if(text.length>100000)throw Error('Rapporto troppo grande.');
-    const choice=await testReportDialog.showSaveDialog(mainWindow,{title:'Esporta risultati del test',defaultPath:`malecns-test-2-giri-${report.settings.circuitId}.json`,filters:[{name:'Risultati JSON',extensions:['json']}]});
+    const choice=await testReportDialog.showSaveDialog(mainWindow,{title:'Esporta risultati del test',defaultPath:imitation?'malecns-v3-addestrato-monza.json':`malecns-test-2-giri-${report.settings.circuitId}.json`,filters:[{name:'Risultati JSON',extensions:['json']}]});
     if(choice.canceled)return {canceled:true};await fs.writeFile(choice.filePath,text,'utf8');return {canceled:false,name:path.basename(choice.filePath)};
   });
   const fileOperation=async operation=>{try{return await operation();}catch(error){return {error:error.message};}};

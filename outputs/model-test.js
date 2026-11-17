@@ -6,10 +6,12 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
   const MODELS=Object.freeze(['v2','v3','v4','v5']);
-  const TERMINAL=new Set(['completed','limit','stopped','error']);
+  const IMITATION_PROFILE='v3-imitation';
+  const TERMINAL=new Set(['completed','failed','limit','stopped','error']);
   function settings(raw={}){
-    const value={circuitId:raw.circuitId||'lab',population:Number(raw.population??16),mutation:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
-    if(!Number.isInteger(value.population)||value.population<4||value.population>100)throw Error('Scegli da 4 a 100 agenti.');
+    const imitation=raw.trialProfile===IMITATION_PROFILE;
+    const value={...(imitation?{trialProfile:IMITATION_PROFILE}:{}),circuitId:imitation?'monza':raw.circuitId||'lab',population:imitation?1:Number(raw.population??16),mutation:imitation?0:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
+    if(!imitation&&(!Number.isInteger(value.population)||value.population<4||value.population>100))throw Error('Scegli da 4 a 100 agenti.');
     if(!Number.isFinite(value.mutation)||value.mutation<0||value.mutation>.35)throw Error('Mutazione non valida (0–35%).');
     if(!Number.isFinite(value.speedMultiplier)||value.speedMultiplier<.5||value.speedMultiplier>30)throw Error('Velocità non valida (0,5–30×).');
     if(!Number.isFinite(value.limitSeconds)||value.limitSeconds<0||value.limitSeconds>86400)throw Error('Limite reale non valido (0–1.440 minuti).');
@@ -44,6 +46,9 @@
         this.generations++;
         if(this.hit?.generation===sim.generation){
           this.generationSimSeconds=sim.elapsed;this.finish('completed',now);
+        }else if(this.settings.trialProfile===IMITATION_PROFILE){
+          this.generationSimSeconds=sim.elapsed;
+          this.finish('failed',now,eligible[0]?.reason||'Due giri non completati.');
         }
       }
     }
@@ -53,14 +58,15 @@
     }
     finish(status,now,error=null){if(this.done)return;this.status=status;this.finished=now;this.error=error;}
     snapshot(now){
-      return {status:this.status,wallSeconds:Math.max(0,((this.finished??now)-this.started)/1000),simSeconds:this.simSeconds,generations:this.generations,currentGeneration:this.currentGeneration,maxLaps:this.maxLaps,bestProgressMeters:this.bestProgressMeters,hit:this.hit,generationSimSeconds:this.generationSimSeconds??null,backend:this.backend,error:this.error};
+      return {status:this.status,wallSeconds:Math.max(0,((this.finished??now)-this.started)/1000),simSeconds:this.simSeconds,generations:this.generations,currentGeneration:this.currentGeneration,maxLaps:this.maxLaps,bestProgressMeters:this.bestProgressMeters,hit:this.hit,generationSimSeconds:this.generationSimSeconds??null,backend:this.backend,error:this.error,...(this.decoderSha256?{decoderSha256:this.decoderSha256}:{})};
     }
   }
   class Suite{
     constructor({options,version,create,onChange=()=>{}}){
       this.settings=settings(options);this.version=version;this.create=create;this.onChange=onChange;
       this.active=false;this.stopRequested=false;this.current=null;
-      this.cases=MODELS.map(modelId=>({modelId,status:'pending'}));
+      const models=this.settings.trialProfile===IMITATION_PROFILE?['v3']:MODELS;
+      this.cases=models.map(modelId=>({modelId,status:'pending'}));
     }
     async run(){
       if(this.active)throw Error('Un test è già in corso.');
@@ -91,8 +97,11 @@
     }
     stop(){this.stopRequested=true;}
     report(){
+      if(this.settings.trialProfile===IMITATION_PROFILE){
+        return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'pretrained-v3-trial',goal:'Una vettura completa due giri misurati di Monza.',boundary:'Decoder addestrato offline. La prova esegue un solo episodio CPU senza aggiornare i pesi.',cases:JSON.parse(JSON.stringify(this.cases))};
+      }
       return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'sequential-cold-start',goal:'One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.',timing:'Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.',boundary:'One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.',cases:JSON.parse(JSON.stringify(this.cases))};
     }
   }
-  return Object.freeze({MODELS,settings,Trial,Suite});
+  return Object.freeze({MODELS,IMITATION_PROFILE,settings,Trial,Suite});
 });

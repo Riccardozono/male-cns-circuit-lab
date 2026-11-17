@@ -612,6 +612,7 @@
         mode: this._mode,
         modelId: this.modelId,
         rendererToken:this._rendererToken,
+        ...(options.trialProfile?{trialProfile:options.trialProfile}:{}),
         ...(options.workerCount===undefined?{}:{workerCount:options.workerCount}),
         ...(options.running===undefined?{}:{running:options.running})
       })).then(info=>{
