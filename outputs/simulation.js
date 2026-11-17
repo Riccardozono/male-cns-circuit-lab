@@ -293,7 +293,11 @@
     const nearest=locate(track,car.x,car.y);
     Rewards.step(track,car,{along:nearest.along,onRoad:track.explicitBoundaries?onRoad(track,car.x,car.y):nearest.distance<=track.halfWidth+5,
       collision:collided(track,car),forwardClearance:raycast(track,car.x,car.y,car.heading),dt});
-    if(!car.alive)Vehicle.stop(car);
+    if(!car.alive){
+      // Evolution needs the speed at termination. Parking clears it for display.
+      car.terminalSpeedMps=car.vehicle.speedMps;
+      Vehicle.stop(car);
+    }
   }
   function capturePracticeState(car){
     // Real previously visited body/neural state; never a pose on a prescribed
@@ -363,7 +367,9 @@
     car.vehicle=JSON.parse(JSON.stringify(state.vehicle));car.brain=makeBrain(graph);car.brain.activity.set(state.activity);
     // Reward only actual motion AFTER this copied start. No gifted distance,
     // checkpoints, laps or replacement of the main generation's statistics.
-    Rewards.initialise(track,car,null,rewardRevision);car.rewardState.along=state.along;
+    Rewards.initialise(track,car,null,rewardRevision);
+    const startAlong=locate(track,car.x,car.y).along;
+    car.rewardState.along=car.rewardState.observedAlong=startAlong;
     const aligned=CONSISTENT_PRACTICE_REVISIONS.includes(rewardRevision)&&Number.isInteger(state.controlInterval)&&
       (state.controlInterval===3||state.controlInterval===Learning.CONTROL_INTERVAL)&&
       Number.isInteger(state.nextControlPhase)&&state.nextControlPhase>=0&&state.nextControlPhase<state.controlInterval&&
@@ -871,7 +877,8 @@
       // branch disappears exactly when the population has converged on it.
       const stagnantFrontier=baseMutation>0&&safeProgressLeader&&this.stagnation>=EVOLUTION_RULES.stagnationWindow&&safeMaxLaps<Rewards.RULES.maxLapsPerGeneration;
       const safeLeaderStopped=Boolean(safeProgressLeader&&['troppo lenta / senza progresso','ferma / senza progresso'].includes(safeProgressLeader.reason)&&
-        Math.abs(safeProgressLeader.vehicle?.speedMps??safeProgressLeader.speed??0)<Math.max(Rewards.RULES.brakeLockSpeedFloorMps,PRACTICE_STALL_SPEED_MPS)&&
+        Number.isFinite(safeProgressLeader.terminalSpeedMps)&&
+        Math.abs(safeProgressLeader.terminalSpeedMps)<Math.max(Rewards.RULES.brakeLockSpeedFloorMps,PRACTICE_STALL_SPEED_MPS)&&
         (Number(safeProgressLeader.outputs?.[1])||0)<=.05&&(Number(safeProgressLeader.outputs?.[2])||0)>=.05);
       let stalledPracticeGenome=null;
       if(this.modelId==='v3'&&usesLearningOutcome&&this.stagnation>=3&&safeLeaderStopped&&safeProgressLeader?.practiceState&&

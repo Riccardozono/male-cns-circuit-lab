@@ -704,3 +704,15 @@ Il confronto separato sul genoma campione V3 standard estratto dal salvataggio g
 I sorgenti applicativi, i salvataggi e i pacchetti Windows restano invariati rispetto al commit `57adcbb`. La nuova serie non promuove controller e non dimostra convergenza. L'archivio privato delle osservazioni è stato compresso con NTFS, recuperando altri 1,23 MiB e verificandone identico lo SHA-256. L'obiettivo di completare i giri e preparare la versione pubblicabile resta aperto.
 
 [Risultati, condizioni sperimentali, limiti e SHA-256 delle evidenze](../outputs/research/v3-observability-search-2026-11-17/report.json).
+
+### Punteggio della pratica locale e prova V3 su Monza (17 novembre 2026)
+
+La selezione conserva la velocità effettiva alla fine dell'episodio. Prima leggeva la velocità già azzerata dal parcheggio e poteva interpretare una terminazione in movimento come uno stallo col freno premuto. La pratica locale inizializza anche la distanza osservata alla posizione catturata. In precedenza il primo avanzamento veniva confrontato con la partenza del circuito. Sono due correzioni della valutazione con regressioni dedicate.
+
+La suite passa 483 controlli su 483. La copia Windows avviata da sorgente carica in pausa il checkpoint Monza gen.83, con 16 agenti e V3 a 128 uscite. Un confronto di sei generazioni con 16 agenti, seed 107720, mutazione 16%, ricompense `progress-3` e gain sterzo diagnostico 0,5× riproduce un massimo di 798,326 m sicuri in entrambi i rami. Completati zero giri. La prova dimostra la correzione della valutazione, mentre l'apprendimento misurato in questo confronto resta allo stesso livello.
+
+Una prova fisica separata, da stati effettivamente visitati, esplora brevi manovre. Dalla posa a 800,041 m in movimento arriva a 901,217 m senza urti in 8 s. Dalla posa ferma a 806,102 m, i 120 tentativi con orizzonte 0,5 s trovano al massimo 806,131 m. Le sequenze campionate servono a misurare i margini per manovrare nella chicane.
+
+Un prototipo separato apprende una correzione residua da 80 osservazioni di una manovra esplorata con successo. Durante il replay legge soltanto l'attività discendente MaleCNS. Con la partenza nominale passa da 806,102 a 906,886 m sicuri, risultato riprodotto dalla griglia. Con due spostamenti a sinistra di 25 e 50 cm urta a 844,719 e 847,056 m. Con due spostamenti a destra rimane fermo dopo circa 30 m. Il prototipo resta in ricerca. La verifica riguarda un solo genoma V3 ampliato, con gain diagnostico 0,5×, e nessun giro completo.
+
+[Misure, risultati per generazione, partenza e verifiche](../outputs/research/v3-practice-recovery-2026-11-17/report.json).

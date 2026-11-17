@@ -22,7 +22,9 @@ function reference(sim,genome,state,revision,maxTicks=1200){
   Object.assign(car,{x:state.x,y:state.y,heading:state.heading,speed:state.speed,_physicsSpeed:state.speed},state.physics);
   car.footprintSensorsEnabled=state.footprintSensorsEnabled;
   car.vehicle=structuredClone(state.vehicle);car.brain=F.makeBrain(sim.graph);car.brain.activity.set(state.activity);
-  F.Rewards.initialise(sim.track,car,null,revision);car.rewardState.along=state.along;
+  F.Rewards.initialise(sim.track,car,null,revision);
+  const startAlong=F.locate(sim.track,car.x,car.y).along;
+  Object.assign(car.rewardState,{along:startAlong,observedAlong:startAlong});
   let commands=[0,0,0];
   for(let tick=0;tick<maxTicks&&car.alive;tick++){
     if(tick%6===0)commands=F.neuralStepForTrack(sim.track,sim.graph,car.brain,car.genome,F.sense(sim.track,car).concat(F.physicsSense(car,sim.track)),true,true,car.vehicle?.speedMps??car.speed/(car.pixelsPerMeter||1));

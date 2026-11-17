@@ -1,0 +1,268 @@
+{
+  "format": "male-cns-v3-practice-recovery-summary-v1",
+  "learningProblemResolved": false,
+  "releaseReady": false,
+  "version": "5.7.0",
+  "proof": {
+    "testTotal": 483,
+    "testPassed": 483,
+    "suiteSha256": "4199cb45da7a5348474597ac54aff4065d0117cca2774dba04ef9c3fcae1c5c5",
+    "windowsSourceStartup": {
+      "passed": true,
+      "openedPaused": true,
+      "model": "v3",
+      "circuit": "monza",
+      "generation": 83,
+      "population": 16,
+      "readoutCount": 128,
+      "sha256": "c975382cb793a1c08c1f60cd744d68f0fcb7dc7023fae3d4b3d9352b50b403c3"
+    }
+  },
+  "practiceComparison": {
+    "model": "V3 wide 128",
+    "circuit": "monza",
+    "seed": 107720,
+    "population": 16,
+    "mutation": 0.16,
+    "rewardRevision": "progress-3",
+    "diagnosticSteeringGain": 0.5,
+    "control": [
+      {
+        "generation": 83,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 803.3028886782432,
+        "meanProgressMeters": 584.500708120383,
+        "maxLaps": 0,
+        "optimizerUpdates": 82
+      },
+      {
+        "generation": 84,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 427.02130486596013,
+        "maxLaps": 0,
+        "optimizerUpdates": 83
+      },
+      {
+        "generation": 85,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 802.6176046859918,
+        "meanProgressMeters": 489.6692296273103,
+        "maxLaps": 0,
+        "optimizerUpdates": 84
+      },
+      {
+        "generation": 86,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 291.365193668173,
+        "maxLaps": 0,
+        "optimizerUpdates": 85
+      },
+      {
+        "generation": 87,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 802.043775670824,
+        "meanProgressMeters": 339.384786419429,
+        "maxLaps": 0,
+        "optimizerUpdates": 86
+      },
+      {
+        "generation": 88,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 803.5398362353257,
+        "meanProgressMeters": 335.89311325677807,
+        "maxLaps": 0,
+        "optimizerUpdates": 87
+      }
+    ],
+    "corrected": [
+      {
+        "generation": 83,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 803.3028886782432,
+        "maxLaps": 0,
+        "optimizerUpdates": 82,
+        "practiceEvaluations": 0,
+        "practiceImprovements": 0,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      },
+      {
+        "generation": 84,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "maxLaps": 0,
+        "optimizerUpdates": 83,
+        "practiceEvaluations": 5,
+        "practiceImprovements": 1,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      },
+      {
+        "generation": 85,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 802.6176046859918,
+        "maxLaps": 0,
+        "optimizerUpdates": 84,
+        "practiceEvaluations": 5,
+        "practiceImprovements": 1,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      },
+      {
+        "generation": 86,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "maxLaps": 0,
+        "optimizerUpdates": 85,
+        "practiceEvaluations": 5,
+        "practiceImprovements": 0,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      },
+      {
+        "generation": 87,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 802.043775670824,
+        "maxLaps": 0,
+        "optimizerUpdates": 86,
+        "practiceEvaluations": 5,
+        "practiceImprovements": 1,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      },
+      {
+        "generation": 88,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 803.5398362353257,
+        "maxLaps": 0,
+        "optimizerUpdates": 87,
+        "practiceEvaluations": 5,
+        "practiceImprovements": 0,
+        "frontierMutationFocus": "longitudinal",
+        "finishedBrakingWhileMoving": 0
+      }
+    ],
+    "safeProgressDeltaMeters": 0,
+    "maxLaps": 0,
+    "sha256": "b84d9b4d32e0e6b3519a092a1aefc24d87b445e3e2ba43bd9a17775350881393"
+  },
+  "physicsOnlyProbe": {
+    "samples": [
+      {
+        "startMeters": 785.0975731951165,
+        "startSpeedMps": 6.540637502910638,
+        "finalMeters": 895.1572527602656,
+        "tested": 4272,
+        "horizonSeconds": 8,
+        "fullPrefixVerified": true
+      },
+      {
+        "startMeters": 800.040553740686,
+        "startSpeedMps": 5.246131117906098,
+        "finalMeters": 901.2169180674737,
+        "tested": 4200,
+        "horizonSeconds": 8,
+        "fullPrefixVerified": true
+      },
+      {
+        "startMeters": 806.1018309337629,
+        "startSpeedMps": 0,
+        "finalMeters": 806.1313385551312,
+        "tested": 120,
+        "horizonSeconds": 0.5,
+        "fullPrefixVerified": true
+      }
+    ],
+    "sha256": "d973fcb16aeba0a3734af06246324dd0b2f873cd27a50b95c3b0a5d1b0fc7a24"
+  },
+  "prototype": {
+    "trainingSamples": 80,
+    "hyperparameterTrials": 24,
+    "baselineMeters": 806.1018309337629,
+    "trained": {
+      "progressMeters": 906.8856669094032,
+      "safe": true,
+      "laps": 0,
+      "terminalReason": "troppo lenta / senza progresso"
+    },
+    "offsetChecks": [
+      {
+        "offsetMeters": -0.25,
+        "baseline": {
+          "progressMeters": 806.0100677537496,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        },
+        "trained": {
+          "progressMeters": 844.7185327891465,
+          "safe": false,
+          "laps": 0,
+          "terminalReason": "urto"
+        }
+      },
+      {
+        "offsetMeters": 0.25,
+        "baseline": {
+          "progressMeters": 32.30216355060456,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        },
+        "trained": {
+          "progressMeters": 32.30216355060456,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        }
+      },
+      {
+        "offsetMeters": -0.5,
+        "baseline": {
+          "progressMeters": 805.7588495603441,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        },
+        "trained": {
+          "progressMeters": 847.0564299309967,
+          "safe": false,
+          "laps": 0,
+          "terminalReason": "urto"
+        }
+      },
+      {
+        "offsetMeters": 0.5,
+        "baseline": {
+          "progressMeters": 30.156877609375055,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        },
+        "trained": {
+          "progressMeters": 30.156877609375055,
+          "safe": true,
+          "laps": 0,
+          "terminalReason": "troppo lenta / senza progresso"
+        }
+      }
+    ],
+    "input": "Current descending neural activity from the MaleCNS V3 graph",
+    "testedOn": "One research genotype, Monza; diagnostic steering gain 0.5",
+    "sha256": "c7153ec57043112d0bce1785cf9527c3c901b3ef5295034966c198cb4d36c705"
+  }
+}

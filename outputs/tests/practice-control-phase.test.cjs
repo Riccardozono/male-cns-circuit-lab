@@ -10,7 +10,9 @@ function reference(sim,genome,state,phase,held,maxTicks){
   Object.assign(car,{x:state.x,y:state.y,heading:state.heading,speed:state.speed,_physicsSpeed:state.speed},state.physics);
   car.footprintSensorsEnabled=state.footprintSensorsEnabled;car.vehicle=structuredClone(state.vehicle);
   car.brain=F.makeBrain(sim.graph);car.brain.activity.set(state.activity);
-  F.Rewards.initialise(sim.track,car,null,state.rewardRevision);car.rewardState.along=state.along;
+  F.Rewards.initialise(sim.track,car,null,state.rewardRevision);
+  const startAlong=F.locate(sim.track,car.x,car.y).along;
+  Object.assign(car.rewardState,{along:startAlong,observedAlong:startAlong});
   const mapCircuit=sim.track.halfWidth<20,
     physicsGain=mapCircuit?F.MAP_PHYSICS_ADAPTER_GAIN:F.PHYSICS_ADAPTER_GAIN,
     launchBias=mapCircuit?F.MAP_NEURAL_MOTOR_LAUNCH_BIAS:F.NEURAL_MOTOR_LAUNCH_BIAS;
@@ -58,6 +60,22 @@ test('Local safety reports a real off-track ending separately from an on-track t
   const offTrack=F.evaluatePractice(sim.track,sim.graph,car.genome,{...state,x:-100000,y:-100000},1);
   assert.equal(normal.reason,'fine prova locale');assert.equal(normal.safe,true);
   assert.ok(['urto','fuori pista','progresso non valido'].includes(offTrack.reason));assert.equal(offTrack.safe,false);
+});
+
+test('Local practice counts the first physical step after a mid-circuit snapshot',()=>{
+  const sim=new F.Simulation(Legacy.tagV3(data),{circuitId:'monza',circuits,population:1});
+  const car=sim.cars[0];
+  for(let i=0;i<120;i++)F.drive(sim.track,car,[0,.7,0]);
+  assert.ok(car.alive&&car.bestProgress>1,'fixture must be racing beyond the starting line');
+  car.practiceNextControlPhase=1;
+  car.practiceControlInterval=L.CONTROL_INTERVAL;
+  car.slowOutputs=[0,.7,0];
+  const state=F.capturePracticeState(car),before=car.bestProgress;
+  F.drive(sim.track,car,car.slowOutputs);
+  assert.ok(car.alive&&car.bestProgress>before);
+  const trial=F.evaluatePractice(sim.track,sim.graph,car.genome,state,1);
+  assert.equal(trial.safe,true);
+  assert.ok(Math.abs(trial.progress-(car.bestProgress-before))<1e-9);
 });
 
 test('Local practice ranks safe no-lap progress before reward and never promotes a crash',()=>{

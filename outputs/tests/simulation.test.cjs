@@ -287,6 +287,30 @@ test('Safe archive preserves progress, lap-count and fastest-lap frontiers outsi
   assert.ok(archived.includes(6),'fastest safe lap survives in the safe archive');
   assert.deepEqual(sim.safeLearningFrontier,{progress:1000,laps:2,lapTime:80});
 });
+test('A moving car terminated for low pace does not trigger brake-lock exploration',()=>{
+  const catalog=require('../data/circuits.json');
+  const sim=new F.Simulation(data,{population:4,mutation:.16,circuitId:'monza',circuits:catalog});
+  const leader=sim.cars[0];
+  for(let i=0;i<120;i++)F.drive(sim.track,leader,[0,.7,0]);
+  assert.ok(leader.alive&&leader.vehicle.speedMps>3);
+  // Arrange a slow previous window while the car is still moving and braking.
+  leader.lifetime=24;
+  leader.lastProgressTime=24;
+  leader.rewardState.paceTime=16;
+  leader.rewardState.paceProgress=leader.bestProgress;
+  leader.vehicle.u=leader.vehicle.speedMps=2.2;
+  leader.speed=leader._physicsSpeed=2.2*(sim.track.pixelsPerMeter||1);
+  F.drive(sim.track,leader,[0,0,.1]);
+  assert.equal(leader.reason,'troppo lenta / senza progresso');
+  assert.equal(leader.vehicle.speedMps,0,'finished cars park for the renderer');
+  for(const car of sim.cars.slice(1))F.Rewards.finish(sim.track,car,'ferma / senza progresso');
+  sim.safeLearningFrontier={progress:leader.bestProgress,laps:0,lapTime:null};
+  sim.stagnation=F.EVOLUTION_RULES.prolongedStagnationWindow;
+  sim.evolve();
+  assert.equal(sim.lastFrontierDiagnostics.frontierParentId,leader.id);
+  assert.equal(sim.lastFrontierDiagnostics.frontierMutationFocus,null);
+});
+
 test('Stagnation repairs from a replayed unsafe archive without trusting its score as safe progress',()=>{
   const sim=new F.Simulation(data,{population:16,mutation:.12}),winner=sim.cars[0],liveLeader=sim.cars[2];
   const archivedCar=sim.cars[15],archivedGenome=F.cloneGenome(archivedCar.genome);
@@ -296,7 +320,7 @@ test('Stagnation repairs from a replayed unsafe archive without trusting its sco
   };
   scored(winner,100,150);
   for(let i=1;i<sim.cars.length;i++)if(i!==2&&i!==15)scored(sim.cars[i],80-i,100+i);
-  scored(liveLeader,50,700);liveLeader.speed=0;liveLeader.outputs=[.0206,0,.2541];
+  scored(liveLeader,50,700);liveLeader.speed=0;liveLeader.terminalSpeedMps=0;liveLeader.outputs=[.0206,0,.2541];
   scored(archivedCar,-500,790);archivedCar.reason='urto';
   sim.hallOfFame=[{genome:archivedGenome,fitness:10,bestProgress:900,laps:0,bestLapTime:Infinity,progress:900}];
   sim.safeLearningFrontier={progress:900,laps:0,lapTime:null};
