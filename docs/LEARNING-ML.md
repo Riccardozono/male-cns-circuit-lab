@@ -720,3 +720,15 @@ Allenare un decoder su tre partenze ha portato tutti e tre i casi di addestramen
 Il confronto tra revisioni spiega la terminazione anticipata a destra. Con lo stesso genoma e il gain diagnostico 0,5×, `progress-3` termina tre partenze a 30,157–33,425 m mentre l’auto avanza e il freno comanda zero. Con la regola corrente, `progress-8-pace-recovery-margin`, gli stessi episodi arrivano a 804,467–805,701 m senza urti. Il decoder allenato su più partenze raggiunge circa 835 m in due dei tre casi a destra e urta nel terzo. A gain sterzo 1×, il decoder urta in ognuna delle tre partenze verificate. Le prove riguardano Monza e un genoma, con zero giri. I risultati guidano la prossima prova con le impostazioni di sterzo e valutazione dell’app.
 
 [Misure, risultati per generazione, partenza e verifiche](../outputs/research/v3-practice-recovery-2026-11-17/report.json).
+
+### Due giri di Monza con un decoder addestrato offline (17 novembre 2026)
+
+Il precedente recupero locale è stato provato a sterzo standard 1× e con le ricompense correnti. Le 16 varianti a interpolazione locale urtano nelle tre partenze di addestramento. Le manovre esplorate da 800 m arrivano al massimo a 851,796 m sicuri, senza completare giri.
+
+Per raccogliere esempi sull’intero circuito, un controllore di riferimento usa le geometrie di Monza durante la generazione dei dati. Completa due giri senza urti in quattro configurazioni. Tre corse con perturbazioni forniscono 17.801 esempi per l’addestramento; una quarta fornisce 5.929 esempi separati per la validazione del fit. Il decoder addestrato riceve attività di 128 neuroni discendenti, medie di 38 gruppi di neuroni sensoriali e la variazione di questi segnali dal controllo precedente. Il simulatore produce posizione, dinamica e ricompense. Posizione assoluta, tracciato e azioni del riferimento restano fuori dall’inferenza.
+
+Nei primi cinque replay autonomi, tutti arrivano a 11.586 m senza urti e terminano per il limite di due giri. La ripetizione nominale coincide con il primo replay, e tre prove supplementari completano due giri con spostamenti fino a ±1,25 m e con disturbo sui comandi. Azzerando l’attività discendente in ingresso al decoder, il replay nominale si arresta a 784,435 m. Disconnettendo la propagazione sinaptica, urta a 801,121 m. I due interventi misurano quanto il decoder dipende dall’attività MaleCNS in queste prove.
+
+Il trasferimento diretto con gli stessi pesi a Le Mans e Monaco produce zero giri, rispettivamente un urto a 660,152 m e una terminazione per ritmo insufficiente a 210,268 m. I risultati riguardano un genoma V3 ampliato e il simulatore CPU fuori dall’interfaccia. Il decoder resta sperimentale. Serve ancora verificare la sua integrazione Windows e l’addestramento successivo per ricompense prima di preparare una candidata.
+
+[Protocollo, tempi, prove di controllo e SHA-256](../outputs/research/v3-male-cns-imitation-2026-11-17/report.json).
