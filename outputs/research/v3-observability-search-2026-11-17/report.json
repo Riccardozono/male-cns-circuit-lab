@@ -1,0 +1,252 @@
+{
+  "format": "male-cns-neural-observability-training-audit-v1",
+  "date": "2026-11-17",
+  "sourceCommit": "57adcbbfb296358299648dc79181fb8086a72de0",
+  "appVersion": "5.7.0",
+  "developmentModel": "GPT-6.1 Sol",
+  "provenance": "session-metadata",
+  "sourceHashes": {
+    "simulation.js": "a88d205be562e3ac8836b79d98b5398e2e22c0824af0b7eecf35cb0f8b4b6c9c",
+    "neural-learning.js": "29eac7379568a6acaa08ef43804cf005a3f3f284848a6f518da38c4e612bbb1a",
+    "rewards.js": "c11e33413d44f71fcb0a9e55c24081e987324cd4390a9ca3aa96a41302a32be2",
+    "vehicle-992.js": "2c8040b32dda557d34e629529a8581c3b914fbf0915122190b79725a75bc7896"
+  },
+  "observability": {
+    "neurons": 128,
+    "samples": 877,
+    "variableFeatures": 128,
+    "saturatedFraction": 0.0006146664766248575,
+    "prefixBendRms": 1.0224752110574875,
+    "estimatedVarianceFirstTwoComponents": 0.991937455041655,
+    "mirrorInputRms": 0.09408610052193067,
+    "mirrorFeatureRms": 0.02046848030751359
+  },
+  "residualSearch": {
+    "broadEpisodes": 72,
+    "broadBestSafeMeters": 798.3910321121677,
+    "narrowEpisodes": 288,
+    "narrowBestSafeMeters": 800.1330788046903,
+    "matchedFullReplays": true
+  },
+  "conditionedMutation": {
+    "singleAnchorEpisodes": 32,
+    "singleAnchorEarlyFailures": 27,
+    "launchProtectedEpisodes": 32,
+    "launchProtectedEarlyFailures": 13,
+    "launchProtectedBestSafeMeters": 799.7718663325887,
+    "launchProtectedReproducible": true
+  },
+  "evolution": {
+    "model": "V3 wide readout, 128 outputs / 330 weights",
+    "circuit": "monza",
+    "rewardRevision": "progress-3",
+    "steeringGain": 0.5,
+    "preliminaryCompletedUpdates": 1,
+    "preliminaryProgressMeters": 804.0318524615124,
+    "updates": 5,
+    "populationPerUpdate": 32,
+    "initialProgressMeters": 804.0318524615124,
+    "finalProgressMeters": 806.1018309337629,
+    "finalLaps": 0,
+    "repeatedFullReplayMatches": true,
+    "generations": [
+      {
+        "update": 1,
+        "mutationSeedBase": 38900,
+        "improved": true,
+        "progressMeters": 804.9464522370276,
+        "safe": true,
+        "laps": 0,
+        "earlyFailures": 8
+      },
+      {
+        "update": 2,
+        "mutationSeedBase": 39000,
+        "improved": true,
+        "progressMeters": 805.6297676607795,
+        "safe": true,
+        "laps": 0,
+        "earlyFailures": 9
+      },
+      {
+        "update": 3,
+        "mutationSeedBase": 39100,
+        "improved": false,
+        "progressMeters": 805.6297676607795,
+        "safe": true,
+        "laps": 0,
+        "earlyFailures": 7
+      },
+      {
+        "update": 4,
+        "mutationSeedBase": 39200,
+        "improved": true,
+        "progressMeters": 806.1018309337629,
+        "safe": true,
+        "laps": 0,
+        "earlyFailures": 7
+      },
+      {
+        "update": 5,
+        "mutationSeedBase": 39300,
+        "improved": false,
+        "progressMeters": 806.1018309337629,
+        "safe": true,
+        "laps": 0,
+        "earlyFailures": 5
+      }
+    ],
+    "cpuWorkers": 4,
+    "seconds": 337.0825921
+  },
+  "holdout": {
+    "model": "V3 standard 64 readout / 202 parameters",
+    "circuit": "monza",
+    "steeringGain": 1,
+    "sourceGeneration": 64,
+    "sourceSeed": 7717,
+    "sourceSaveHash": "29ef7627ffdc4971b0a7a0bb11d65f4fe771d93541a48e7e41f0fbcb015943e3",
+    "sourceSaveUnchanged": true,
+    "baseline": {
+      "progress": 797.2415925783719,
+      "fitness": -3107.495618740038,
+      "laps": 0,
+      "reason": "urto",
+      "safe": false,
+      "censored": false,
+      "ticks": 4127
+    },
+    "mutationSeedBase": 38900,
+    "populationPerArm": 32,
+    "result": {
+      "standard": {
+        "best": {
+          "index": 57,
+          "arm": "standard",
+          "seed": 7,
+          "factor": -0.5,
+          "progress": 32.80906796442977,
+          "fitness": -4380.948660834782,
+          "laps": 0,
+          "reason": "troppo lenta / senza progresso",
+          "safe": true,
+          "censored": false,
+          "ticks": 961
+        },
+        "fullReplay": {
+          "progress": 32.80906796442977,
+          "fitness": -4380.948660834782,
+          "laps": 0,
+          "reason": "troppo lenta / senza progresso",
+          "safe": true,
+          "censored": false,
+          "ticks": 961
+        },
+        "earlyFailures": 29,
+        "safeNearFrontier": 0,
+        "maxProgress": 681.2294102966491,
+        "maxSafeProgress": 32.80906796442977
+      },
+      "conditioned": {
+        "best": {
+          "seed": 7,
+          "targetIndex": 3,
+          "factor": 0.5,
+          "anchorDrift": 2.220446049250313e-16,
+          "index": 24,
+          "arm": "conditioned",
+          "progress": 584.5940289251398,
+          "fitness": -3829.827196878481,
+          "laps": 0,
+          "reason": "troppo lenta / senza progresso",
+          "safe": true,
+          "censored": false,
+          "ticks": 5290
+        },
+        "fullReplay": {
+          "progress": 584.5940289251398,
+          "fitness": -3829.827196878481,
+          "laps": 0,
+          "reason": "troppo lenta / senza progresso",
+          "safe": true,
+          "censored": false,
+          "ticks": 5290
+        },
+        "earlyFailures": 5,
+        "safeNearFrontier": 0,
+        "maxProgress": 803.6085809587504,
+        "maxSafeProgress": 584.5940289251398
+      }
+    },
+    "seconds": 98.25370769999999
+  },
+  "housekeeping": {
+    "allocatedBytesBefore": 5169916,
+    "allocatedBytesAfter": 3878912,
+    "recoveredBytes": 1291004,
+    "hashUnchanged": true,
+    "deletedFiles": 0
+  },
+  "decision": "Experimental only. No safe near-frontier offspring in the standard V3 holdout; no strategy or controller promoted to the app.",
+  "learningSucceeded": false,
+  "limitations": [
+    "No completed laps in these experiments.",
+    "The wide profile used a diagnostic steering gain of 0.5 and cannot be imported as an ordinary app save without explicit compatibility handling.",
+    "The holdout baseline crashes; its 797 m cannot be counted as safe progress. Both mutation arms remain below that frontier for safe offspring.",
+    "Five randomized updates start at 804.032 m after one preliminary update, not at the original 798.391 m.",
+    "The preliminary runner was stopped after one completed update to vary random mutation seeds between subsequent updates.",
+    "No application source or Windows package changed; the previous 481-test suite was not rerun for this documentation-only update."
+  ],
+  "evidence": [
+    {
+      "kind": "observability",
+      "localFile": ".impeccable/review/learning-ml/progress382-neural-observability-20261117/report.json",
+      "sha256": "d45d2e1081a08eed58abdfd72f570cd1bc63de60c27b68d941176800243d63b0"
+    },
+    {
+      "kind": "pca",
+      "localFile": ".impeccable/review/learning-ml/progress382-neural-observability-20261117/pca-and-mirror.json",
+      "sha256": "f61600766a942fb99e526d00ee1f8a544306e858641c9ddc88b5a4a1f49ea34f"
+    },
+    {
+      "kind": "broad",
+      "localFile": ".impeccable/review/learning-ml/progress383-neural-residual-search-20261117/report.json",
+      "sha256": "a47dd02ac88d0f43bca02e8289a7564eb22510c5a7e0ed539668edf30538ee8b"
+    },
+    {
+      "kind": "narrow",
+      "localFile": ".impeccable/review/learning-ml/progress384-narrow-neural-residual-20261117/report.json",
+      "sha256": "bd15e1c177f7535632b94b0504a6046f3c76b0c79cb88f7516d93447acf1c3a0"
+    },
+    {
+      "kind": "conditioned",
+      "localFile": ".impeccable/review/learning-ml/progress385-conditioned-readout-20261117/report.json",
+      "sha256": "8bdf92a08c0e2df4b38ba7c786f5a4d35230334c004c4d2d210d2dc7d9a22f49"
+    },
+    {
+      "kind": "protected",
+      "localFile": ".impeccable/review/learning-ml/progress386-launch-protected-mutation-20261117/report.json",
+      "sha256": "19ef208281f4d204324ff437da6874ca520f0e24aef7c3cda59da7bd476eb60a"
+    },
+    {
+      "kind": "preliminary",
+      "localFile": ".impeccable/review/learning-ml/progress387-conditioned-evolution-20261117/partial-audit.json",
+      "sha256": "798c9a765a30cd9d0b8f1ed874842b88ffea7bbad0f22288fd88b3acfea70c93"
+    },
+    {
+      "kind": "evolution",
+      "localFile": ".impeccable/review/learning-ml/progress388-conditioned-evolution-randomized-20261117/report.json",
+      "sha256": "89ed02e750c925d0a43fa17a97fe6873f0ffb989fb5f22bc8261516d66762d70"
+    },
+    {
+      "kind": "holdout",
+      "localFile": ".impeccable/review/learning-ml/progress389-v3-standard-holdout-20261117/report.json",
+      "sha256": "18305ee75f8c1d8d988bc7a42c713c6c382c39fbef166b0a6fc031367cfccbcb"
+    },
+    {
+      "kind": "compaction",
+      "localFile": ".impeccable/review/learning-ml/progress382-neural-observability-20261117/compaction.json",
+      "sha256": "c0c1149a97d578e0cfe00187eecebf1e613454b54d0380d1fa312290caa376ca"
+    }
+  ]
+}

@@ -679,3 +679,28 @@ La compressione NTFS dei due `win-unpacked` recupera 244,10 MiB di spazio fisico
 Suite completa: **481/481 controlli superati**, 320,310 s, Node 24.19.0. Il confronto di sei generazioni riparte dal checkpoint gen.83 con 16 auto, mutazione 16%, seed 107720, ricompense `progress-3` e gain sterzo 0,5× comune ai due rami. Il controllo è quello archiviato p361, con sorgente, checkpoint e stato iniziale verificati. Il ramo corretto riproduce lo stesso massimo sicuro, 798,326 m, e zero giri: differenza sicura 0 m. La correzione elimina il difetto di compensazione ma questo campione non dimostra un apprendimento migliore. Versione 5.7.0 invariata; il lavoro per una versione pronta al rilascio resta aperto.
 
 [Riepilogo verificabile, risultati per generazione e SHA-256 delle prove locali](../outputs/research/v3-sensory-compensation-2026-11-17/report.json).
+
+### Osservabilità e mutazioni con protezione della partenza (17 novembre 2026)
+
+Sul replay V3 ampliato da 798,391 m sono state misurate 877 osservazioni: tutte le 128 uscite discendenti variano, meno dello 0,1% dei valori è saturo. Una stima delle componenti principali attribuisce il 99,19% della varianza a due componenti. La rete distingue il rettilineo dal tratto finale di questo episodio; la concentrazione della varianza suggerisce di esplorare anche risposte neurali meno variabili, senza dimostrare da sola la causa dello stallo.
+
+Un decoder residuo sperimentale, attivato esclusivamente dall'attività neurale osservata e dalla sua memoria, non migliora l'incumbent in 72 prove. Restringendo i contesti e riducendo le variazioni, 288 prove raggiungono 800,133 m sicuri, confermati in due replay completi dalla griglia; zero giri. Nessuna posizione, distanza lungo la pista o comando bersaglio entra nel decoder.
+
+Una seconda ricerca bilancia le mutazioni del readout con un sistema regolarizzato dei contesti osservati, preservando sia il contesto dominante sia due risposte effettive della partenza. Il primo confronto usa 32 figli per variante: il candidato con avvio protetto arriva a 799,772 m sicuri. Un aggiornamento preliminare porta il genoma a 804,032 m; viene poi proseguito per cinque aggiornamenti con seed di mutazione diversi, 32 figli ciascuno e quattro worker CPU:
+
+| Aggiornamento | Progresso sicuro selezionato | Giri |
+|---:|---:|---:|
+| Inizio dei cinque aggiornamenti | 804,032 m | 0 |
+| 1 | 804,946 m | 0 |
+| 2 | 805,630 m | 0 |
+| 3 | 805,630 m | 0 |
+| 4 | 806,102 m | 0 |
+| 5 | 806,102 m | 0 |
+
+Il risultato finale è riprodotto in due episodi completi. Sono prove del profilo V3 ampliato con gain sterzo diagnostico 0,5×: il genoma privato non è un normale salvataggio importabile nell'app senza gestire esplicitamente questa differenza.
+
+Il confronto separato sul genoma campione V3 standard estratto dal salvataggio gen.64, seed originale 7717, usa gain 1× e 32 figli per ramo. Il genoma sorgente urta a 797,242 m; quella distanza non è progresso sicuro. Con le mutazioni standard 29/32 figli restano sotto 100 m e il miglior figlio sicuro arriva a 32,809 m. Con la strategia condizionata i casi sotto 100 m scendono a 5/32 e il miglior figlio sicuro arriva a 584,594 m, ma nessun figlio sicuro raggiunge il 90% della frontiera precedente. Zero giri in entrambi i rami. Il miglioramento dei tentativi iniziali non giustifica una sostituzione della strategia nell'app.
+
+I sorgenti applicativi, i salvataggi e i pacchetti Windows restano invariati rispetto al commit `57adcbb`. La nuova serie non promuove controller e non dimostra convergenza. L'archivio privato delle osservazioni è stato compresso con NTFS, recuperando altri 1,23 MiB e verificandone identico lo SHA-256. L'obiettivo di completare i giri e preparare la versione pubblicabile resta aperto.
+
+[Risultati, condizioni sperimentali, limiti e SHA-256 delle evidenze](../outputs/research/v3-observability-search-2026-11-17/report.json).
