@@ -90,6 +90,27 @@ test('Sensory exploration changes existing encoder weights without altering anat
   assert.deepEqual(car.genome,genome);assert.deepEqual(car.brain.activity,neurons);assert.deepEqual(s.graph.targets,edges);
   assert.deepEqual(F.mutateSensoryBlock(s.graph,genome,F.rng(12),0,context),genome);
 });
+test('Wide V3 sensory compensation preserves the actual 64-normalized motor logits',()=>{
+  const s=new F.Simulation(Legacy.tagV3WideReadout(structuredClone(data)),{population:1,seed:7717});
+  const p=s.graph.learning,g=F.cloneGenome(s.cars[0].genome);
+  assert.equal(p.nodes.length,128);assert.equal(p.normalizationCount,64);
+  const context={activity:F.makeBrain(s.graph).activity,sensors:Array.from({length:28},(_,j)=>Math.sin(j*.31)*.3+.5)};
+  const evaluate=genome=>{
+    const brain=F.makeBrain(s.graph);brain.activity.set(context.activity);
+    for(let k=0;k<8;k++)F.neuralStep(s.graph,brain,genome,context.sensors);
+    return [0,1].map(action=>brain.policyFeatures.reduce((sum,value,j)=>sum+value*genome.policyWeights[p.readoutOffset+j*2+action]/Math.sqrt(p.normalizationCount),genome.policyWeights.at(-2+action)));
+  };
+  const before=g.policyWeights.slice(),expected=evaluate(g);
+  for(const seed of [7,12,31,47]){
+    const child=F.mutateSensoryBlock(s.graph,g,F.rng(seed),.24,context),actual=evaluate(child);
+    assert.notDeepEqual(child.policyWeights.slice(0,56),before.slice(0,56));
+    for(let action=0;action<2;action++)assert.ok(Math.abs(actual[action]-expected[action])<1e-10,`wide V3 action ${action} drifted by ${actual[action]-expected[action]}`);
+    assert.deepEqual(child.policyWeights.slice(p.readoutOffset,-2),before.slice(p.readoutOffset,-2));
+    assert.deepEqual(g.policyWeights,before);
+    assert.ok(L.valid(s.graph,child.policyWeights));
+  }
+});
+
 test('Sensory trials and their mirrored partners cannot overflow saved parameter bounds',()=>{
   const s=sim(),car=s.cars[0],g=F.cloneGenome(car.genome),context={activity:car.brain.activity.slice(),sensors:car.sensorVector.slice()};
   for(let j=0;j<56;j++)g.policyWeights[j]=j%2?7.99:-7.99;

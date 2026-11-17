@@ -663,3 +663,19 @@ I report e le tracce completi restano locali e sono esclusi da Git tramite `.imp
 - Validazione live p379: `progress379-v3-practice-winner-live-validation-20261102/report.json`, SHA-256 `672F36EC600A46FDB3857CB5CFFA7C5FAFDF254AAD0819C5B24571EABC3E44E4`.
 
 Prossimo test utile: cercare mutazioni del readout che migliorino il settore conservando il comportamento acquisito prima dei 780 m, quindi ripetere il replay completo su seed indipendente prima di toccare l'app.
+
+### Compensazione sensoriale V3 ampliato e replay dalla partenza (17 novembre 2026)
+
+Modello di sviluppo: GPT-6.1 Sol, identificato nei metadati della sessione.
+
+Nel V3 sperimentale con 128 uscite, il decoder conserva la normalizzazione storica `1/sqrt(64)`. La compensazione delle mutazioni sensoriali usava invece `1/sqrt(128)`: modificava involontariamente i comandi nel contesto che avrebbe dovuto conservare. `mutateSensoryBlock` ora usa `normalizationCount`, con precedenza all'eventuale `featureNorm` esplicito. Il cambiamento riguarda i nuovi figli generati dall'allenamento; il formato dei salvataggi e l'inferenza dei genomi esistenti restano compatibili.
+
+La regressione con il vero grafo V3 ampliato fallisce prima della correzione e passa dopo. Un audit su 16 seed porta lo scarto massimo dei due logit nel contesto protetto da `0,0260281684` a `4,16e-17`. I 39 controlli mirati coprono anche mutazioni motorie, decoder ampliato, ricompense e fase della pratica locale. La conservazione di quel contesto non dimostra un miglioramento dei giri.
+
+Separatamente, 96 episodi completi confrontano mutazioni del solo readout dalla griglia di Monza. Il candidato locale p378, che inserito vicino alla curva arrivava a 803 m, dalla partenza si ferma a 23,982 m; il genoma originale arriva a 798,326 m. La migliore mutazione con otto contesti protetti arriva a 798,391 m (+0,065 m). Tutti i 96 episodi terminano senza censura; nessuno completa un giro. Nessun candidato di questa ricerca viene promosso. Si tratta di un solo genoma V3 ampliato, un circuito e una condizione iniziale; non è una misura degli altri modelli.
+
+La compressione NTFS dei due `win-unpacked` recupera 244,10 MiB di spazio fisico: da 829,48 a 585,38 MiB allocati. I 410 SHA-256 restano identici; nessun file viene eliminato. Portable, installer e checkpoint sono conservati. Report locali esclusi da Git: `.impeccable/review/learning-ml/progress380-prefix-replay-20261117/` e `outputs/pulizia-ntfs-20261117/report.json`.
+
+Suite completa: **481/481 controlli superati**, 320,310 s, Node 24.19.0. Il confronto di sei generazioni riparte dal checkpoint gen.83 con 16 auto, mutazione 16%, seed 107720, ricompense `progress-3` e gain sterzo 0,5× comune ai due rami. Il controllo è quello archiviato p361, con sorgente, checkpoint e stato iniziale verificati. Il ramo corretto riproduce lo stesso massimo sicuro, 798,326 m, e zero giri: differenza sicura 0 m. La correzione elimina il difetto di compensazione ma questo campione non dimostra un apprendimento migliore. Versione 5.7.0 invariata; il lavoro per una versione pronta al rilascio resta aperto.
+
+[Riepilogo verificabile, risultati per generazione e SHA-256 delle prove locali](../outputs/research/v3-sensory-compensation-2026-11-17/report.json).

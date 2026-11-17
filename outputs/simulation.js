@@ -326,7 +326,9 @@
     }
     const proposal=Learning.scaleMutation(genome.policyWeights,child.policyWeights,1);
     const policy=ensureLearning(graph),actionCount=policy.actionCount??2,featureCount=policy.featureCount??policy.nodes.length;
-    const stride=policy.readoutStride??2,biasOffset=policy.biasOffset??child.policyWeights.length-actionCount,norm=policy.featureNorm??1/Math.sqrt(policy.nodes.length);
+    // Match the live decoder: the expanded V3 retains a 64-neuron scale
+    // even though its readout contains 128 descending neurons.
+    const stride=policy.readoutStride??2,biasOffset=policy.biasOffset??child.policyWeights.length-actionCount,norm=policy.featureNorm??1/Math.sqrt(policy.normalizationCount??policy.nodes.length);
     const observe=candidate=>{
       const brain=makeBrain(graph);brain.activity.set(context.activity);
       for(let n=0;n<8;n++)neuralStep(graph,brain,candidate,context.sensors);

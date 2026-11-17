@@ -1,0 +1,236 @@
+{
+  "format": "male-cns-sensory-compensation-audit-v1",
+  "date": "2026-11-17",
+  "appVersion": "5.7.0",
+  "developmentModel": "GPT-6.1 Sol",
+  "provenance": "session-metadata",
+  "normalizationFix": {
+    "readoutNeurons": 128,
+    "normalizationCount": 64,
+    "mutationSeeds": 16,
+    "maxLogitDriftBefore": 0.026028168386859174,
+    "maxLogitDriftAfter": 4.163336342344337e-17
+  },
+  "verification": {
+    "tests": 481,
+    "passed": 481,
+    "failed": 0,
+    "durationSeconds": 320.30967810000004,
+    "command": "node --test --test-reporter=tap outputs/tests/*.test.cjs"
+  },
+  "completeEpisodeSearch": {
+    "model": "V3 wide readout",
+    "circuit": "monza",
+    "rewardRevision": "progress-3",
+    "steeringGain": 0.5,
+    "checkpointSha256": "ac932df51c7a141074fb30304d3d28bfe7615d60576785d9f066915b82cb8849",
+    "episodes": 96,
+    "allUncensored": true,
+    "safeEpisodes": 43,
+    "originalProgressMeters": 798.326127033268,
+    "previousLocalWinnerProgressMeters": 23.982081328944812,
+    "bestProgressMeters": 798.3910321121677,
+    "maxLaps": 0,
+    "seconds": 479.5088551
+  },
+  "sixGenerationComparison": {
+    "population": 16,
+    "seed": 107720,
+    "startingGeneration": 83,
+    "mutation": 0.16,
+    "steeringGain": 0.5,
+    "checkpointSha256": "AC932DF51C7A141074FB30304D3D28BFE7615D60576785D9F066915B82CB8849",
+    "initialStateSha256": "56181D942E423AE2A28857E0F127709A5F753DE9B8E6A77F599002FA4EFF02B8",
+    "controlSourceHashVerified": true,
+    "sourceHashes": {
+      "outputs/simulation.js": "A88D205BE562E3AC8836B79D98B5398E2E22C0824AF0B7EECF35CB0F8B4B6C9C",
+      "outputs/neural-learning.js": "29EAC7379568A6ACAA08EF43804CF005A3F3F284848A6F518DA38C4E612BBB1A",
+      "outputs/rewards.js": "C11E33413D44F71FCB0A9E55C24081E987324CD4390A9CA3AA96A41302A32BE2",
+      "outputs/vehicle-992.js": "2C8040B32DDA557D34E629529A8581C3B914FBF0915122190B79725A75BC7896",
+      "outputs/dense-neural.js": "22E21B33D0E613ECC65AD3B75A48297F77F12F90AB22CF627F761E52C7495D63",
+      "outputs/legacy-models.js": "7D64CB740A3AE56BE01C92C366926DDC05E416285D1754A06CB28F50AEAF433F",
+      "outputs/progress-save.js": "5E50A72FE0103AD9EE7506937D21DD6CCE83500F169DE2E5C43286715288EFE9",
+      "outputs/data/connectome.json": "245ECA6301A1E0A53776D8E02F2187D4195BF39EB42F8282C3097C08EA6E5698",
+      "outputs/data/circuits.json": "D982C05E03A5602CFD5A296C6233991DA76B9A51CC59596E8D2D60AEF59C7ED4"
+    },
+    "control": [
+      {
+        "generation": 83,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 803.3028886782432,
+        "meanProgressMeters": 584.500708120383,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 82,
+        "optimizerEpisodes": 2675
+      },
+      {
+        "generation": 84,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 427.02130486596013,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 83,
+        "optimizerEpisodes": 2682
+      },
+      {
+        "generation": 85,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 802.6176046859918,
+        "meanProgressMeters": 489.6692296273103,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 84,
+        "optimizerEpisodes": 2689
+      },
+      {
+        "generation": 86,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 291.365193668173,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 85,
+        "optimizerEpisodes": 2696
+      },
+      {
+        "generation": 87,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 802.043775670824,
+        "meanProgressMeters": 339.384786419429,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 86,
+        "optimizerEpisodes": 2703
+      },
+      {
+        "generation": 88,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 803.5398362353257,
+        "meanProgressMeters": 335.89311325677807,
+        "maxLaps": 0,
+        "laps": 0,
+        "bestLapTime": null,
+        "noLapCount": 16,
+        "optimizerUpdates": 87,
+        "optimizerEpisodes": 2710
+      }
+    ],
+    "treatment": [
+      {
+        "generation": 83,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 803.3028886782432,
+        "meanProgressMeters": 584.500708120383,
+        "maxLaps": 0,
+        "optimizerUpdates": 82
+      },
+      {
+        "generation": 84,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 427.02130486596013,
+        "maxLaps": 0,
+        "optimizerUpdates": 83
+      },
+      {
+        "generation": 85,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 802.6176046859918,
+        "meanProgressMeters": 489.6692296273103,
+        "maxLaps": 0,
+        "optimizerUpdates": 84
+      },
+      {
+        "generation": 86,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 753.8760591505439,
+        "maxProgressMeters": 801.1207621478061,
+        "meanProgressMeters": 291.365193668173,
+        "maxLaps": 0,
+        "optimizerUpdates": 85
+      },
+      {
+        "generation": 87,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 802.043775670824,
+        "meanProgressMeters": 339.384786419429,
+        "maxLaps": 0,
+        "optimizerUpdates": 86
+      },
+      {
+        "generation": 88,
+        "ticks": 5290,
+        "bestSafeProgressMeters": 798.326127033268,
+        "maxProgressMeters": 803.5398362353257,
+        "meanProgressMeters": 335.89311325677807,
+        "maxLaps": 0,
+        "optimizerUpdates": 87
+      }
+    ],
+    "safeProgressDeltaMeters": 0,
+    "maxLaps": 0,
+    "seconds": 317.8411792
+  },
+  "space": {
+    "files": 410,
+    "allocatedBytesBefore": 869768246,
+    "allocatedBytesAfter": 613814282,
+    "recoveredBytes": 255953964,
+    "allHashesUnchanged": true,
+    "deletedFiles": 0
+  },
+  "decision": "Normalization defect corrected; no learning candidate promoted. V3 Monza lap completion remains unresolved.",
+  "limitations": [
+    "The six-generation comparison uses an archived control with verified source, checkpoint and initial state.",
+    "One V3 wide checkpoint, one circuit, one evolution seed; no claim of convergence or improved lap performance.",
+    "Local reports and training checkpoints remain outside Git; no Windows package or release replaced."
+  ],
+  "localEvidence": [
+    {
+      "file": ".impeccable/review/learning-ml/progress380-prefix-replay-20261117/report.json",
+      "sha256": "240480b4ff2a6067648cb8c1930cc2783ef3bee025f9a1c74d9c87a4031af014"
+    },
+    {
+      "file": ".impeccable/review/learning-ml/progress380-prefix-replay-20261117/sensory-compensation-before.json",
+      "sha256": "20d6189909447209a5428e6ddafe9440d5bf8c361eb09e17a33ff3475a3f5def"
+    },
+    {
+      "file": ".impeccable/review/learning-ml/progress380-prefix-replay-20261117/sensory-compensation-after.json",
+      "sha256": "d79ac5932179ba6614bf087b4fae32217d37b6835b0284357fedd0e637e20022"
+    },
+    {
+      "file": ".impeccable/review/learning-ml/progress380-prefix-replay-20261117/suite.tap",
+      "sha256": "173c3943f0ea2029295ed4137af49ae61388513d3fc500b9fbbad3f6529756cc"
+    },
+    {
+      "file": ".impeccable/review/learning-ml/progress381-sensory-normalization-20261117/report.json",
+      "sha256": "e658ae4e0e6ece0dd9b5fecfefdbbc72611cb8e6f24ca5664e7f813db5901eef"
+    },
+    {
+      "file": "outputs/pulizia-ntfs-20261117/report.json",
+      "sha256": "68617fd2a6ffbfd1b9760bd486af73deafd7bfe6c7b8b8a26aab603a2a0a2bf3"
+    }
+  ]
+}
