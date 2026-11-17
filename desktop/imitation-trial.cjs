@@ -23,6 +23,7 @@ function validate(bundle) {
   const { actor, genome } = bundle ?? {};
   if (bundle?.format !== FORMAT || !IMITATION_CIRCUITS.includes(bundle.circuitId) ||
       actor?.format !== MODEL_FORMAT || actor.featureCount !== 332 ||
+      (actor.footprintSensors !== undefined && typeof actor.footprintSensors !== 'boolean') ||
       actor.featureLayout?.descending !== 128 || actor.featureLayout?.inputGroupMeans !== 38 ||
       actor.featureLayout?.adjacentDifference !== 166 ||
       !vector(actor.center, 332) || !vector(actor.scale, 332) || actor.scale.some(scale => scale <= 0) ||

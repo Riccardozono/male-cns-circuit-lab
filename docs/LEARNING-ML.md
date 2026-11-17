@@ -760,3 +760,15 @@ La verifica dell’app Windows da sorgente misura a Monza 279,595 e 276,835 s do
 Il test Windows riproduce i decoder a pesi fissi. L’aggiornamento per ricompense dentro l’app, un giro autonomo a Monaco e la verifica della candidata distribuibile restano aperti.
 
 [Evidenze per pista e tempi effettivi nell’app](../outputs/research/v3-circuit-adaptation-2026-11-17/report.json).
+
+### Due giri del V3 addestrato su Monaco
+
+Nel confronto a parità di posa, uno dei decoder in prova comanda gas 0,258 in avvicinamento all’urto mentre il riferimento chiede freno 0,650. Un altro si ferma col freno ancora premuto. L’addestramento con soli rami di recupero ha zero giri con entrambi i profili sensoriali.
+
+Un riferimento con obiettivo di 8 m/s completa due giri anche con partenze spostate e disturbi allo sterzo. Il decoder addestrato con quel ritmo e i sensori d’ingombro completa due giri in una prova su quattro. L’affinamento aggiunge osservazioni del secondo giro acquisite dal riferimento e da episodi del decoder precedente. Nelle quattro prove successive il primo giro è sempre completato. La partenza nominale e quella spostata a sinistra di 50 cm completano anche il secondo giro senza urti. Le due partenze a destra urtano nel secondo giro.
+
+Nell’app Windows, la prova nominale misura 394,278 e 394,101 s, per 788,379 s simulati e 6.674 m. Il worker usa i sensori d’ingombro. La verifica copre la tabella dei tempi, l’export, l’interruzione e il ripristino della sessione. Il lanciatore locale `Avvia-prova-V3-Monaco.cmd` apre il profilo dedicato. I lanciatori Monza e Le Mans conservano i rispettivi bundle.
+
+Il decoder apprende da esempi di guida e inferisce i comandi dall’attività MaleCNS. Le prestazioni nel giro veloce, la robustezza delle altre due partenze e l’aggiornamento per ricompense dentro l’app restano da verificare prima della candidata distribuibile.
+
+[Evidenze delle partenze e della prova Windows](../outputs/research/v3-monaco-second-lap-2026-11-17/report.json).

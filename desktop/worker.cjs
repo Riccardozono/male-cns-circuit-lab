@@ -315,6 +315,7 @@ try {
     circuitId: workerData.circuitId
   });
   if(imitation){
+    if(imitation.actor.footprintSensors===true)sim.graph.sensorProfile=require('../outputs/legacy-models.js').V3_CURRENT_SENSOR_PROFILE;
     sim.spawn([imitation.genome]);
     sim.motorDecoder=Imitation.createDecoder(imitation.actor,sim.graph);
   }

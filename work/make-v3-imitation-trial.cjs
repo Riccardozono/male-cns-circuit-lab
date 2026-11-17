@@ -35,10 +35,10 @@ async function main() {
     const {steeringScale, pedalScale, accelerationBias} = report.elite.parameters;
     actuatorRefinement = {steeringScale, pedalScale, accelerationBias};
   }
-  const { format, featureCount, featureLayout, center, scale, layers } = actor;
+  const { format, featureCount, featureLayout, center, scale, layers, footprintSensors } = actor;
   const bundle = {
     format: Imitation.FORMAT, circuitId, runtimeHashes: runtime,
-    actor: {format, featureCount, featureLayout, center, scale, layers, ...(actuatorRefinement?{actuatorRefinement}:{})},
+    actor: {format, featureCount, featureLayout, center, scale, layers, ...(footprintSensors===undefined?{}:{footprintSensors}), ...(actuatorRefinement?{actuatorRefinement}:{})},
     genome: JSON.parse(genomeBytes.toString('utf8')),
   };
   await fs.writeFile(destination, gzipSync(JSON.stringify(bundle), {level:5}), {flag:'wx'});

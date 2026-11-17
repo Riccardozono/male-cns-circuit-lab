@@ -1,0 +1,386 @@
+{
+  "format": "male-cns-monaco-second-lap-and-desktop-v1",
+  "version": "5.7.0",
+  "conditions": {
+    "circuit": "monaco",
+    "graph": "MaleCNS V3 wide-128",
+    "steerGain": 1,
+    "motorProfilesUseOnlyNeuralActivity": true,
+    "footprintSensors": true
+  },
+  "firstReplayFailureDiagnostic": {
+    "cases": [
+      {
+        "profile": "shared",
+        "offsetMeters": 0,
+        "progressMeters": 2104.212568112078,
+        "reason": "urto",
+        "samePoseComparison": {
+          "meters": 2103.8640336054673,
+          "speed": 12.197073769033397,
+          "command": [
+            0.653823512142698,
+            0.2583093585649468
+          ],
+          "target": [
+            0.8886006999686504,
+            -0.65
+          ],
+          "error": [
+            -0.23477718782595247,
+            0.9083093585649469
+          ],
+          "lateralDistance": 2.2096830453385365
+        }
+      },
+      {
+        "profile": "specialist-left",
+        "offsetMeters": -0.25,
+        "progressMeters": 2085.016808254381,
+        "reason": "urto",
+        "samePoseComparison": {
+          "meters": 2085.016808254381,
+          "speed": 5.377205130406105,
+          "command": [
+            -0.9975692112234172,
+            -0.43918218566490097
+          ],
+          "target": [
+            -1,
+            0.08034935869923698
+          ],
+          "error": [
+            0.0024307887765827596,
+            -0.519531544364138
+          ],
+          "lateralDistance": 2.004653599685726
+        }
+      },
+      {
+        "profile": "specialist-right",
+        "offsetMeters": 0.3,
+        "progressMeters": 1433.7713223214741,
+        "reason": "ferma / senza progresso",
+        "samePoseComparison": {
+          "meters": 1433.7713223214741,
+          "speed": 0,
+          "command": [
+            0.2975178907367765,
+            -0.050255257630255845
+          ],
+          "target": [
+            0.5911484777744184,
+            0.5116087583871314
+          ],
+          "error": [
+            -0.2936305870376419,
+            -0.5618640160173872
+          ],
+          "lateralDistance": 0.6300368174512507
+        }
+      }
+    ],
+    "evidenceSha256": "dbb5655841f431f85a5de9e9d544e4eea0d0ce7a5388d165a702485eda65e1bf"
+  },
+  "earlyRecoveryBranches": {
+    "replays": [
+      {
+        "profile": "baseline",
+        "offsetMeters": 0,
+        "noise": 0,
+        "progressMeters": 1120.888980748656,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -1905.0054577630513
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0,
+        "noise": 0,
+        "progressMeters": 2090.0936070351495,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -91.27867037731403
+      },
+      {
+        "profile": "baseline",
+        "offsetMeters": -0.25,
+        "noise": 0,
+        "progressMeters": 1120.1700823035483,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -1900.9922490958127
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": -0.25,
+        "noise": 0,
+        "progressMeters": 1119.6982563641127,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -1909.3665483564894
+      },
+      {
+        "profile": "baseline",
+        "offsetMeters": 0.48,
+        "noise": 0.012,
+        "progressMeters": 1116.8413474430038,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -1910.6957328578228
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0.48,
+        "noise": 0.012,
+        "progressMeters": 2088.64448780868,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -106.61171643364332
+      }
+    ],
+    "evidenceSha256": "18c90a08876f025b44410c6e317fd3ac7208a2a9b6eb70cb8b0a9c361cfee607",
+    "limitation": "Both profile inputs and training starting conditions differed."
+  },
+  "trainingPace": {
+    "limitMps": 8,
+    "robustReferences": [
+      {
+        "lapTimesSeconds": [
+          394.8719457754062,
+          393.04501138252033
+        ],
+        "offsetMeters": -0.4,
+        "noise": 0.017
+      },
+      {
+        "lapTimesSeconds": [
+          394.78895431426656,
+          392.9798693501822
+        ],
+        "offsetMeters": 0.55,
+        "noise": 0.017
+      }
+    ],
+    "evidenceSha256": "524e7cbe512d811dd7abec6e8151f50b71e0e58eed0d77990841bd534087a681",
+    "geometryUsedForTrainingLabelsOnly": true
+  },
+  "cautiousReplays": {
+    "runs": [
+      {
+        "profile": "footprint",
+        "offsetMeters": 0,
+        "noise": 0,
+        "progressMeters": 5411.681998868304,
+        "laps": 1,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [
+          395.1604225358741
+        ],
+        "fitness": 6868.1292027885465
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": -0.5,
+        "noise": 0,
+        "progressMeters": 5405.5153088763345,
+        "laps": 1,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [
+          394.51691413559786
+        ],
+        "fitness": 6856.719409923884
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0.4,
+        "noise": 0.011,
+        "progressMeters": 6674.00000070401,
+        "laps": 2,
+        "safe": true,
+        "terminalReason": "limite 2 giri",
+        "lapTimesSeconds": [
+          393.9227123461108,
+          398.4626559879552
+        ],
+        "fitness": 10082.858677043958
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0.8,
+        "noise": 0,
+        "progressMeters": 2092.1881634527513,
+        "laps": 0,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [],
+        "fitness": -126.48120627637945
+      }
+    ],
+    "evidenceSha256": "81c11807e205d9386bd831dd6d68e8a94c4e0f8a2d805f739d42e061c5daabf3"
+  },
+  "secondLapContinuation": {
+    "firstLapTraining": 11873,
+    "secondLapReferenceTraining": 3929,
+    "secondLapActualTraining": 899,
+    "parentActorSha256": "54ff6f984b795ff364912b86d05d6f49dabfe1235af0e357c27eb6b49711b0af",
+    "runs": [
+      {
+        "profile": "footprint",
+        "offsetMeters": 0,
+        "noise": 0,
+        "progressMeters": 6674.00000070401,
+        "laps": 2,
+        "safe": true,
+        "terminalReason": "limite 2 giri",
+        "lapTimesSeconds": [
+          394.2775587819577,
+          394.11391134020397
+        ],
+        "fitness": 10091.62836536632
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": -0.5,
+        "noise": 0,
+        "progressMeters": 6674.00000070401,
+        "laps": 2,
+        "safe": true,
+        "terminalReason": "limite 2 giri",
+        "lapTimesSeconds": [
+          394.3254898066009,
+          394.46155928319797
+        ],
+        "fitness": 10091.405854349265
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0.4,
+        "noise": 0.011,
+        "progressMeters": 5411.556393411369,
+        "laps": 1,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [
+          394.4506732590798
+        ],
+        "fitness": 6875.340375751977
+      },
+      {
+        "profile": "footprint",
+        "offsetMeters": 0.8,
+        "noise": 0,
+        "progressMeters": 5411.552564682731,
+        "laps": 1,
+        "safe": false,
+        "terminalReason": "urto",
+        "lapTimesSeconds": [
+          394.221452955012
+        ],
+        "fitness": 6875.44215671514
+      }
+    ],
+    "evidenceSha256": "51b0a1708557627f74f277aabd93da5295d485aa5c93235207107b55a6728473"
+  },
+  "windows": {
+    "appStartup": "Windows native app from source",
+    "checks": [
+      {
+        "name": "Real desktop trial uses its chosen circuit, one car, V3 wide and 30× requested",
+        "passed": true
+      },
+      {
+        "name": "Ordinary session is paused and persistence is locked during the trial",
+        "passed": true
+      },
+      {
+        "name": "The car completes two timed laps on the real desktop worker",
+        "passed": true
+      },
+      {
+        "name": "Both lap times are in the verified range for the circuit",
+        "passed": true
+      },
+      {
+        "name": "Recorded lap sum matches the worker’s fixed-tick episode",
+        "passed": true
+      },
+      {
+        "name": "Visible result shows two laps and both times on one row",
+        "passed": true
+      },
+      {
+        "name": "Ordinary engine session and progress restore byte for byte",
+        "passed": true
+      },
+      {
+        "name": "Local storage is preserved",
+        "passed": true
+      },
+      {
+        "name": "Exported report equals the measured result",
+        "passed": true
+      },
+      {
+        "name": "Cancel stops an independent trial and preserves the ordinary session",
+        "passed": true
+      },
+      {
+        "name": "No renderer errors during either trial",
+        "passed": true
+      }
+    ],
+    "trial": {
+      "modelId": "v3",
+      "status": "completed",
+      "wallSeconds": 42.4581679,
+      "simSeconds": 788.383333332945,
+      "generations": 1,
+      "currentGeneration": 1,
+      "maxLaps": 2,
+      "bestProgressMeters": 6674.00000070401,
+      "hit": {
+        "generation": 1,
+        "agentId": 0,
+        "lapTimes": [
+          394.27755878195745,
+          394.1013832508133
+        ],
+        "twoLapSimSeconds": 788.3789420327707,
+        "wallToTwoLapsSeconds": 42.4581679
+      },
+      "generationSimSeconds": 788.383333332945,
+      "backend": "CPU",
+      "error": null,
+      "decoderSha256": "6105e2b8b74ca76f0ecca92c28a22763b9b2d91a711c85ffd6dd1d2064165a6a"
+    },
+    "nativeEvidenceSha256": "42cefae3319d08611bb63a9750625a6ecb5a32478eae97b56cd974b979171e78",
+    "screenshotSha256": "377e82923da60061ec45ec9235d34b9f72ca061e1a4bd4f849d544ad64237dbb"
+  },
+  "status": {
+    "nativeMonacoTwoLaps": true,
+    "robustAllPerturbations": false,
+    "updatesWithinTheAppVerified": false,
+    "releaseCandidateValidated": false
+  },
+  "automatedSuite": {
+    "tests": 485,
+    "passed": 485,
+    "durationMs": 180884.689,
+    "sha256": "ad189df2c2be524eeaf15a8ccc32ef69efde8b316040fae92295488874f602ba"
+  }
+}
