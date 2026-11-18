@@ -6,7 +6,7 @@ complessivo di guida/apprendimento non è ancora risolto.
 
 Aggiornamento successivo: i contesti neurali appresi
 portano il campione a **1990,413 m**, verificati anche nella copia Windows di
-sola inferenza. Vedi [CONTESTI-NEURALI-DEV.md](CONTESTI-NEURALI-DEV.md) per avvio,
+sola inferenza. Vedi [CONTESTI-NEURALI-DEV.md](https://github.com/Riccardozono/male-cns-circuit-lab/blob/99845d0c47017715251c11e58433d5322d1eea52/docs/CONTESTI-NEURALI-DEV.md) per avvio,
 confronti e problema numerico fra runtime. I risultati a 1212 m sotto sono
 la fase precedente, conservata come evidenza, non il nuovo massimo.
 

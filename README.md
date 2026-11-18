@@ -42,7 +42,7 @@ La release **5.7.0** è disponibile per Windows x64. [Verifica SHA-256](https://
 - **Decoder importabili.** La versione 5.7.0 apre i file da **Test modelli → Carica decoder V3…** e supporta l’affinamento per ricompense. Il decoder Monaco verificato è un profilo locale di prova.
 - **Verifica Windows.** Portable e installer silenzioso hanno riprodotto gli stessi tempi a Monaco. Sono passati 489 test automatici e 37 controlli del confronto breve V2–V5.
 
-[Rapporto e checksum della candidata](outputs/research/v3-monaco-verified-candidate-2026-11-18/report.json) · [Apprendimento e metodo](docs/LEARNING-ML.md) · [Mappatura dei sensori](docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md)
+[Rapporto e checksum della candidata](outputs/research/v3-monaco-verified-candidate-2026-11-18/report.json) · [Apprendimento e metodo](docs/LEARNING-ML.md) · [Mappatura dei sensori](https://github.com/Riccardozono/male-cns-circuit-lab/blob/99845d0c47017715251c11e58433d5322d1eea52/docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md)
 
 **Novità 5.5.0:** tribune 3D con sedute, gradoni, scale, parapetti e coperture, più box, cabine di pista, portale di partenza e cartelli di frenata illustrativi. Trovale in **Vista 3D → Inquadra → Tribune e box**. Le zone delle tribune fanno riferimento alle mappe ufficiali 2026; architettura, misure e raccordo con il tracciato sono stime dichiarate. Le sedute vicine usano dettaglio adattivo; tutta la nuova geometria richiede al massimo tre batch di disegno. Fisica e apprendimento della 5.4.0 restano invariati. [Guida e fonti](outputs/TRIBUNE-v550.md) · [Verifiche](outputs/VERIFICA-v550.md).
 
@@ -202,7 +202,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | **GPT-6 Luna** | OpenAI Codex | **26** |
 | **GPT-6.1 Sol** | OpenAI Codex | **27** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
-| **GPT-6.2 Sol** | OpenAI Codex | **15** |
+| **GPT-6.2 Sol** | OpenAI Codex | **16** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).

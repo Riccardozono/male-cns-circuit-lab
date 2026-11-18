@@ -28,7 +28,7 @@ pubblicata rimane precedente al redesign finché l'autore non chiede una release
 
 Il sistema visuale sostituisce quello scuro in [DESIGN.md](DESIGN.md) e nel suo
 sidecar; la documentazione storica sotto rimane come storia, non come guida del
-tema corrente. [Guida di avvio e verifiche](docs/INTERFACCIA-DEV.md). L'approvazione
+tema corrente. [Guida di avvio e verifiche](https://github.com/Riccardozono/male-cns-circuit-lab/blob/99845d0c47017715251c11e58433d5322d1eea52/docs/INTERFACCIA-DEV.md). L'approvazione
 del riferimento non certifica identità pixel per pixel o migliore convergenza.
 
 ### Allineamento e prima persona — 13 ottobre 2026
@@ -55,7 +55,7 @@ popolazione, sensori fisici, rete, ricompense e progressi restano invariati.
 salvataggi 5.6.0. Fonti: [layout](outputs/styles.css),
 [controlli e accessibilità](outputs/app.js), [camera](outputs/circuit-3d.mjs),
 [geometria originale](outputs/car-3d.mjs) e [GLB esterno](outputs/supplied-car-3d.mjs).
-Guida operativa e verifiche: [INTERFACCIA-DEV.md](docs/INTERFACCIA-DEV.md);
+Guida operativa e verifiche: [INTERFACCIA-DEV.md](https://github.com/Riccardozono/male-cns-circuit-lab/blob/99845d0c47017715251c11e58433d5322d1eea52/docs/INTERFACCIA-DEV.md);
 confronti documentali: `.impeccable/review/first-person/documenter.md`.
 
 ### Tema corrente: variante scura opzionale — 13 ottobre 2026

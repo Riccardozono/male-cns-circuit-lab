@@ -57,4 +57,4 @@ Per verificare il formato: `node --test work/neural-grown-model.test.cjs` (2 tes
 
 La ricerca è proseguita con128 candidati senza ulteriore miglioramento, poi96 proposte coordinate hanno raggiunto3523,566304810903m, sempre0giri. Due ulteriori episodi nativi indipendenti riproducono il modello esportato. È stata aggiunta **una nuova copia Windows privata**, senza sostituire quella già aperta, che parte in pausa con16 auto ed esegue apprendimento effettivo dell'ultimo strato. Il suo file `.malecns-grown-dev` contiene tutto il modello ed è incompatibile con i formati precedenti.
 
-Avvio, verifiche, esiti negativi e limiti: [APPRENDIMENTO-DECODER-ESTESO-DEV.md](APPRENDIMENTO-DECODER-ESTESO-DEV.md). La versione resta5.6.0; nessuna nuova release. L'obiettivo di completare i giri non è raggiunto.
+Avvio, verifiche, esiti negativi e limiti: [APPRENDIMENTO-DECODER-ESTESO-DEV.md](https://github.com/Riccardozono/male-cns-circuit-lab/blob/99845d0c47017715251c11e58433d5322d1eea52/work/APPRENDIMENTO-DECODER-ESTESO-DEV.md). La versione resta5.6.0; nessuna nuova release. L'obiettivo di completare i giri non è raggiunto.
