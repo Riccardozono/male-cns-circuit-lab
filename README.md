@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.7.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)
+[![Candidata 5.7.0](docs/assets/badges/version.svg)](#candidata-570)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**[Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)**
+**Windows 5.6.0 · [Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,11 +34,15 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
-**Novità 5.7.0:** quando una policy sicura si ferma senza gas, l'esplorazione evolutiva varia il comando longitudinale gas/freno mantenendo invariata la sterzata appresa. In un confronto CUDA appaiato di quattro generazioni V3 a Monza, la media della progressione sicura delle tre generazioni successive è passata da **138,71 m** a **277,86 m** e la media delle auto sicure oltre 500 m da **4,33** a **8,67**. Il miglior risultato è rimasto **790,46 m** e non è stato completato alcun giro: prova su un solo seed, non garanzia di convergenza. La pratica locale ora usa gli stessi guadagni sensoriali e bias motore della pista stretta. [Dettagli e limiti](outputs/RELEASE-v570.md) · [Verifiche](outputs/VERIFICA-v570.md).
+## Candidata 5.7.0
 
-### Sviluppo in corso nel branch `dev` (non incluso nella release 5.7.0)
+Il sorgente su **main** include la candidata 5.7.0. I download qui sopra sono della release pubblicata **5.6.0**.
 
-Le nuove policy associano i neuroni di ingresso ai canali visivi compilati per lato e ai relay di fisica/strada. I salvataggi precedenti, privi di `sensorMappingVersion`, conservano la vecchia interpretazione modulo-28. A Monza, con policy V3 inizializzate da zero, popolazione 16, mutazione 0,32 e 12 generazioni, il fronte sicuro è salito in 4 dei 5 seed appaiati: **+0,5, +180,1, −14,6, +392,0 e +591,7 m** rispetto alla baseline; nessun ramo ha completato un giro. Un seed V2 ha migliorato il fronte sicuro da **72,4 a 200,2 m**, sempre senza giro. V4 e V5 hanno verifiche del percorso sensoriale sul grafo completo, ma non una prova di apprendimento comparativa. Questi dati sono sperimentali e non dimostrano convergenza. [Protocollo e misure](docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md).
+- **V3 a Monaco.** Il decoder corretto ha completato due giri senza urti in tutte le nove partenze verificate, comprese quattro inedite. Sulle quattro inedite il decoder precedente ne completava due.
+- **Decoder importabili.** La candidata apre i file da **Test modelli → Carica decoder V3…** e supporta l’affinamento per ricompense. Il decoder Monaco verificato è un profilo locale di prova.
+- **Verifica Windows.** Portable e installer silenzioso hanno riprodotto gli stessi tempi a Monaco. Sono passati 489 test automatici e 37 controlli del confronto breve V2–V5.
+
+[Rapporto e checksum della candidata](outputs/research/v3-monaco-verified-candidate-2026-11-18/report.json) · [Apprendimento e metodo](docs/LEARNING-ML.md) · [Mappatura dei sensori](docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md)
 
 **Novità 5.5.0:** tribune 3D con sedute, gradoni, scale, parapetti e coperture, più box, cabine di pista, portale di partenza e cartelli di frenata illustrativi. Trovale in **Vista 3D → Inquadra → Tribune e box**. Le zone delle tribune fanno riferimento alle mappe ufficiali 2026; architettura, misure e raccordo con il tracciato sono stime dichiarate. Le sedute vicine usano dettaglio adattivo; tutta la nuova geometria richiede al massimo tre batch di disegno. Fisica e apprendimento della 5.4.0 restano invariati. [Guida e fonti](outputs/TRIBUNE-v550.md) · [Verifiche](outputs/VERIFICA-v550.md).
 
@@ -54,8 +58,8 @@ La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Mon
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
 La [release 5.6.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode.
 
@@ -187,7 +191,7 @@ La struttura anatomica è distinta dalla dinamica artificiale a tassi normalizza
 
 Questo è un progetto realizzato in modalità **vibe coding**: richieste in linguaggio naturale, iterazioni assistite da OpenAI Codex e verifiche sul codice e sull'app.
 
-I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit attribuiti su GitHub:
+I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit attribuiti nella cronologia di main.
 
 | Modello OpenAI | Ambiente | Commit attribuiti su GitHub |
 | --- | --- | ---: |
@@ -195,9 +199,10 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | **GPT-5.6 Luna** | OpenAI Codex | **1** |
 | **GPT-6** | OpenAI Codex | **3** |
 | **GPT-6 Astra** | OpenAI Codex | **1** |
-| **GPT-6 Luna** | OpenAI Codex | **23** |
-| **GPT-6.1 Sol** | OpenAI Codex | **25** |
+| **GPT-6 Luna** | OpenAI Codex | **26** |
+| **GPT-6.1 Sol** | OpenAI Codex | **27** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
+| **GPT-6.2 Sol** | OpenAI Codex | **14** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
