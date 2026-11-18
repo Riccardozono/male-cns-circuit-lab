@@ -1,0 +1,1202 @@
+{
+  "appVersion": "5.7.0",
+  "date": "2026-11-18",
+  "buildCommit": "cabb76540bc3526b5ee6761b123f0f551e007623",
+  "installer": {
+    "installerSha256": "b5a52637c8ed0dff9e8329d9784d27e29a422608bd296703c838d461154369dc",
+    "installationMode": "current user / silent",
+    "installExitCode": 0,
+    "verifiedRegistration": true,
+    "verifiedShortcuts": true,
+    "nativeChecks": 11,
+    "uninstallExitCode": 0,
+    "testInstallRemoved": true,
+    "lapTimes": [
+      395.89113810927887,
+      395.6388130938573
+    ],
+    "nativeReportSha256": "D5B2C270D732CFE4E9FADEDCC187AF6393573F352573988552445BC3673F07F1",
+    "twoLapSimSeconds": 791.5299512031362,
+    "checkScope": "Current-user silent install of the actual NSIS candidate, program shortcuts and registry, application from test installation with isolated profile, silent uninstall. Guided UI outside scope."
+  },
+  "assets": [
+    {
+      "file": "MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe",
+      "bytes": 133692777,
+      "sha256": "8427e1ecca94fea1a22eabb68e200d0beb61648800d8c3f0a9d4b327a64a1b57",
+      "signature": "NotSigned"
+    },
+    {
+      "file": "MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe",
+      "bytes": 133922869,
+      "sha256": "b5a52637c8ed0dff9e8329d9784d27e29a422608bd296703c838d461154369dc",
+      "signature": "NotSigned"
+    }
+  ],
+  "monaco": {
+    "parentDecoder": "progress416 head",
+    "inference": "All automated decoder comparisons use MaleCNS activity and the same physical simulator. Reference steering and geometry are used to construct labels.",
+    "recoveryCollection": [
+      {
+        "id": 0,
+        "group": "reproduce",
+        "offset": -0.22,
+        "noise": 0.018,
+        "blend": 0,
+        "seed": 41672,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.322680040289,
+        "frames": 392
+      },
+      {
+        "id": 1,
+        "group": "reproduce",
+        "offset": 1.05,
+        "noise": 0.014,
+        "blend": 0,
+        "seed": 41674,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2094.3448346909163,
+        "frames": 395
+      },
+      {
+        "id": 2,
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "blend": 0.75,
+        "seed": 41672,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          396.743056275496,
+          396.83476042979
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401,
+        "frames": 1135
+      },
+      {
+        "id": 3,
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "blend": 0.75,
+        "seed": 41674,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.6319392332791,
+          396.9142187383418
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401,
+        "frames": 1135
+      },
+      {
+        "id": 4,
+        "group": "broader",
+        "offset": -1.18,
+        "noise": 0.016,
+        "blend": 0.62,
+        "seed": 41774,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.41665337214295,
+          396.96809350784736
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401,
+        "frames": 1132
+      },
+      {
+        "id": 5,
+        "group": "broader",
+        "offset": -0.68,
+        "noise": 0.019,
+        "blend": 0.62,
+        "seed": 41775,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2524.404776202195,
+        "frames": 568
+      },
+      {
+        "id": 6,
+        "group": "broader",
+        "offset": 0.61,
+        "noise": 0.017,
+        "blend": 0.62,
+        "seed": 41776,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          396.7288112198015
+        ],
+        "reason": "urto",
+        "progressMeters": 5414.1763557123895,
+        "frames": 960
+      },
+      {
+        "id": 7,
+        "group": "broader",
+        "offset": 1.18,
+        "noise": 0.018,
+        "blend": 0.62,
+        "seed": 41777,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          398.32804576256564,
+          397.2966949120035
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401,
+        "frames": 1132
+      }
+    ],
+    "recoveryTraining": {
+      "anchorRows": 17078,
+      "referenceRows": 4534,
+      "recoveryRows": 2283,
+      "results": [
+        {
+          "profile": "anchor",
+          "referenceLoss": 0.0008595515391789377,
+          "recoveryLoss": 0.0013337007258087397,
+          "anchorDrift": 0.000027397660232963972,
+          "sha256": "ab8cb0d1d0e620aa4fd761f1a32450e75033196af11325f96b68d77f78bbfcc6"
+        },
+        {
+          "profile": "correction",
+          "referenceLoss": 0.0007855801377445459,
+          "recoveryLoss": 0.001223522936925292,
+          "anchorDrift": 0.00005608581341220997,
+          "sha256": "19525b9a777e7e36dacb90d8d8369b5dab82337b93af4a87940e2ca83d316f03"
+        }
+      ]
+    },
+    "recoveryRollouts": [
+      {
+        "profile": "anchor",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "a4d2b03323e3f086f57e0988660f5251d51a2e12de6dcfb1dcf1278fc51e680e",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          397.4224546911427
+        ],
+        "reason": "urto",
+        "progressMeters": 5413.286068484278
+      },
+      {
+        "profile": "correction",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "11020df828bbb0afe0cccf8804599a3993b4c30f829b686a7f6977ff7a251f18",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          398.5671730312448,
+          398.4058444232279
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "anchor",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "a4d2b03323e3f086f57e0988660f5251d51a2e12de6dcfb1dcf1278fc51e680e",
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.9958449976966
+      },
+      {
+        "profile": "correction",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "11020df828bbb0afe0cccf8804599a3993b4c30f829b686a7f6977ff7a251f18",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          399.2317638803296,
+          399.5328005195719
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "anchor",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "a4d2b03323e3f086f57e0988660f5251d51a2e12de6dcfb1dcf1278fc51e680e",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          398.9095994789538,
+          398.8652384950155
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "correction",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "11020df828bbb0afe0cccf8804599a3993b4c30f829b686a7f6977ff7a251f18",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          400.09156185258723
+        ],
+        "reason": "urto",
+        "progressMeters": 5413.942957311014
+      },
+      {
+        "profile": "anchor",
+        "group": "retention",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "bundleSha256": "a4d2b03323e3f086f57e0988660f5251d51a2e12de6dcfb1dcf1278fc51e680e",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.94910769247366,
+          398.6448742857186
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "correction",
+        "group": "retention",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "bundleSha256": "11020df828bbb0afe0cccf8804599a3993b4c30f829b686a7f6977ff7a251f18",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          399.32980168515564
+        ],
+        "reason": "urto",
+        "progressMeters": 5413.645511403277
+      },
+      {
+        "profile": "anchor",
+        "group": "retention",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "bundleSha256": "a4d2b03323e3f086f57e0988660f5251d51a2e12de6dcfb1dcf1278fc51e680e",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          397.8035444654703
+        ],
+        "reason": "urto",
+        "progressMeters": 5412.58119983534
+      },
+      {
+        "profile": "correction",
+        "group": "retention",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "bundleSha256": "11020df828bbb0afe0cccf8804599a3993b4c30f829b686a7f6977ff7a251f18",
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2094.057029412958
+      }
+    ],
+    "smallWeightInterpolations": [
+      {
+        "profile": "anchor",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "59e57814c327445d9c5a9746c7468d89e69ccbbb2f60bbac8edbd42dd4d895f6",
+        "coefficients": [
+          0.25,
+          0
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.638465361437
+      },
+      {
+        "profile": "correction",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "103cb395fe2c4f4a0fcdcde53218fda79f9fa77b86b827ae7b94f4db2e33780a",
+        "coefficients": [
+          0,
+          0.25
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.6678048738895
+      },
+      {
+        "profile": "combined",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "26f60526bade2eb41102513c2c238409aa82387f140f7da340bc7f438da7cc21",
+        "coefficients": [
+          0.18,
+          0.18
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          396.36042387068693,
+          396.31311888963097
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "anchor",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "59e57814c327445d9c5a9746c7468d89e69ccbbb2f60bbac8edbd42dd4d895f6",
+        "coefficients": [
+          0.25,
+          0
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.3583476038175
+      },
+      {
+        "profile": "correction",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "103cb395fe2c4f4a0fcdcde53218fda79f9fa77b86b827ae7b94f4db2e33780a",
+        "coefficients": [
+          0,
+          0.25
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.401577621887
+      },
+      {
+        "profile": "combined",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "26f60526bade2eb41102513c2c238409aa82387f140f7da340bc7f438da7cc21",
+        "coefficients": [
+          0.18,
+          0.18
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.3766747320738
+      },
+      {
+        "profile": "anchor",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "59e57814c327445d9c5a9746c7468d89e69ccbbb2f60bbac8edbd42dd4d895f6",
+        "coefficients": [
+          0.25,
+          0
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          398.28444846597324,
+          397.1318626807097
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "correction",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "103cb395fe2c4f4a0fcdcde53218fda79f9fa77b86b827ae7b94f4db2e33780a",
+        "coefficients": [
+          0,
+          0.25
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          398.1596649541279,
+          397.3274767558809
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "combined",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "26f60526bade2eb41102513c2c238409aa82387f140f7da340bc7f438da7cc21",
+        "coefficients": [
+          0.18,
+          0.18
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.8621505300484
+      },
+      {
+        "profile": "anchor",
+        "group": "retention",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "bundleSha256": "59e57814c327445d9c5a9746c7468d89e69ccbbb2f60bbac8edbd42dd4d895f6",
+        "coefficients": [
+          0.25,
+          0
+        ],
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          397.7002763607076
+        ],
+        "reason": "urto",
+        "progressMeters": 5413.847623899321
+      },
+      {
+        "profile": "correction",
+        "group": "retention",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "bundleSha256": "103cb395fe2c4f4a0fcdcde53218fda79f9fa77b86b827ae7b94f4db2e33780a",
+        "coefficients": [
+          0,
+          0.25
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.69788652330527,
+          397.6226824731745
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "combined",
+        "group": "retention",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "bundleSha256": "26f60526bade2eb41102513c2c238409aa82387f140f7da340bc7f438da7cc21",
+        "coefficients": [
+          0.18,
+          0.18
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.7671457428768,
+          397.54651245794423
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "anchor",
+        "group": "retention",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "bundleSha256": "59e57814c327445d9c5a9746c7468d89e69ccbbb2f60bbac8edbd42dd4d895f6",
+        "coefficients": [
+          0.25,
+          0
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          396.93690101188685,
+          397.1556617241702
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "correction",
+        "group": "retention",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "bundleSha256": "103cb395fe2c4f4a0fcdcde53218fda79f9fa77b86b827ae7b94f4db2e33780a",
+        "coefficients": [
+          0,
+          0.25
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          396.74960077501316,
+          397.4413378528717
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "combined",
+        "group": "retention",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "bundleSha256": "26f60526bade2eb41102513c2c238409aa82387f140f7da340bc7f438da7cc21",
+        "coefficients": [
+          0.18,
+          0.18
+        ],
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.1817348534942,
+          397.31764689551704
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      }
+    ],
+    "referencePaces": [
+      {
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "pace": {
+          "id": "current",
+          "limit": 8,
+          "deceleration": 3.1
+        },
+        "laps": 0,
+        "lapTimes": [],
+        "safe": false,
+        "completed": false,
+        "reason": "urto",
+        "progressMeters": 2092.779970726073
+      },
+      {
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "pace": {
+          "id": "current",
+          "limit": 8,
+          "deceleration": 3.1
+        },
+        "laps": 2,
+        "lapTimes": [
+          394.94280313989333,
+          393.01118957664056
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": -1.25,
+        "noise": 0.018,
+        "seed": 41931,
+        "pace": {
+          "id": "current",
+          "limit": 8,
+          "deceleration": 3.1
+        },
+        "laps": 0,
+        "lapTimes": [],
+        "safe": false,
+        "completed": false,
+        "reason": "urto",
+        "progressMeters": 2093.253259118639
+      },
+      {
+        "offset": 1.25,
+        "noise": 0.02,
+        "seed": 41932,
+        "pace": {
+          "id": "current",
+          "limit": 8,
+          "deceleration": 3.1
+        },
+        "laps": 1,
+        "lapTimes": [
+          394.725091280734
+        ],
+        "safe": false,
+        "completed": false,
+        "reason": "urto",
+        "progressMeters": 5412.2912393146835
+      },
+      {
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "pace": {
+          "id": "slower",
+          "limit": 7.3,
+          "deceleration": 2.7
+        },
+        "laps": 2,
+        "lapTimes": [
+          424.33882194485676,
+          422.82058120577034
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "pace": {
+          "id": "slower",
+          "limit": 7.3,
+          "deceleration": 2.7
+        },
+        "laps": 2,
+        "lapTimes": [
+          424.4182537536962,
+          422.6795977385248
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": -1.25,
+        "noise": 0.018,
+        "seed": 41931,
+        "pace": {
+          "id": "slower",
+          "limit": 7.3,
+          "deceleration": 2.7
+        },
+        "laps": 2,
+        "lapTimes": [
+          424.5454025536512,
+          422.7513407994724
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": 1.25,
+        "noise": 0.02,
+        "seed": 41932,
+        "pace": {
+          "id": "slower",
+          "limit": 7.3,
+          "deceleration": 2.7
+        },
+        "laps": 2,
+        "lapTimes": [
+          424.4280441334144,
+          422.72566220667244
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "pace": {
+          "id": "earlier-braking",
+          "limit": 8,
+          "deceleration": 2.3
+        },
+        "laps": 2,
+        "lapTimes": [
+          395.543417653542,
+          393.69709657835307
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "pace": {
+          "id": "earlier-braking",
+          "limit": 8,
+          "deceleration": 2.3
+        },
+        "laps": 0,
+        "lapTimes": [],
+        "safe": false,
+        "completed": false,
+        "reason": "urto",
+        "progressMeters": 2093.281852610082
+      },
+      {
+        "offset": -1.25,
+        "noise": 0.018,
+        "seed": 41931,
+        "pace": {
+          "id": "earlier-braking",
+          "limit": 8,
+          "deceleration": 2.3
+        },
+        "laps": 2,
+        "lapTimes": [
+          395.62815360782446,
+          393.81859815938463
+        ],
+        "safe": true,
+        "completed": true,
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "offset": 1.25,
+        "noise": 0.02,
+        "seed": 41932,
+        "pace": {
+          "id": "earlier-braking",
+          "limit": 8,
+          "deceleration": 2.3
+        },
+        "laps": 0,
+        "lapTimes": [],
+        "safe": false,
+        "completed": false,
+        "reason": "urto",
+        "progressMeters": 2093.4819128283425
+      }
+    ],
+    "slowerReferenceCollection": [
+      {
+        "id": 0,
+        "offset": 0,
+        "noise": 0,
+        "seed": 41960,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.3951111592123
+      },
+      {
+        "id": 1,
+        "offset": -0.44,
+        "noise": 0.012,
+        "seed": 41961,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          424.58940563066693,
+          422.5625036271279
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "id": 2,
+        "offset": -0.86,
+        "noise": 0.014,
+        "seed": 41962,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          424.60901326475425
+        ],
+        "reason": "urto",
+        "progressMeters": 5412.687088435796
+      },
+      {
+        "id": 3,
+        "offset": -1.23,
+        "noise": 0.016,
+        "seed": 41963,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          424.6827703671807,
+          422.7635216845161
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "id": 4,
+        "offset": 0.41,
+        "noise": 0.013,
+        "seed": 41964,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          424.50197167168324,
+          422.78636910352884
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "id": 5,
+        "offset": 1.17,
+        "noise": 0.015,
+        "seed": 41965,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          424.37066726038967,
+          422.45251103011304
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      }
+    ],
+    "slowerReferenceTraining": {
+      "bestEpoch": 44,
+      "validationLoss": 0.00047304300824180245,
+      "wholeFrames": 7809,
+      "cornerFrames": 1996,
+      "validationFrames": 3265,
+      "actorSha256": "b2a2a2b22371bb74c77e89c60fc0e3733257bfc9b18af6d85f66af2b12ae45e8",
+      "epochs": [
+        0.0010738810524344444,
+        0.0009184310329146683,
+        0.0008144532912410796,
+        0.0007424796931445599,
+        0.0007466591778211296,
+        0.0006809060578234494,
+        0.0006427759071812034,
+        0.0006204095552675426,
+        0.0006101231556385756,
+        0.0005755106685683131,
+        0.0006417191470973194,
+        0.000664038525428623,
+        0.0005960398120805621,
+        0.0005575098330155015,
+        0.0005503096035681665,
+        0.0005409292061813176,
+        0.0005198452854529023,
+        0.0005185574409551919,
+        0.0005434732302092016,
+        0.0005223343032412231,
+        0.0005176452687010169,
+        0.0005162220913916826,
+        0.0005019796662963927,
+        0.0005095856613479555,
+        0.0005115140229463577,
+        0.0004925488028675318,
+        0.000498968583997339,
+        0.0004886144888587296,
+        0.0004864628426730633,
+        0.0004878210602328181,
+        0.0004871112178079784,
+        0.00048289148253388703,
+        0.00048277786117978394,
+        0.00048404926201328635,
+        0.0004807898076251149,
+        0.00048045016592368484,
+        0.0004808252851944417,
+        0.00047864686348475516,
+        0.0004781699681188911,
+        0.00047614116920158267,
+        0.0004766382335219532,
+        0.00047592082410119474,
+        0.0004753102548420429,
+        0.00047304300824180245
+      ]
+    },
+    "slowerAutonomousRollouts": [
+      {
+        "profile": "slower",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          423.7621618535159,
+          422.6346588615268
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "slower",
+        "group": "recovery",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          423.7079250051287
+        ],
+        "reason": "urto",
+        "progressMeters": 5412.220463352421
+      },
+      {
+        "profile": "slower",
+        "group": "recovery",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2092.6135759490535
+      },
+      {
+        "profile": "slower",
+        "group": "held-out",
+        "offset": -1.27,
+        "noise": 0.018,
+        "seed": 41981,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          424.69443828135337,
+          423.9252672159278
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "previous",
+        "group": "held-out",
+        "offset": -1.27,
+        "noise": 0.018,
+        "seed": 41981,
+        "bundleSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+        "completed": true,
+        "safe": true,
+        "laps": 2,
+        "lapTimes": [
+          397.6345398755816,
+          397.40421631210984
+        ],
+        "reason": "limite 2 giri",
+        "progressMeters": 6674.00000070401
+      },
+      {
+        "profile": "slower",
+        "group": "held-out",
+        "offset": -0.49,
+        "noise": 0.018,
+        "seed": 41982,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2093.12469060472
+      },
+      {
+        "profile": "previous",
+        "group": "held-out",
+        "offset": -0.49,
+        "noise": 0.018,
+        "seed": 41982,
+        "bundleSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          397.70287069577057
+        ],
+        "reason": "urto",
+        "progressMeters": 5413.4665689010235
+      },
+      {
+        "profile": "slower",
+        "group": "held-out",
+        "offset": 0.51,
+        "noise": 0.019,
+        "seed": 41983,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          424.9361895219871
+        ],
+        "reason": "urto",
+        "progressMeters": 5412.370747485709
+      },
+      {
+        "profile": "previous",
+        "group": "held-out",
+        "offset": 0.51,
+        "noise": 0.019,
+        "seed": 41983,
+        "bundleSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          397.47524397702074
+        ],
+        "reason": "urto",
+        "progressMeters": 5414.189935668452
+      },
+      {
+        "profile": "slower",
+        "group": "held-out",
+        "offset": 1.29,
+        "noise": 0.016,
+        "seed": 41984,
+        "bundleSha256": "5164d2c20c6e0c8e8f15222824d74c36fe168dc0453368a612e3fc02747e27f1",
+        "completed": false,
+        "safe": false,
+        "laps": 0,
+        "lapTimes": [],
+        "reason": "urto",
+        "progressMeters": 2092.8014305240185
+      },
+      {
+        "profile": "previous",
+        "group": "held-out",
+        "offset": 1.29,
+        "noise": 0.016,
+        "seed": 41984,
+        "bundleSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+        "completed": false,
+        "safe": false,
+        "laps": 1,
+        "lapTimes": [
+          398.02938650005206
+        ],
+        "reason": "urto",
+        "progressMeters": 5414.0251240905245
+      }
+    ],
+    "slowerSummary": {
+      "slower nominal": {
+        "completed": 1,
+        "total": 1
+      },
+      "slower recovery": {
+        "completed": 0,
+        "total": 2
+      },
+      "slower held-out": {
+        "completed": 1,
+        "total": 4
+      },
+      "previous held-out": {
+        "completed": 1,
+        "total": 4
+      }
+    },
+    "decision": "Keep the existing decoder. The tested recovery and pace changes do not resolve both earlier collisions while retaining successful starts."
+  },
+  "workspaceCleanup": {
+    "files": 5,
+    "areHashesUnchanged": true,
+    "savedBytes": 76138,
+    "removedTestInstall": true
+  }
+}

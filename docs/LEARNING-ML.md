@@ -794,3 +794,13 @@ Il portable Windows ha verificato l’apertura di un decoder e due giri a Monza.
 La suite automatica supera 487 controlli. La build verifica anche il confronto breve V2–V5 da zero. V2 e V3 usano CPU, V4 e V5 usano WebGPU e CPU. I quattro modelli raggiungono il limite di due secondi reali previsto da questo controllo.
 
 [Risultati per partenza, verifiche e checksum della candidata](../outputs/research/v3-monaco-robustness-2026-11-18/report.json).
+
+### Verifica dell’installer e recupero alla chicane (18 novembre 2026)
+
+L’installer 5.7.0 x64 della candidata è stato eseguito in modalità silenziosa per l’utente corrente, in una directory di prova. Windows ha registrato la versione e creato le scorciatoie con destinazione corretta. L’app installata ha completato due giri a Monaco in 791,530 s simulati con il decoder precedente. Il disinstallatore ha rimosso directory, scorciatoie e registrazione della prova. I due pacchetti sono quelli del commit `cabb76540bc3526b5ee6761b123f0f551e007623` e conservano i rispettivi SHA-256. La verifica ha coperto la modalità silenziosa.
+
+Nelle due partenze che urtavano al primo giro, la raccolta con correzioni del riferimento ha completato due giri in entrambi i casi. I due nuovi strati di uscita hanno recuperato una partenza ciascuno in guida autonoma e hanno completato 2/5 prove a testa. Il decoder precedente ne completa 3/5. Le tre interpolazioni dei pesi completano rispettivamente 2/5, 3/5 e 3/5. Il decoder precedente rimane il riferimento per l’app.
+
+Il riferimento con obiettivo 7,3 m/s completa quattro partenze difficili su quattro nel confronto preliminare e quattro su sei nella raccolta separata. Il decoder addestrato sui passaggi sicuri completa la partenza nominale, urta in entrambe le ripartenze note e chiude una su quattro partenze inedite, come il decoder precedente sullo stesso gruppo. Il ritmo più prudente funziona meglio per costruire gli esempi del riferimento in questo confronto. La guida autonoma resta vulnerabile alla chicane.
+
+[Verifica dell’installazione e risultati dei replay](../outputs/research/v3-monaco-recovery-install-2026-11-18/report.json).
