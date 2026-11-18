@@ -804,3 +804,13 @@ Nelle due partenze che urtavano al primo giro, la raccolta con correzioni del ri
 Il riferimento con obiettivo 7,3 m/s completa quattro partenze difficili su quattro nel confronto preliminare e quattro su sei nella raccolta separata. Il decoder addestrato sui passaggi sicuri completa la partenza nominale, urta in entrambe le ripartenze note e chiude una su quattro partenze inedite, come il decoder precedente sullo stesso gruppo. Il ritmo più prudente funziona meglio per costruire gli esempi del riferimento in questo confronto. La guida autonoma resta vulnerabile alla chicane.
 
 [Verifica dell’installazione e risultati dei replay](../outputs/research/v3-monaco-recovery-install-2026-11-18/report.json).
+
+### Correzioni neurali locali per la chicane (18 novembre 2026)
+
+Un classificatore dell’attività MaleCNS modula una correzione appresa ai comandi del V3. La variante più intensa recupera entrambe le partenze critiche e conclude 2/5 prove. La variante moderata conclude 3/5 e, su quattro partenze inedite, chiude tre prove come il decoder precedente. Entrambe intervengono anche fuori dalla zona usata per costruire le etichette.
+
+La memoria temporale calcolata sulle osservazioni campionate riduce gli errori sul set di validazione offline. In pista la variante temporale chiude 3/5 e durante le prove interviene centinaia di volte fuori dalla zona. La diagnosi con attivazione fornita dalla posizione esatta chiude 1/3 con la finestra più larga e 0/3 con la finestra più corta. Queste due prove usano la geometria per la diagnosi. I test autonomi passano al decoder soltanto attività neurale.
+
+Da dodici pose realmente raggiunte, distribuite su tre partenze, il simulatore prova 228 recuperi. Tre regolazioni del riferimento permettono di superare la chicane da tutte e dodici le pose. Il riferimento precedente ci riesce in dieci pose. Raccolte le traiettorie con una di quelle regolazioni, l’ultimo decoder riduce gli interventi fuori zona a circa il 4% e nella configurazione migliore conclude 1/5 prove. Le pose confermano la fattibilità fisica del recupero. La correzione appresa resta insufficiente. Il decoder usato per la verifica della candidata rimane quello precedente.
+
+[Risultati delle partenze e diagnosi del recupero fisico](../outputs/research/v3-monaco-neural-gate-2026-11-18/report.json).

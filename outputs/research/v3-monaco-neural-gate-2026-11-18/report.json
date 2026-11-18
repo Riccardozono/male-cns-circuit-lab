@@ -1,0 +1,1528 @@
+{
+  "appVersion": "5.7.0",
+  "date": "2026-11-18",
+  "scope": "Monaco CPU research with the actual MaleCNS V3 activity. Every autonomous row uses the physical simulator and receives only neural features and causal memory in the learned controller.",
+  "activityGate": {
+    "fit": {
+      "epoch": 47,
+      "validationError": 0.0008576188120059669,
+      "supportMSE": 0.08084047585725784,
+      "falsePositiveRate": 0.13722628355026245,
+      "selectionLoss": 0.032045840460341424
+    },
+    "comparison": {
+      "profiles": {
+        "moderate": {
+          "completed": 3,
+          "total": 5,
+          "assisted": 5999,
+          "outside": 2651
+        },
+        "strong": {
+          "completed": 2,
+          "total": 5,
+          "assisted": 6288,
+          "outside": 3225
+        }
+      },
+      "results": [
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            395.86872423250173,
+            396.16175861755465
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7921,
+          "assisted": 1720,
+          "outside": 794,
+          "meanMix": 0.21725350146955028
+        },
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "strong",
+          "threshold": 0.3,
+          "multiplier": 0.82,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.9137875947017,
+          "samples": 2484,
+          "assisted": 610,
+          "outside": 266,
+          "meanMix": 0.32183423280075263
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.4251595411424,
+          "samples": 2491,
+          "assisted": 478,
+          "outside": 158,
+          "meanMix": 0.2115740278427697
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "strong",
+          "threshold": 0.3,
+          "multiplier": 0.82,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            396.9551311699766,
+            397.3990068907954
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7944,
+          "assisted": 2236,
+          "outside": 1220,
+          "meanMix": 0.3229361476518001
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.66901052056625,
+            396.982987220652
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7947,
+          "assisted": 1663,
+          "outside": 776,
+          "meanMix": 0.2186757609754406
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "strong",
+          "threshold": 0.3,
+          "multiplier": 0.82,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.7682018561966,
+            397.19262430510264
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7950,
+          "assisted": 2229,
+          "outside": 1217,
+          "meanMix": 0.320055896681923
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.33053078704586,
+            396.9495042013091
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7943,
+          "assisted": 1664,
+          "outside": 776,
+          "meanMix": 0.21883298930605294
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "strong",
+          "threshold": 0.3,
+          "multiplier": 0.82,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2094.063785153073,
+          "samples": 2496,
+          "assisted": 619,
+          "outside": 275,
+          "meanMix": 0.3138852476576263
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.772933013081,
+          "samples": 2488,
+          "assisted": 474,
+          "outside": 147,
+          "meanMix": 0.19067284354339886
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "strong",
+          "threshold": 0.3,
+          "multiplier": 0.82,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.776524861676,
+          "samples": 2490,
+          "assisted": 594,
+          "outside": 247,
+          "meanMix": 0.31155962386585373
+        }
+      ],
+      "evidenceSha256": "3c4e02f452229de0890bd3e84a1fd5429c66c13690262a31903bf9862a46ab3d"
+    },
+    "independent": {
+      "profiles": {
+        "moderate": {
+          "completed": 3,
+          "total": 4,
+          "assisted": 6272,
+          "outside": 2843
+        },
+        "parent": {
+          "completed": 3,
+          "total": 4,
+          "assisted": 0,
+          "outside": 0
+        }
+      },
+      "results": [
+        {
+          "offset": -1.25,
+          "noise": 0.014,
+          "seed": 42081,
+          "group": "held-out",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            396.84755655849426
+          ],
+          "progressMeters": 5412.856938820612,
+          "samples": 6438,
+          "assisted": 1365,
+          "outside": 580,
+          "meanMix": 0.2151562101799377
+        },
+        {
+          "offset": -1.25,
+          "noise": 0.014,
+          "seed": 42081,
+          "group": "held-out",
+          "profile": "parent",
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.1263770271993,
+            396.44180271214395
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7936,
+          "assisted": 0,
+          "outside": 0,
+          "meanMix": 0
+        },
+        {
+          "offset": -0.53,
+          "noise": 0.019,
+          "seed": 42082,
+          "group": "held-out",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.74646779343374,
+            397.49996744501897
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7953,
+          "assisted": 1615,
+          "outside": 734,
+          "meanMix": 0.21837942109817232
+        },
+        {
+          "offset": -0.53,
+          "noise": 0.019,
+          "seed": 42082,
+          "group": "held-out",
+          "profile": "parent",
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.9627312026348,
+            397.26885435092163
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7953,
+          "assisted": 0,
+          "outside": 0,
+          "meanMix": 0
+        },
+        {
+          "offset": 0.47,
+          "noise": 0.018,
+          "seed": 42083,
+          "group": "held-out",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            398.7345549173947,
+            397.72567860331105
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7965,
+          "assisted": 1618,
+          "outside": 760,
+          "meanMix": 0.21689634568312482
+        },
+        {
+          "offset": 0.47,
+          "noise": 0.018,
+          "seed": 42083,
+          "group": "held-out",
+          "profile": "parent",
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            398.6468623575628,
+            397.3977891324315
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7961,
+          "assisted": 0,
+          "outside": 0,
+          "meanMix": 0
+        },
+        {
+          "offset": 1.26,
+          "noise": 0.016,
+          "seed": 42084,
+          "group": "held-out",
+          "profile": "moderate",
+          "threshold": 0.4,
+          "multiplier": 0.55,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            398.0916346537146,
+            397.3258535320986
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7955,
+          "assisted": 1674,
+          "outside": 769,
+          "meanMix": 0.21810689749668463
+        },
+        {
+          "offset": 1.26,
+          "noise": 0.016,
+          "seed": 42084,
+          "group": "held-out",
+          "profile": "parent",
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.114483036421,
+          "samples": 2500,
+          "assisted": 0,
+          "outside": 0,
+          "meanMix": 0
+        }
+      ],
+      "evidenceSha256": "ee9443d948e43c1f7989582f41c35fb338e05b9ed603d16122aa616cd4ffa3a9"
+    }
+  },
+  "temporalGate": {
+    "fit": {
+      "epoch": 20,
+      "threshold": 0.65,
+      "recall": 0.8979848623275757,
+      "falsePositiveRate": 0,
+      "metric": 0
+    },
+    "comparison": {
+      "profiles": {
+        "temporal": {
+          "completed": 3,
+          "total": 5,
+          "assisted": 6367,
+          "outside": 2571
+        },
+        "strict": {
+          "completed": 3,
+          "total": 5,
+          "assisted": 1407,
+          "outside": 201
+        }
+      },
+      "results": [
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "temporal",
+          "threshold": 0.65,
+          "multiplier": 0.82,
+          "exponent": 0.68,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            396.22865174390415
+          ],
+          "progressMeters": 5413.619558862925,
+          "samples": 6425,
+          "assisted": 1144,
+          "outside": 397,
+          "meanMix": 0.6499888497621915
+        },
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "strict",
+          "threshold": 0.74,
+          "multiplier": 0.82,
+          "exponent": 0.58,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.928042435823,
+          "samples": 2483,
+          "assisted": 57,
+          "outside": 2,
+          "meanMix": 0.5100110600284216
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "temporal",
+          "threshold": 0.65,
+          "multiplier": 0.82,
+          "exponent": 0.68,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            397.51037396463926
+          ],
+          "progressMeters": 5413.007832946914,
+          "samples": 6443,
+          "assisted": 1173,
+          "outside": 487,
+          "meanMix": 0.6529094237060747
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "strict",
+          "threshold": 0.74,
+          "multiplier": 0.82,
+          "exponent": 0.58,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.3803407874743,
+          "samples": 2491,
+          "assisted": 95,
+          "outside": 10,
+          "meanMix": 0.3942157100300588
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "temporal",
+          "threshold": 0.65,
+          "multiplier": 0.82,
+          "exponent": 0.68,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.72992908016374,
+            396.94213858005037
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7947,
+          "assisted": 1366,
+          "outside": 583,
+          "meanMix": 0.6350694209701983
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "strict",
+          "threshold": 0.74,
+          "multiplier": 0.82,
+          "exponent": 0.58,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.40695787285625,
+            396.1070856208242
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7936,
+          "assisted": 427,
+          "outside": 67,
+          "meanMix": 0.47432502251438396
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "temporal",
+          "threshold": 0.65,
+          "multiplier": 0.82,
+          "exponent": 0.68,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.60606543248394,
+            397.594427717574
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7953,
+          "assisted": 1341,
+          "outside": 553,
+          "meanMix": 0.6441646579863936
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "strict",
+          "threshold": 0.74,
+          "multiplier": 0.82,
+          "exponent": 0.58,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.5062711583709,
+            396.8569295737032
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7944,
+          "assisted": 441,
+          "outside": 67,
+          "meanMix": 0.47020983605662703
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "temporal",
+          "threshold": 0.65,
+          "multiplier": 0.82,
+          "exponent": 0.68,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            396.82830100606,
+            396.7176648392333
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7936,
+          "assisted": 1343,
+          "outside": 551,
+          "meanMix": 0.652215177184701
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "strict",
+          "threshold": 0.74,
+          "multiplier": 0.82,
+          "exponent": 0.58,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            396.7965131065126,
+            396.65556772219685
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7935,
+          "assisted": 387,
+          "outside": 55,
+          "meanMix": 0.4801975739821126
+        }
+      ],
+      "evidenceSha256": "d2a03741b49e26bd2c2b60cc6be6072a2568bca2d206f2b959e64e59bfa61e02"
+    }
+  },
+  "activationDiagnostic": {
+    "scope": "Track location supplies the activation window in this diagnostic only.",
+    "comparison": {
+      "profiles": {
+        "wide": {
+          "completed": 1,
+          "total": 3,
+          "assisted": 3044,
+          "outside": 0
+        },
+        "approach": {
+          "completed": 0,
+          "total": 3,
+          "assisted": 509,
+          "outside": 0
+        }
+      },
+      "results": [
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "wide",
+          "oracleWindow": [
+            1755,
+            2235,
+            70
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            396.44256117438533
+          ],
+          "progressMeters": 5414.326607461659,
+          "samples": 6431,
+          "assisted": 954,
+          "outside": 0,
+          "meanMix": 0.6623915074527884
+        },
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "approach",
+          "oracleWindow": [
+            2010,
+            2155,
+            30
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.870884776371,
+          "samples": 2485,
+          "assisted": 108,
+          "outside": 0,
+          "meanMix": 0.6411906627610574
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "wide",
+          "oracleWindow": [
+            1755,
+            2235,
+            70
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            397.5629024781579
+          ],
+          "progressMeters": 5412.906559975496,
+          "samples": 6445,
+          "assisted": 958,
+          "outside": 0,
+          "meanMix": 0.6619622281172538
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "approach",
+          "oracleWindow": [
+            2010,
+            2155,
+            30
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            396.7877112585018
+          ],
+          "progressMeters": 5412.393033804872,
+          "samples": 6439,
+          "assisted": 294,
+          "outside": 0,
+          "meanMix": 0.6152908207119531
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "wide",
+          "oracleWindow": [
+            1755,
+            2235,
+            70
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            397.65058304997245,
+            397.33832787455884
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7950,
+          "assisted": 1132,
+          "outside": 0,
+          "meanMix": 0.6511938450652871
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "approach",
+          "oracleWindow": [
+            2010,
+            2155,
+            30
+          ],
+          "threshold": 0,
+          "multiplier": 0.75,
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.4829080849663,
+          "samples": 2496,
+          "assisted": 107,
+          "outside": 0,
+          "meanMix": 0.6355452993574545
+        }
+      ],
+      "evidenceSha256": "02e5bb328b9dad53474c9df7f16bf020b99272c11a0466d25c6952c43a0d9210"
+    }
+  },
+  "observedPoseRecovery": {
+    "horizonEndMeters": 2235,
+    "scope": "Partial physics recovery from observed first-lap poses using the reference driver.",
+    "branchCount": 228,
+    "profilesReachingEndFromAllPoses": [
+      {
+        "profile": "look-3.65-pace-7.4-brake-2.3",
+        "reached": 12,
+        "total": 12,
+        "settings": {
+          "lookAhead": 3.65,
+          "limit": 7.4,
+          "deceleration": 2.3
+        }
+      },
+      {
+        "profile": "look-3.65-pace-8-brake-2.3",
+        "reached": 12,
+        "total": 12,
+        "settings": {
+          "lookAhead": 3.65,
+          "limit": 8,
+          "deceleration": 2.3
+        }
+      },
+      {
+        "profile": "look-3.65-pace-8-brake-3.1",
+        "reached": 12,
+        "total": 12,
+        "settings": {
+          "lookAhead": 3.65,
+          "limit": 8,
+          "deceleration": 3.1
+        }
+      }
+    ],
+    "poses": [
+      {
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "baseline": {
+          "reached": true,
+          "reason": "",
+          "meters": 2235.111091751216
+        },
+        "results": [
+          {
+            "checkpoint": 2010,
+            "meters": 2010.0023185978553,
+            "speedMps": 9.058824679072455,
+            "recovered": 9,
+            "candidate": {
+              "profile": "look-3.65-pace-7.4-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 7.4,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.118463220177,
+              "endReason": "",
+              "simSeconds": 30.45,
+              "meanOffset": 0.20759543690387278,
+              "maxOffset": 1.9867717229760036,
+              "minSpeedMps": 5.323427976998694,
+              "initialCommand": [
+                -0.0015671945132245838,
+                -0.06735308488405678
+              ]
+            }
+          },
+          {
+            "checkpoint": 2050,
+            "meters": 2050.5726210104162,
+            "speedMps": 9.141270645706951,
+            "recovered": 7,
+            "candidate": {
+              "profile": "look-3.65-pace-8-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 8,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.030969421308,
+              "endReason": "",
+              "simSeconds": 24.8,
+              "meanOffset": 0.24956008269532878,
+              "maxOffset": 1.949765540658445,
+              "minSpeedMps": 5.334054970400716,
+              "initialCommand": [
+                0.002435042147480652,
+                -0.0026588307133689204
+              ]
+            }
+          },
+          {
+            "checkpoint": 2074,
+            "meters": 2074.4112753051913,
+            "speedMps": 9.18409454259158,
+            "recovered": 7,
+            "candidate": {
+              "profile": "look-3.65-pace-6.8-brake-2.3",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 6.8,
+                "deceleration": 2.3
+              },
+              "reached": true,
+              "progressMeters": 2235.0871977210263,
+              "endReason": "",
+              "simSeconds": 23.666666666666668,
+              "meanOffset": 0.2621235655625191,
+              "maxOffset": 1.9330349793885153,
+              "minSpeedMps": 5.327582863088054,
+              "initialCommand": [
+                0.006682091127155472,
+                -0.15801181782394758
+              ]
+            }
+          },
+          {
+            "checkpoint": 2084,
+            "meters": 2084.0691762242645,
+            "speedMps": 6.695399302322219,
+            "recovered": 7,
+            "candidate": {
+              "profile": "look-3.65-pace-6.8-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 6.8,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.023669108129,
+              "endReason": "",
+              "simSeconds": 22.45,
+              "meanOffset": 0.3050539000214791,
+              "maxOffset": 2.363310180716371,
+              "minSpeedMps": 5.330225421538426,
+              "initialCommand": [
+                -0.6131774799673247,
+                -0.0844249127902773
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "baseline": {
+          "reached": false,
+          "reason": "urto",
+          "meters": 2093.322680040289
+        },
+        "results": [
+          {
+            "checkpoint": 2010,
+            "meters": 2010.213969097762,
+            "speedMps": 9.184951320268723,
+            "recovered": 8,
+            "candidate": {
+              "profile": "look-3.65-pace-8-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 8,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.1025906488444,
+              "endReason": "",
+              "simSeconds": 29.25,
+              "meanOffset": 0.2135724529387234,
+              "maxOffset": 1.9478682924124904,
+              "minSpeedMps": 5.333307482992318,
+              "initialCommand": [
+                -0.021520214445794696,
+                -0.008118915033590413
+              ]
+            }
+          },
+          {
+            "checkpoint": 2050,
+            "meters": 2050.071875229246,
+            "speedMps": 9.0285962407533,
+            "recovered": 8,
+            "candidate": {
+              "profile": "look-3.65-pace-6.8-brake-2.3",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 6.8,
+                "deceleration": 2.3
+              },
+              "reached": true,
+              "progressMeters": 2235.0876251378654,
+              "endReason": "",
+              "simSeconds": 26.816666666666666,
+              "meanOffset": 0.23186969033393523,
+              "maxOffset": 1.9091292441798002,
+              "minSpeedMps": 5.312014185665555,
+              "initialCommand": [
+                -0.014373699538373256,
+                -0.13857453009416254
+              ]
+            }
+          },
+          {
+            "checkpoint": 2074,
+            "meters": 2074.4316942142173,
+            "speedMps": 8.860830709748068,
+            "recovered": 7,
+            "candidate": {
+              "profile": "look-3.65-pace-6.8-brake-2.3",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 6.8,
+                "deceleration": 2.3
+              },
+              "reached": true,
+              "progressMeters": 2235.079766572371,
+              "endReason": "",
+              "simSeconds": 23.75,
+              "meanOffset": 0.2748990926082148,
+              "maxOffset": 2.103049738147147,
+              "minSpeedMps": 5.3200652270150375,
+              "initialCommand": [
+                -0.001509646948264207,
+                -0.11760383871850855
+              ]
+            }
+          },
+          {
+            "checkpoint": 2084,
+            "meters": 2084.4683036394485,
+            "speedMps": 6.5443666808862275,
+            "recovered": 7,
+            "candidate": {
+              "profile": "look-3.65-pace-6.8-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 6.8,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.089482501623,
+              "endReason": "",
+              "simSeconds": 22.3,
+              "meanOffset": 0.27718022155741245,
+              "maxOffset": 2.061422104926973,
+              "minSpeedMps": 5.343248306762303,
+              "initialCommand": [
+                -0.4934315806692871,
+                -0.06554583511077838
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "baseline": {
+          "reached": false,
+          "reason": "urto",
+          "meters": 2094.3448346909163
+        },
+        "results": [
+          {
+            "checkpoint": 2010,
+            "meters": 2010.3100195164532,
+            "speedMps": 9.033856694327037,
+            "recovered": 6,
+            "candidate": {
+              "profile": "look-3.65-pace-7.4-brake-2.3",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 7.4,
+                "deceleration": 2.3
+              },
+              "reached": true,
+              "progressMeters": 2235.0989675812098,
+              "endReason": "",
+              "simSeconds": 30.5,
+              "meanOffset": 0.20715601558645247,
+              "maxOffset": 1.9537985386571914,
+              "minSpeedMps": 5.315372259432262,
+              "initialCommand": [
+                -0.004501146369971868,
+                -0.06423208679087955
+              ]
+            }
+          },
+          {
+            "checkpoint": 2050,
+            "meters": 2050.2447674238433,
+            "speedMps": 9.041426307576291,
+            "recovered": 8,
+            "candidate": {
+              "profile": "look-3.65-pace-8-brake-2.3",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 8,
+                "deceleration": 2.3
+              },
+              "reached": true,
+              "progressMeters": 2235.017688199773,
+              "endReason": "",
+              "simSeconds": 24.966666666666665,
+              "meanOffset": 0.24786126903015265,
+              "maxOffset": 1.9225186314972207,
+              "minSpeedMps": 5.321922556880016,
+              "initialCommand": [
+                -0.001287704478043784,
+                0.00982171155296363
+              ]
+            }
+          },
+          {
+            "checkpoint": 2074,
+            "meters": 2074.1106876002214,
+            "speedMps": 9.256643985747335,
+            "recovered": 10,
+            "candidate": {
+              "profile": "look-3.65-pace-7.4-brake-3.1",
+              "settings": {
+                "lookAhead": 3.65,
+                "limit": 7.4,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.0900604017133,
+              "endReason": "",
+              "simSeconds": 22.866666666666667,
+              "meanOffset": 0.2714923382406676,
+              "maxOffset": 1.9518773574036914,
+              "minSpeedMps": 5.335662947301051,
+              "initialCommand": [
+                -0.011982254167099672,
+                -0.0920804982184168
+              ]
+            }
+          },
+          {
+            "checkpoint": 2084,
+            "meters": 2084.347141591919,
+            "speedMps": 6.439013647385249,
+            "recovered": 13,
+            "candidate": {
+              "profile": "previous",
+              "settings": {
+                "lookAhead": 3.8,
+                "limit": 8,
+                "deceleration": 3.1
+              },
+              "reached": true,
+              "progressMeters": 2235.0989736953284,
+              "endReason": "",
+              "simSeconds": 20.916666666666668,
+              "meanOffset": 0.3016146427437257,
+              "maxOffset": 1.993699698833545,
+              "minSpeedMps": 5.327349755812604,
+              "initialCommand": [
+                -0.5583391863687059,
+                -0.05237670592315602
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "evidenceSha256": "180491bf26788f633bfef76f4217baa03d9c1d085549510a364953d4381e2790"
+  },
+  "localRecoveryPolicy": {
+    "collection": {
+      "settings": {
+        "circuitId": "monaco",
+        "lateralMps2": 2.65,
+        "lookAhead": 3.65,
+        "previewStep": 2,
+        "span": 3,
+        "speedFloor": 4.9,
+        "offset": 0,
+        "limit": 7.4,
+        "deceleration": 2.3
+      },
+      "decays": [
+        0.82,
+        0.955
+      ],
+      "window": [
+        1890,
+        2240,
+        55
+      ],
+      "safeRuns": 5,
+      "totalRuns": 6,
+      "evidenceSha256": "933bbd146683f2846f3bc8a871ad40aa8d81cd309bb2c0de2bf23b9ce0b63d9c"
+    },
+    "fit": {
+      "epoch": 44,
+      "threshold": 0.6,
+      "recall": 0.9706293940544128,
+      "falsePositiveRate": 0.0014074594946578145,
+      "metric": 0.0014074594946578145,
+      "residualLoss": 0.0007568280561827123,
+      "selection": 0.0036779436632059515
+    },
+    "comparison": {
+      "profiles": {
+        "moderate": {
+          "completed": 0,
+          "total": 5,
+          "assisted": 622,
+          "outside": 22
+        },
+        "strong": {
+          "completed": 1,
+          "total": 5,
+          "assisted": 1457,
+          "outside": 53
+        }
+      },
+      "results": [
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "moderate",
+          "threshold": 0.6,
+          "multiplier": 0.7,
+          "exponent": 0.8,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.6921713360553,
+          "samples": 2486,
+          "assisted": 103,
+          "outside": 3,
+          "meanMix": 0.5730503581534208
+        },
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "strong",
+          "threshold": 0.6,
+          "multiplier": 0.9,
+          "exponent": 0.65,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.712351463748,
+          "samples": 2490,
+          "assisted": 106,
+          "outside": 3,
+          "meanMix": 0.78382982083681
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "moderate",
+          "threshold": 0.6,
+          "multiplier": 0.7,
+          "exponent": 0.8,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.166725223048,
+          "samples": 2493,
+          "assisted": 154,
+          "outside": 9,
+          "meanMix": 0.5472262892831127
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "strong",
+          "threshold": 0.6,
+          "multiplier": 0.9,
+          "exponent": 0.65,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.309432924119,
+          "samples": 2500,
+          "assisted": 138,
+          "outside": 7,
+          "meanMix": 0.7609245911125903
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "moderate",
+          "threshold": 0.6,
+          "multiplier": 0.7,
+          "exponent": 0.8,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.7310589889553,
+          "samples": 2498,
+          "assisted": 128,
+          "outside": 2,
+          "meanMix": 0.5376937838392837
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "strong",
+          "threshold": 0.6,
+          "multiplier": 0.9,
+          "exponent": 0.65,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.697296716291,
+          "samples": 2502,
+          "assisted": 136,
+          "outside": 2,
+          "meanMix": 0.765200157920418
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "moderate",
+          "threshold": 0.6,
+          "multiplier": 0.7,
+          "exponent": 0.8,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.3067844288116,
+          "samples": 2497,
+          "assisted": 113,
+          "outside": 3,
+          "meanMix": 0.557718264799074
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "strong",
+          "threshold": 0.6,
+          "multiplier": 0.9,
+          "exponent": 0.65,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": true,
+          "completed": true,
+          "laps": 2,
+          "reason": "limite 2 giri",
+          "lapTimes": [
+            398.42773137359274,
+            398.4941333003746
+          ],
+          "progressMeters": 6674.00000070401,
+          "samples": 7970,
+          "assisted": 621,
+          "outside": 27,
+          "meanMix": 0.8141743068865215
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "moderate",
+          "threshold": 0.6,
+          "multiplier": 0.7,
+          "exponent": 0.8,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 0,
+          "reason": "urto",
+          "lapTimes": [],
+          "progressMeters": 2093.4255393517133,
+          "samples": 2493,
+          "assisted": 124,
+          "outside": 5,
+          "meanMix": 0.48887525553431704
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "strong",
+          "threshold": 0.6,
+          "multiplier": 0.9,
+          "exponent": 0.65,
+          "measureWindow": [
+            1890,
+            2240
+          ],
+          "safe": false,
+          "completed": false,
+          "laps": 1,
+          "reason": "urto",
+          "lapTimes": [
+            397.85028208806455
+          ],
+          "progressMeters": 5414.31188601605,
+          "samples": 6458,
+          "assisted": 456,
+          "outside": 14,
+          "meanMix": 0.7839739376459491
+        }
+      ],
+      "evidenceSha256": "0feb9c00254a0a84bb1c12275b52ee9d4ad55e0fce940674ba72c9d9b2578e74"
+    }
+  },
+  "decision": "Keep the current decoder and the verified local Windows packages. No tested learned gate resolves both failures and retains the other starts.",
+  "workspaceCleanup": {
+    "files": 9,
+    "allHashesUnchanged": true,
+    "savedBytes": 125121
+  }
+}
