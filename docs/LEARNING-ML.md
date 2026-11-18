@@ -775,7 +775,7 @@ Il decoder apprende da esempi di guida e inferisce i comandi dall’attività Ma
 
 ### Affinamento V3 dall’app Windows
 
-Avviare la prova con un bundle V3 compatibile per il circuito. Nel pannello **Confronto modelli**, **Affina V3 con ricompense** esegue due generazioni isolate con quattro auto per generazione. Il worker parte dal decoder caricato e varia i coefficienti di sterzo, pedali e accelerazione. Il punteggio della simulazione seleziona fra gli agenti che completano entrambi i giri senza urti o violazioni. L’élite viene riprovata nella seconda generazione. I pesi neurali rimangono fissi e le auto continuano a leggere l’attività MaleCNS.
+Nel pannello **Test modelli**, **Carica decoder V3…** apre un file `.json.gz` compatibile con il motore corrente. Il circuito indicato dal file viene usato per la prova V3. **Affina V3 con ricompense** esegue due generazioni isolate con quattro auto per generazione. Il worker parte dal decoder caricato e varia i coefficienti di sterzo, pedali e accelerazione. Il punteggio della simulazione seleziona fra gli agenti che completano entrambi i giri senza urti o violazioni. L’élite viene riprovata nella seconda generazione. I pesi neurali rimangono fissi e le auto continuano a leggere l’attività MaleCNS.
 
 Su Monza la partenza nominale passa da 592,222 a 556,430 s simulati per due giri, un guadagno di 35,792 s. Tutti gli otto episodi completano due giri senza urti. Dopo la prova si può usare **Salva decoder affinato…**. Un nuovo avvio Windows con il file esportato riproduce gli stessi tempi al giro, 279,595 e 276,835 s. Al termine e dopo l’interruzione, l’app ripristina la sessione ordinaria.
 

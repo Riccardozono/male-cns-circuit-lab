@@ -37,6 +37,7 @@ const modelBenchmark=process.argv.includes('--model-benchmark');
 const modelTestSmoke=process.argv.includes('--model-test-smoke');
 const imitationTrialArg=process.argv.find(argument=>argument.startsWith('--imitation-trial='));
 const imitationSmokeDir=process.argv.find(argument=>argument.startsWith('--imitation-smoke-dir='))?.slice('--imitation-smoke-dir='.length);
+const imitationSmokeOpenFile=process.argv.find(argument=>argument.startsWith('--imitation-smoke-open-file='))?.slice('--imitation-smoke-open-file='.length);
 const learningSmoke = process.argv.includes('--learning-test');
 const uiSmoke = process.argv.includes('--ui-smoke');
 const trainingCopySmoke=process.argv.includes('--training-copy-smoke');
@@ -122,9 +123,9 @@ function createWindow(imitationModel = null) {
   mainWindow.loadURL(trainingCopyProfile?'male-cns://app/index.html?training-copy='+trainingCopyVariant:'male-cns://app/index.html');
   if(imitationSmokeDir){
     const output=path.resolve(imitationSmokeDir);
-    const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
+    const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output,imitationSmokeOpenFile);
     const validate=process.argv.includes('--actuator-refinement-smoke')?harness.runActuatorRefinement:harness.runImitation;
-    mainWindow.webContents.once('did-finish-load',()=>validate(mainWindow,{output,engine,version:app.getVersion(),imitationModel,refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
+    mainWindow.webContents.once('did-finish-load',()=>validate(mainWindow,{output,engine,version:app.getVersion(),imitationModel,openDecoder:Boolean(imitationSmokeOpenFile),refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
   }
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));
@@ -554,20 +555,38 @@ app.whenReady().then(async () => {
   ipcMain.handle('compute:command', (_event, command) => engine.command(command));
   ipcMain.handle('compute:info', () => engine.info());
   ipcMain.handle('compute:gpu-response', (_event, payload) => engine.gpuResponse(payload));
-  let latestRefinement=null;
+  let latestRefinement=null, selectingDecoder=false, preparingTest=false;
   testEngine=new DesktopEngine(outputsDirectory(),payload=>{
     const trial=payload.modelTest,selected=trial?.rewardTraining?.selected;
     if(trial?.status==='completed'&&selected?.completed&&trial.decoderSha256===imitationModel?.sha256)latestRefinement=selected.parameters;
     mainWindow?.webContents.send('test:snapshot',payload);
   },error=>mainWindow?.webContents.send('test:error',{message:error.message}),request=>mainWindow?.webContents.send('test:gpu-request',request),{imitationModel});
-  ipcMain.handle('test:start',(_event,options)=>{
-    latestRefinement=null;
-    return testEngine.start({...options,workerCount:1,running:false,mode:'connectome'});
+  ipcMain.handle('test:start',async (_event,options)=>{
+    if(selectingDecoder||preparingTest)throw Error('Preparazione del test in corso.');
+    preparingTest=true;
+    try{
+      latestRefinement=null;
+      return await testEngine.start({...options,workerCount:1,running:false,mode:'connectome'});
+    }finally{preparingTest=false;}
   });
   ipcMain.handle('test:command',(_event,command)=>testEngine.command(command));
   ipcMain.handle('test:info',()=>testEngine.info());
   ipcMain.handle('test:gpu-response',(_event,payload)=>testEngine.gpuResponse(payload));
   ipcMain.handle('test:stop',()=>testEngine.stop());
+  ipcMain.handle('test:open-decoder',async()=>{
+    if(selectingDecoder||preparingTest||testEngine.workers.length)throw Error('Concludi il test corrente prima di caricare un decoder.');
+    selectingDecoder=true;
+    try{
+      const selection=await testReportDialog.showOpenDialog(mainWindow,{
+        title:'Carica decoder V3',filters:[{name:'Decoder V3 compresso',extensions:['gz']}],properties:['openFile'],
+      });
+      if(selection.canceled||!selection.filePaths[0])return {canceled:true};
+      const model=await Imitation.load(selection.filePaths[0],outputsDirectory());
+      imitationModel=testEngine.imitationModel=model;
+      latestRefinement=null;
+      return {canceled:false,name:path.basename(selection.filePaths[0]),...testEngine.info()};
+    }finally{selectingDecoder=false;}
+  });
   ipcMain.handle('test:save-refinement',async()=>{
     if(!imitationModel||!latestRefinement)throw Error('Nessun decoder affinato disponibile.');
     const bytes=Imitation.encodeRefinement(imitationModel,latestRefinement);

@@ -62,7 +62,13 @@ async function load(file, outputsDir) {
   if (!info.isFile() || info.size > MAX_BYTES) throw Error('File decoder V3 non valido o troppo grande.');
   const bytes = await fs.readFile(file);
   if (bytes.length > MAX_BYTES) throw Error('File decoder V3 troppo grande.');
-  const bundle = validate(JSON.parse(gunzipSync(bytes, { maxOutputLength: 4 * MAX_BYTES }).toString('utf8')));
+  let data;
+  try {
+    data = JSON.parse(gunzipSync(bytes, { maxOutputLength: 4 * MAX_BYTES }).toString('utf8'));
+  } catch {
+    throw Error('Il file non contiene un decoder V3 compresso valido.');
+  }
+  const bundle = validate(data);
   const hashes = await runtimeHashes(outputsDir);
   if (RUNTIME_FILES.some(name => bundle.runtimeHashes?.[name] !== hashes[name])) {
     throw Error('Decoder V3 incompatibile con questo motore. Serve il bundle della stessa build.');

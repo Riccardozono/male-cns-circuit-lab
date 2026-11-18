@@ -33,6 +33,7 @@ contextBridge.exposeInMainWorld('desktopTest', {
   start:options=>ipcRenderer.invoke('test:start',options),
   command:command=>ipcRenderer.invoke('test:command',command),
   info:()=>ipcRenderer.invoke('test:info'),
+  openDecoder:()=>ipcRenderer.invoke('test:open-decoder'),
   stop:()=>ipcRenderer.invoke('test:stop'),
   saveReport:report=>ipcRenderer.invoke('test:save-report',report),
   saveRefinement:()=>ipcRenderer.invoke('test:save-refinement'),

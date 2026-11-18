@@ -3,7 +3,16 @@
 // inside a disposable profile supplied by the runner, never the user's app.
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function reportDialog(output){return{showSaveDialog:async(_window,options)=>({canceled:false,filePath:path.join(output,options.title==='Salva decoder affinato'?'refined-decoder.json.gz':'exported-report.json')})};}
+function reportDialog(output,openFile){
+  const files=[null,path.join(output,'invalid-decoder.gz'),openFile];
+  return {
+    showOpenDialog:async()=>{
+      const file=files.shift();
+      return file?{canceled:false,filePaths:[path.resolve(file)]}:{canceled:true,filePaths:[]};
+    },
+    showSaveDialog:async(_window,options)=>({canceled:false,filePath:path.join(output,options.title==='Salva decoder affinato'?'refined-decoder.json.gz':'exported-report.json')}),
+  };
+}
 async function run(window,{output,engine,version,forceCpuFallback,capture}){
   await fs.mkdir(output,{recursive:true});const wc=window.webContents,checks=[],errors=[];
   wc.on('console-message',d=>{if(d.level==='error'||d.level===3)errors.push(d.message);});
@@ -92,7 +101,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
 }
 module.exports={run,reportDialog};
 
-async function runImitation(window,{output,engine,version,refined=false,circuitId='monza',footprintSensors=false}){
+async function runImitation(window,{output,engine,version,openDecoder=false,refined=false,circuitId='monza',footprintSensors=false}){
   await fs.mkdir(output,{recursive:true});
   const wc=window.webContents,checks=[],errors=[];
   wc.on('console-message',details=>{if(details.level==='error'||details.level===3)errors.push(details.message);});
@@ -106,7 +115,25 @@ async function runImitation(window,{output,engine,version,refined=false,circuitI
     }
   };
   const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
-  await until("Boolean(globalThis.circuitLab?.tests&&circuitLab.sim.cars.length&&!document.getElementById('model-test-imitation').hidden)");
+  await until("Boolean(globalThis.circuitLab?.tests&&circuitLab.sim.cars.length)");
+  if(openDecoder){
+    await fs.writeFile(path.join(output,'invalid-decoder.gz'),'invalid');
+    await js("document.getElementById('open-model-test').click()");
+    const open="document.getElementById('model-test-open-decoder')";
+    const test="document.getElementById('model-test-imitation')";
+    const status="document.getElementById('model-test-status')";
+    check('A fresh desktop session offers decoder import',await js(`!${open}.hidden&&${test}.hidden`));
+    await js(`${open}.click()`);
+    await until(`!${open}.disabled`);
+    check('Cancel does not activate a decoder',await js(`${test}.hidden&&${status}.dataset.error!=='true'`));
+    await js(`${open}.click()`);
+    await until(`!${open}.disabled&&${status}.dataset.error==='true'`);
+    check('Invalid bundle reports an error and leaves the trial inactive',await js(`${test}.hidden`));
+    await js(`${open}.click()`);
+    await until(`!${open}.disabled&&!${test}.hidden`);
+    check('A valid bundle enables both Windows trial actions',await js(`${status}.dataset.error==='false'&&!document.getElementById('model-test-refine').hidden`));
+  }
+  await until("!document.getElementById('model-test-imitation').hidden");
   await js("globalThis.normalV3TrialSim=circuitLab.sim;normalV3TrialSim.running=false;void 0");
   await until('!normalV3TrialSim.running&&normalV3TrialSim._pendingRunning===null');
   const session=engine.sessionId;

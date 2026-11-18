@@ -6,7 +6,7 @@ const sessionUI=MaleCNSSessionUI.create(document);
 const COLORS=['#ff7658','#68d3c5','#f0bd69','#a6b4ff','#d7a4dd','#8ccf8b','#f5df91','#77b7dc'];
 let sim,selectedId=0,showSensors=true,view={scale:1,offsetX:0,offsetY:0},lastTime=0,lastUI=0,savedGeneration=0;
 let runtimeData=null,legacyDataPromise=null,activeModelId='v5',switchingModel=false,progressBusy=false;
-let modelTestSuite=null,modelTestBusy=false,modelTestRows=[];
+let modelTestSuite=null,modelTestBusy=false,modelTestOpeningDecoder=false,modelTestRows=[];
 let canvasMetrics={width:0,height:0,dpr:1},historyKey='',renderDirty=true,lastRenderTime=0;
 let brainAtlas=null;
 let trackRenderer=null,trackCamera=null,trackFocus='',trackGesture=null;
@@ -567,14 +567,15 @@ function syncModelTestControls(){
   $('next-generation').disabled=locked||sim.mode!=='connectome';
   $('save-progress').disabled=locked||sim.mode!=='connectome';$('load-progress').disabled=locked;
   if(locked){$('gear-up').disabled=true;$('gear-down').disabled=true;}
-  $('model-test-start').disabled=locked;$('model-test-imitation').disabled=locked;$('model-test-refine').disabled=locked;$('model-test-limit').disabled=locked;
+  const testLocked=locked||modelTestOpeningDecoder;
+  for(const id of ['model-test-start','model-test-open-decoder','model-test-imitation','model-test-refine','model-test-limit'])$(id).disabled=testLocked;
   $('model-test-stop').disabled=!modelTestBusy||Boolean(modelTestSuite?.stopRequested);
-  $('model-test-export').disabled=modelTestBusy||!modelTestSuite?.finishedAt;
+  $('model-test-export').disabled=modelTestBusy||modelTestOpeningDecoder||!modelTestSuite?.finishedAt;
   const currentSettings=modelTestSuite?.settings;
   const refineButton=$('model-test-save-refinement');
   const refinement=modelTestSuite?.cases[0];
   refineButton.hidden=!currentSettings?.refineActuators;
-  refineButton.disabled=locked||refinement?.status!=='completed'||!refinement.rewardTraining?.selected?.completed;
+  refineButton.disabled=testLocked||refinement?.status!=='completed'||!refinement.rewardTraining?.selected?.completed;
   const s=modelTestBusy||currentSettings?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE?currentSettings:null;
   $('model-test-settings').textContent=s?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
     ? `${sim.circuits.find(c=>c.id===s.circuitId)?.name||s.circuitId} · ${s.refineActuators?'Affinamento V3':'V3 addestrato offline'} · ${s.population} auto · CPU · ${s.speedMultiplier}× richiesti`
@@ -628,7 +629,7 @@ function showTestSimulation(next,modelId,data,selection=null){
   populateAgents(selection);buildBrainMap();updateModelSummary();circuitInfo();refresh(true);render();
 }
 async function runModelTest(overrides=null){
-  if(modelTestBusy||progressBusy||switchingModel)return;
+  if(modelTestBusy||modelTestOpeningDecoder||progressBusy||switchingModel)return;
   if(!overrides&&!$('model-test-limit').reportValidity())return;
   const normal=sim,normalModel=activeModelId,normalData=window.circuitLab.data,normalRunning=sim.running,normalMode=$('controller-select').value;
   const normalSelection={automatic:agentSelection.automatic,selectedId:agentSelection.selectedId};
@@ -686,15 +687,43 @@ function initModelTestControls(){
   modelTestRows=MaleCNSModelTest.MODELS.map(modelId=>{const row=document.createElement('tr'),heading=document.createElement('th');heading.scope='row';heading.textContent=modelId.toUpperCase();row.append(heading);for(let i=0;i<6;i++)row.append(document.createElement('td'));body.append(row);return row;});
   $('model-test-start').onclick=()=>runModelTest().catch(error=>{$('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';});
   const imitationButton=$('model-test-imitation');
+  const openDecoderButton=$('model-test-open-decoder');
   let imitationCircuitId=null;
-  globalThis.desktopTest?.info().then(info=>{
+  const showDecoder=info=>{
     const circuit=MALE_CNS_CIRCUITS.circuits.find(entry=>entry.id===info.imitationTrialCircuitId);
     if(!info.imitationTrialAvailable||!circuit)return;
     imitationCircuitId=circuit.id;
     imitationButton.textContent='Prova V3 addestrato · '+circuit.name;
     imitationButton.hidden=false;
     $('model-test-refine').hidden=false;
-  }).catch(()=>{});
+  };
+  if(globalThis.desktopTest){
+    openDecoderButton.hidden=false;
+    desktopTest.info().then(showDecoder).catch(()=>{});
+    openDecoderButton.onclick=async()=>{
+      modelTestOpeningDecoder=true;
+      syncModelTestControls();
+      const status=$('model-test-status');
+      try{
+        const result=await desktopTest.openDecoder();
+        if(result.canceled)return;
+        showDecoder(result);
+        if(modelTestSuite?.settings.trialProfile===MaleCNSModelTest.IMITATION_PROFILE){
+          modelTestSuite=null;
+          updateModelTestResults(null);
+          $('model-test-caption').textContent='Risultati ancora non disponibili.';
+        }
+        status.textContent='Decoder V3 caricato · '+result.name+'.';
+        status.dataset.error='false';
+      }catch(error){
+        status.textContent=error.message;
+        status.dataset.error='true';
+      }finally{
+        modelTestOpeningDecoder=false;
+        syncModelTestControls();
+      }
+    };
+  }
   imitationButton.onclick=()=>{
     if(!$('model-test-limit').reportValidity())return;
     runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE,circuitId:imitationCircuitId,speedMultiplier:30}).catch(error=>{
