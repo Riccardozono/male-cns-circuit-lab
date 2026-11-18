@@ -678,7 +678,7 @@ La compressione NTFS dei due `win-unpacked` recupera 244,10 MiB di spazio fisico
 
 Suite completa: **481/481 controlli superati**, 320,310 s, Node 24.19.0. Il confronto di sei generazioni riparte dal checkpoint gen.83 con 16 auto, mutazione 16%, seed 107720, ricompense `progress-3` e gain sterzo 0,5× comune ai due rami. Il controllo è quello archiviato p361, con sorgente, checkpoint e stato iniziale verificati. Il ramo corretto riproduce lo stesso massimo sicuro, 798,326 m, e zero giri: differenza sicura 0 m. La correzione elimina il difetto di compensazione ma questo campione non dimostra un apprendimento migliore. Versione 5.7.0 invariata; il lavoro per una versione pronta al rilascio resta aperto.
 
-[Riepilogo verificabile, risultati per generazione e SHA-256 delle prove locali](../outputs/research/v3-sensory-compensation-2026-11-17/report.json).
+[Riepilogo verificabile, risultati per generazione e SHA-256 delle prove locali](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-sensory-compensation-2026-11-17/report.json).
 
 ### Osservabilità e mutazioni con protezione della partenza (17 novembre 2026)
 
@@ -703,7 +703,7 @@ Il confronto separato sul genoma campione V3 standard estratto dal salvataggio g
 
 I sorgenti applicativi, i salvataggi e i pacchetti Windows restano invariati rispetto al commit `57adcbb`. La nuova serie non promuove controller e non dimostra convergenza. L'archivio privato delle osservazioni è stato compresso con NTFS, recuperando altri 1,23 MiB e verificandone identico lo SHA-256. L'obiettivo di completare i giri e preparare la versione pubblicabile resta aperto.
 
-[Risultati, condizioni sperimentali, limiti e SHA-256 delle evidenze](../outputs/research/v3-observability-search-2026-11-17/report.json).
+[Risultati, condizioni sperimentali, limiti e SHA-256 delle evidenze](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-observability-search-2026-11-17/report.json).
 
 ### Punteggio della pratica locale e prova V3 su Monza (17 novembre 2026)
 
@@ -719,7 +719,7 @@ Allenare un decoder su tre partenze ha portato tutti e tre i casi di addestramen
 
 Il confronto tra revisioni spiega la terminazione anticipata a destra. Con lo stesso genoma e il gain diagnostico 0,5×, `progress-3` termina tre partenze a 30,157–33,425 m mentre l’auto avanza e il freno comanda zero. Con la regola corrente, `progress-8-pace-recovery-margin`, gli stessi episodi arrivano a 804,467–805,701 m senza urti. Il decoder allenato su più partenze raggiunge circa 835 m in due dei tre casi a destra e urta nel terzo. A gain sterzo 1×, il decoder urta in ognuna delle tre partenze verificate. Le prove riguardano Monza e un genoma, con zero giri. I risultati guidano la prossima prova con le impostazioni di sterzo e valutazione dell’app.
 
-[Misure, risultati per generazione, partenza e verifiche](../outputs/research/v3-practice-recovery-2026-11-17/report.json).
+[Misure, risultati per generazione, partenza e verifiche](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-practice-recovery-2026-11-17/report.json).
 
 ### Due giri di Monza con un decoder addestrato offline (17 novembre 2026)
 
@@ -731,7 +731,7 @@ Nei primi cinque replay autonomi, tutti arrivano a 11.586 m senza urti e termina
 
 Il trasferimento diretto con gli stessi pesi a Le Mans e Monaco produce zero giri, rispettivamente un urto a 660,152 m e una terminazione per ritmo insufficiente a 210,268 m. I risultati riguardano un genoma V3 ampliato e il simulatore CPU fuori dall’interfaccia. Il decoder resta sperimentale. Serve ancora verificare la sua integrazione Windows e l’addestramento successivo per ricompense prima di preparare una candidata.
 
-[Protocollo, tempi, prove di controllo e SHA-256](../outputs/research/v3-male-cns-imitation-2026-11-17/report.json).
+[Protocollo, tempi, prove di controllo e SHA-256](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-male-cns-imitation-2026-11-17/report.json).
 
 ### Prova Windows del V3 addestrato
 
@@ -745,7 +745,7 @@ Il runner di ricerca e il percorso del worker producono gli stessi tempi se eseg
 
 La prova Windows usa pesi fissi su Monza. Rimangono aperte l’evoluzione per ricompense del decoder, le altre piste e la validazione di una candidata distribuibile.
 
-[Rapporto della verifica desktop](../outputs/research/v3-male-cns-imitation-2026-11-17/desktop-report.json).
+[Rapporto della verifica desktop](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-male-cns-imitation-2026-11-17/desktop-report.json).
 
 ### Affinamento per ricompense a Monza e prova Windows a Le Mans
 
@@ -759,7 +759,7 @@ La verifica dell’app Windows da sorgente misura a Monza 279,595 e 276,835 s do
 
 Il test Windows riproduce i decoder a pesi fissi. L’aggiornamento per ricompense dentro l’app, un giro autonomo a Monaco e la verifica della candidata distribuibile restano aperti.
 
-[Evidenze per pista e tempi effettivi nell’app](../outputs/research/v3-circuit-adaptation-2026-11-17/report.json).
+[Evidenze per pista e tempi effettivi nell’app](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-circuit-adaptation-2026-11-17/report.json).
 
 ### Due giri del V3 addestrato su Monaco
 
@@ -771,7 +771,7 @@ Nell’app Windows, la prova nominale misura 394,278 e 394,101 s, per 788,379 s 
 
 Il decoder apprende da esempi di guida e inferisce i comandi dall’attività MaleCNS. Le prestazioni nel giro veloce, la robustezza delle altre due partenze e l’aggiornamento per ricompense dentro l’app restano da verificare prima della candidata distribuibile.
 
-[Evidenze delle partenze e della prova Windows](../outputs/research/v3-monaco-second-lap-2026-11-17/report.json).
+[Evidenze delle partenze e della prova Windows](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-monaco-second-lap-2026-11-17/report.json).
 
 ### Affinamento V3 dall’app Windows
 
@@ -781,7 +781,7 @@ Su Monza la partenza nominale passa da 592,222 a 556,430 s simulati per due giri
 
 La verifica dell’affinamento dall’app riguarda un genoma V3 e la partenza nominale di Monza. Servono ancora prove su altre partenze e la verifica dei pacchetti Windows della candidata.
 
-[Risultati delle due generazioni e verifica del file esportato](../outputs/research/v3-actuator-training-desktop-2026-11-18/report.json).
+[Risultati delle due generazioni e verifica del file esportato](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-actuator-training-desktop-2026-11-18/report.json).
 
 ### Robustezza a Monaco e candidata Windows (18 novembre 2026)
 
@@ -793,7 +793,7 @@ Il portable Windows ha verificato l’apertura di un decoder e due giri a Monza.
 
 La suite automatica supera 487 controlli. La build verifica anche il confronto breve V2–V5 da zero. V2 e V3 usano CPU, V4 e V5 usano WebGPU e CPU. I quattro modelli raggiungono il limite di due secondi reali previsto da questo controllo.
 
-[Risultati per partenza, verifiche e checksum della candidata](../outputs/research/v3-monaco-robustness-2026-11-18/report.json).
+[Risultati per partenza, verifiche e checksum della candidata](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-monaco-robustness-2026-11-18/report.json).
 
 ### Verifica dell’installer e recupero alla chicane (18 novembre 2026)
 
@@ -803,7 +803,7 @@ Nelle due partenze che urtavano al primo giro, la raccolta con correzioni del ri
 
 Il riferimento con obiettivo 7,3 m/s completa quattro partenze difficili su quattro nel confronto preliminare e quattro su sei nella raccolta separata. Il decoder addestrato sui passaggi sicuri completa la partenza nominale, urta in entrambe le ripartenze note e chiude una su quattro partenze inedite, come il decoder precedente sullo stesso gruppo. Il ritmo più prudente funziona meglio per costruire gli esempi del riferimento in questo confronto. La guida autonoma resta vulnerabile alla chicane.
 
-[Verifica dell’installazione e risultati dei replay](../outputs/research/v3-monaco-recovery-install-2026-11-18/report.json).
+[Verifica dell’installazione e risultati dei replay](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-monaco-recovery-install-2026-11-18/report.json).
 
 ### Correzioni neurali locali per la chicane (18 novembre 2026)
 
@@ -813,7 +813,7 @@ La memoria temporale calcolata sulle osservazioni campionate riduce gli errori s
 
 Da dodici pose realmente raggiunte, distribuite su tre partenze, il simulatore prova 228 recuperi. Tre regolazioni del riferimento permettono di superare la chicane da tutte e dodici le pose. Il riferimento precedente ci riesce in dieci pose. Raccolte le traiettorie con una di quelle regolazioni, l’ultimo decoder riduce gli interventi fuori zona a circa il 4% e nella configurazione migliore conclude 1/5 prove. Le pose confermano la fattibilità fisica del recupero. La correzione appresa resta insufficiente. Il decoder usato per la verifica della candidata rimane quello precedente.
 
-[Risultati delle partenze e diagnosi del recupero fisico](../outputs/research/v3-monaco-neural-gate-2026-11-18/report.json).
+[Risultati delle partenze e diagnosi del recupero fisico](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/outputs/research/v3-monaco-neural-gate-2026-11-18/report.json).
 
 ### Ricerca per esiti fisici e guida autonoma a Monaco (18 novembre 2026)
 

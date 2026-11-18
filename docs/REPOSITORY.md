@@ -13,9 +13,7 @@ nuovo tag o sostituzione delle release distribuite.
   pur non essendo caricati dall'app durante la guida.
 - Strumenti di preprocessing, benchmark, verifiche e riferimenti cartografici.
 - Il submodule `work/malecns`, la documentazione e le anteprime pubbliche.
-- Le copie sorgenti richieste dai controlli storici: per esempio
-  `work/learning-lab-v510.cjs --baseline` usa `work/baseline-v510/`, e la verifica
-  della correzione texture confronta `work/pre-texture-fix-v510/`.
+- Le copie di prova 5.1.0 e i relativi controlli sono disponibili nella [revisione storica](https://github.com/Riccardozono/male-cns-circuit-lab/blob/31b524210663b749066b8a91b88633104a1a829f/work).
 
 Non essere caricato dal renderer non basta per considerare un file inutile:
 test, fonti, crediti e strumenti riproducibili fanno parte del progetto.
