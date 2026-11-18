@@ -782,3 +782,15 @@ Su Monza la partenza nominale passa da 592,222 a 556,430 s simulati per due giri
 La verifica dell’affinamento dall’app riguarda un genoma V3 e la partenza nominale di Monza. Servono ancora prove su altre partenze e la verifica dei pacchetti Windows della candidata.
 
 [Risultati delle due generazioni e verifica del file esportato](../outputs/research/v3-actuator-training-desktop-2026-11-18/report.json).
+
+### Robustezza a Monaco e candidata Windows (18 novembre 2026)
+
+Con il decoder eseguito da Electron, la regolazione dello sterzo a 1,015× completa quattro partenze su quattro usate nel confronto e tre su quattro tenute da parte. I coefficienti originali completano rispettivamente tre prove e due prove. Gli esiti con rumore possono differire dai precedenti replay fatti in un altro runtime.
+
+Sei replay hanno prodotto 5.205 osservazioni attorno alla chicane. Il riferimento geometrico è stato usato per generare le etichette. In pista il decoder riceve solo attività MaleCNS. Aggiornando lo strato finale e conservando le risposte precedenti su 16.701 osservazioni di controllo, il V3 completa sei prove su sei nel primo confronto. Il ritocco dello sterzo completa tre prove e l’aggiornamento di tutti gli strati ne completa cinque. In quattro nuove conferme, il decoder selezionato chiude due prove. I due urti rimanenti avvengono nel primo giro, a 2.093–2.095 m.
+
+Il portable Windows ha verificato l’apertura di un decoder e due giri a Monza. Lo stesso eseguibile con il nuovo decoder Monaco misura 395,891 e 395,639 s. L’app estratta dall’installer NSIS misura due giri con il decoder Monaco della fase precedente. La procedura di installazione guidata resta da verificare. I due eseguibili sono unsigned.
+
+La suite automatica supera 487 controlli. La build verifica anche il confronto breve V2–V5 da zero. V2 e V3 usano CPU, V4 e V5 usano WebGPU e CPU. I quattro modelli raggiungono il limite di due secondi reali previsto da questo controllo.
+
+[Risultati per partenza, verifiche e checksum della candidata](../outputs/research/v3-monaco-robustness-2026-11-18/report.json).

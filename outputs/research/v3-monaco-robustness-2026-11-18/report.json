@@ -1,0 +1,853 @@
+{
+  "version": "5.7.0",
+  "evidenceDate": "2026-11-18",
+  "scope": "Pretrained V3, Monaco CPU, two laps from grid. Perturbations add deterministic motor noise to measured physical rollouts.",
+  "actuatorSweep": {
+    "settings": [
+      {
+        "profile": "original",
+        "parameters": {
+          "steeringScale": 1,
+          "pedalScale": 1,
+          "accelerationBias": 0
+        }
+      },
+      {
+        "profile": "softer",
+        "parameters": {
+          "steeringScale": 0.985,
+          "pedalScale": 1,
+          "accelerationBias": 0
+        }
+      },
+      {
+        "profile": "sharper",
+        "parameters": {
+          "steeringScale": 1.015,
+          "pedalScale": 1,
+          "accelerationBias": 0
+        }
+      },
+      {
+        "profile": "strongerPedals",
+        "parameters": {
+          "steeringScale": 1,
+          "pedalScale": 1.045,
+          "accelerationBias": 0
+        }
+      }
+    ],
+    "tuningResults": [
+      {
+        "profile": "original",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41250,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.27755878195745,
+          394.1013832508133
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "original",
+        "offset": -0.5,
+        "noise": 0,
+        "seed": 41251,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.32704150315016,
+          394.1561487769447
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "original",
+        "offset": 0.4,
+        "noise": 0.011,
+        "seed": 41252,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.50464276715314,
+          394.81009865555956
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "original",
+        "offset": 0.8,
+        "noise": 0,
+        "seed": 41253,
+        "safe": false,
+        "completed": false,
+        "laps": 1,
+        "lapTimes": [
+          394.22226572182876
+        ],
+        "progressMeters": 5412.224191190524,
+        "reason": "urto"
+      },
+      {
+        "profile": "softer",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41250,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.1698537285469,
+          394.38023467702766
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "softer",
+        "offset": -0.5,
+        "noise": 0,
+        "seed": 41251,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.13724882812534,
+          394.07253902595033
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "softer",
+        "offset": 0.4,
+        "noise": 0.011,
+        "seed": 41252,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2093.359755324987,
+        "reason": "urto"
+      },
+      {
+        "profile": "softer",
+        "offset": 0.8,
+        "noise": 0,
+        "seed": 41253,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.79480989214204,
+          394.2197445079376
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41250,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.16221341369976,
+          394.44974910549263
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": -0.5,
+        "noise": 0,
+        "seed": 41251,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.1678061791111,
+          394.61337383232564
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": 0.4,
+        "noise": 0.011,
+        "seed": 41252,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.5796260029036,
+          394.64756405416193
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": 0.8,
+        "noise": 0,
+        "seed": 41253,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.6358452092743,
+          393.94900799237166
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "strongerPedals",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41250,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          392.42683378626504,
+          393.2386473222262
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "strongerPedals",
+        "offset": -0.5,
+        "noise": 0,
+        "seed": 41251,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          392.52027296244336,
+          393.0056018081065
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "strongerPedals",
+        "offset": 0.4,
+        "noise": 0.011,
+        "seed": 41252,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2091.8411838503516,
+        "reason": "urto"
+      },
+      {
+        "profile": "strongerPedals",
+        "offset": 0.8,
+        "noise": 0,
+        "seed": 41253,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          392.5580476894693,
+          392.77398726840374
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      }
+    ],
+    "independentResults": [
+      {
+        "profile": "original",
+        "offset": -0.8,
+        "noise": 0.008,
+        "seed": 41581,
+        "safe": false,
+        "completed": false,
+        "laps": 1,
+        "lapTimes": [
+          395.0577691474001
+        ],
+        "progressMeters": 5412.358307139217,
+        "reason": "urto"
+      },
+      {
+        "profile": "original",
+        "offset": -0.25,
+        "noise": 0.015,
+        "seed": 41582,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.0446937787272,
+          395.51294661030573
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "original",
+        "offset": 0.27,
+        "noise": 0.009,
+        "seed": 41583,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.3550673570054,
+          394.4032328678395
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "original",
+        "offset": 0.62,
+        "noise": 0.013,
+        "seed": 41584,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2093.22411741556,
+        "reason": "urto"
+      },
+      {
+        "profile": "sharper",
+        "offset": -0.8,
+        "noise": 0.008,
+        "seed": 41581,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2089.249896787282,
+        "reason": "urto"
+      },
+      {
+        "profile": "sharper",
+        "offset": -0.25,
+        "noise": 0.015,
+        "seed": 41582,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.4634888357783,
+          395.1968047303732
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": 0.27,
+        "noise": 0.009,
+        "seed": 41583,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.71989253403405,
+          394.4012799893772
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "sharper",
+        "offset": 0.62,
+        "noise": 0.013,
+        "seed": 41584,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.097399033512,
+          395.03734267185376
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      }
+    ]
+  },
+  "neuralCorrection": {
+    "fit": {
+      "localRows": 5205,
+      "anchorRows": 16701,
+      "results": [
+        {
+          "profile": "head",
+          "localLoss": 0.024819761514663696,
+          "anchorMeanSquaredDrift": 0.00009982373012462631,
+          "sha256": "453e0813f987a6b9fb002d4cdaa011b46b3285c3f6e407651865a83c9da7172c"
+        },
+        {
+          "profile": "all",
+          "localLoss": 0.004237946588546038,
+          "anchorMeanSquaredDrift": 0.00012819436960853636,
+          "sha256": "27ce695b7174e3c2ae60341dfc05f5c3972a8641064c8db76c202d8f8e2d6cb4"
+        }
+      ]
+    },
+    "firstComparison": [
+      {
+        "profile": "steering",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.16221341369976,
+          394.44974910549263
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "head",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.89113810927887,
+          395.6388130938573
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "nominal",
+        "offset": 0,
+        "noise": 0,
+        "seed": 41650,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.597033110558,
+          396.0150970124211
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "steering",
+        "group": "training recovery",
+        "offset": -0.8,
+        "noise": 0.008,
+        "seed": 41581,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2089.249896787282,
+        "reason": "urto"
+      },
+      {
+        "profile": "head",
+        "group": "training recovery",
+        "offset": -0.8,
+        "noise": 0.008,
+        "seed": 41581,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          396.299585034509,
+          395.59429985359856
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "training recovery",
+        "offset": -0.8,
+        "noise": 0.008,
+        "seed": 41581,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.4714406252669,
+          396.1987437438824
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "steering",
+        "group": "held-out",
+        "offset": -0.91,
+        "noise": 0.006,
+        "seed": 41651,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.41979286538594,
+          393.99003909055364
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "head",
+        "group": "held-out",
+        "offset": -0.91,
+        "noise": 0.006,
+        "seed": 41651,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          396.24462730523254,
+          396.0168491940961
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "held-out",
+        "offset": -0.91,
+        "noise": 0.006,
+        "seed": 41651,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.2650451178735,
+          396.4950932947631
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "steering",
+        "group": "held-out",
+        "offset": -0.47,
+        "noise": 0.016,
+        "seed": 41652,
+        "safe": false,
+        "completed": false,
+        "laps": 1,
+        "lapTimes": [
+          394.89725946393895
+        ],
+        "progressMeters": 5412.135830034511,
+        "reason": "urto"
+      },
+      {
+        "profile": "head",
+        "group": "held-out",
+        "offset": -0.47,
+        "noise": 0.016,
+        "seed": 41652,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          397.0931788367981,
+          397.4418488785899
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "held-out",
+        "offset": -0.47,
+        "noise": 0.016,
+        "seed": 41652,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.2059064817637,
+          396.97250232786473
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "steering",
+        "group": "held-out",
+        "offset": 0.54,
+        "noise": 0.012,
+        "seed": 41653,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          394.8575663267513,
+          394.89211952842203
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "head",
+        "group": "held-out",
+        "offset": 0.54,
+        "noise": 0.012,
+        "seed": 41653,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          396.595800261542,
+          396.67719525210185
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "held-out",
+        "offset": 0.54,
+        "noise": 0.012,
+        "seed": 41653,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2093.4172438312266,
+        "reason": "urto"
+      },
+      {
+        "profile": "steering",
+        "group": "held-out",
+        "offset": 0.91,
+        "noise": 0.015,
+        "seed": 41654,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2092.2298007316836,
+        "reason": "urto"
+      },
+      {
+        "profile": "head",
+        "group": "held-out",
+        "offset": 0.91,
+        "noise": 0.015,
+        "seed": 41654,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          397.33854029997246,
+          396.6649085468405
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "all",
+        "group": "held-out",
+        "offset": 0.91,
+        "noise": 0.015,
+        "seed": 41654,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          395.9434236100981,
+          396.8220610224663
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      }
+    ],
+    "independentConfirmation": [
+      {
+        "profile": "head",
+        "group": "confirmation",
+        "offset": -1.05,
+        "noise": 0.014,
+        "seed": 41671,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          397.44093293455154,
+          396.82341317817526
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "head",
+        "group": "confirmation",
+        "offset": -0.22,
+        "noise": 0.018,
+        "seed": 41672,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2093.322680040289,
+        "reason": "urto"
+      },
+      {
+        "profile": "head",
+        "group": "confirmation",
+        "offset": 0.33,
+        "noise": 0.015,
+        "seed": 41673,
+        "safe": true,
+        "completed": true,
+        "laps": 2,
+        "lapTimes": [
+          396.65008303233265,
+          396.5352775348724
+        ],
+        "progressMeters": 6674.00000070401,
+        "reason": "limite 2 giri"
+      },
+      {
+        "profile": "head",
+        "group": "confirmation",
+        "offset": 1.05,
+        "noise": 0.014,
+        "seed": 41674,
+        "safe": false,
+        "completed": false,
+        "laps": 0,
+        "lapTimes": [],
+        "progressMeters": 2094.3448346909163,
+        "reason": "urto"
+      }
+    ],
+    "selectedProfile": "head",
+    "selectedBundleSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+    "boundary": "Track geometry was used solely to produce teacher labels. Inference uses MaleCNS activity. Two new confirmation starts still collide during the first lap."
+  },
+  "windowsCandidate": {
+    "sourceCommit": "cabb76540bc3526b5ee6761b123f0f551e007623",
+    "electron": "38.8.6",
+    "version": "5.7.0",
+    "assets": [
+      {
+        "file": "MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe",
+        "bytes": 133692777,
+        "sha256": "8427e1ecca94fea1a22eabb68e200d0beb61648800d8c3f0a9d4b327a64a1b57",
+        "signature": "NotSigned"
+      },
+      {
+        "file": "MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe",
+        "bytes": 133922869,
+        "sha256": "b5a52637c8ed0dff9e8329d9784d27e29a422608bd296703c838d461154369dc",
+        "signature": "NotSigned"
+      }
+    ],
+    "automatedSuitePassed": 487,
+    "sourceDecoderImport": {
+      "checks": 15,
+      "circuit": "monza",
+      "backend": "CPU",
+      "decoderSha256": "88266e169a5d3a67b4662b124dc39f09512ae762cf66d38657f5a10425a99067",
+      "lapTimes": [
+        298.4157772389806,
+        293.8060583362445
+      ],
+      "twoLapSimSeconds": 592.2218355752251,
+      "sha256": "db1533fe8198c78816f2883cac375557e3228bbb1281d5e3eee6715fa14af929"
+    },
+    "portableDecoderImport": {
+      "checks": 15,
+      "circuit": "monza",
+      "backend": "CPU",
+      "decoderSha256": "88266e169a5d3a67b4662b124dc39f09512ae762cf66d38657f5a10425a99067",
+      "lapTimes": [
+        298.4157772389806,
+        293.8060583362445
+      ],
+      "twoLapSimSeconds": 592.2218355752251,
+      "sha256": "dbabc6495379d6c92581e1757ff896ae106f7721cc47a7e85f22986b3f9317ab"
+    },
+    "portableMonacoAfterCorrection": {
+      "checks": 11,
+      "circuit": "monaco",
+      "backend": "CPU",
+      "decoderSha256": "1b0753da5352ba73c5c60b56a6414452356f0e186969ea013e06f4e4c1d786ee",
+      "lapTimes": [
+        395.89113810927887,
+        395.6388130938573
+      ],
+      "twoLapSimSeconds": 791.5299512031362,
+      "sha256": "d0c2cedec9654ffa3e598c968e5ec2d1a8c0fa377a42d8548111bd2b03f44de6"
+    },
+    "installerExtractedApp": {
+      "checks": 11,
+      "circuit": "monaco",
+      "backend": "CPU",
+      "decoderSha256": "11ada10532b443ff30e1c1ff175e070ef2518eb5895745844f3c8025ac83c19a",
+      "lapTimes": [
+        394.16221341369976,
+        394.44974910549263
+      ],
+      "twoLapSimSeconds": 788.6119625191924,
+      "sha256": "f5863de63e148205b3d228eb19281b09eb83452b5b07f572487723f934db5067"
+    },
+    "comparison": {
+      "checks": 37,
+      "results": [
+        {
+          "modelId": "v2",
+          "status": "limit",
+          "backend": "CPU",
+          "simSeconds": 59.21666666666459
+        },
+        {
+          "modelId": "v3",
+          "status": "limit",
+          "backend": "CPU",
+          "simSeconds": 11.516666666666818
+        },
+        {
+          "modelId": "v4",
+          "status": "limit",
+          "backend": "WebGPU + CPU",
+          "simSeconds": 11.716666666666828
+        },
+        {
+          "modelId": "v5",
+          "status": "limit",
+          "backend": "WebGPU + CPU",
+          "simSeconds": 7.733333333333311
+        }
+      ],
+      "sha256": "18e5aa86ba68e74e56b086a64890ecd152d25eafcb955c9b5209da118cfbf262"
+    },
+    "boundary": "Portable launch and extracted NSIS application were verified from isolated profiles. Installer wizard and host installation were not executed. Unsigned experimental packages. No tag or release."
+  }
+}
