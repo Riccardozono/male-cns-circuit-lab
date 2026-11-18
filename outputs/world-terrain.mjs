@@ -68,6 +68,7 @@ export function createWorldTerrain(track,ground,data,material){
   const p=base.attributes.position,distances=new Float32Array(p.count),color=new Float32Array(p.count*3),distanceAt=roadDistance(track),anchor=track.center[0];
   const datumM=gridHeight(data,anchor.x,anchor.y)-ground.sample(anchor.x,anchor.y).height,background=new T.Color(material.color),earth=new T.Color(),low=new T.Color('#52774a'),high=new T.Color('#8b9573'),water=new T.Color('#335e69');
   const cover=createLandCoverIndex(data),palette={forest:new T.Color('#456847'),wood:new T.Color('#486c48'),park:new T.Color('#72915b'),grass:new T.Color('#91a66c'),meadow:new T.Color('#9aac6f'),farmland:new T.Color('#b2ad78'),orchard:new T.Color('#728854'),scrub:new T.Color('#7b8860'),water,basin:water,reservoir:water,residential:new T.Color('#a29d8e'),industrial:new T.Color('#a3a18e'),commercial:new T.Color('#aaa595')};
+  const waterMask=new Float32Array(p.count);
   let min=Infinity,max=-Infinity;
   for(let i=0;i<p.count;i++){
     const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y,d=distanceAt(x,y),absolute=gridHeight(data,x/ppm,y/ppm),raw=absolute-datumM,w=smooth(clamp((d-120)/180,0,1)),edge=smooth(clamp((d-radius)/90,0,1));
@@ -75,14 +76,36 @@ export function createWorldTerrain(track,ground,data,material){
     const h=((near*(1-w)+raw*w)*(1-edge)-.12)*ppm;p.setY(i,h);distances[i]=d;min=Math.min(min,h/ppm);max=Math.max(max,h/ppm);
     earth.copy(low).lerp(high,clamp((absolute-data.entry.grid.absoluteRangeM[0])/Math.max(1,data.entry.grid.absoluteRangeM[1]-data.entry.grid.absoluteRangeM[0]),0,1)*.65);
     // Coastal tint is an inference from zero-elevation samples, not a water map.
-    if(data.entry.srtm.producerGranuleId.startsWith('N43')&&absolute<=.15&&d>160)earth.copy(water);
+    const coastal=data.entry.srtm.producerGranuleId.startsWith('N43')&&absolute<=.15&&d>160;
+    if(coastal)earth.copy(water);
     const area=cover.at(x/ppm,y/ppm);if(area&&palette[area.kind]){earth.lerp(palette[area.kind],smooth(clamp((d-18)/70,0,1)));earth.multiplyScalar(.94+((area.osmWay%17)/17)*.12);}
+    waterMask[i]=(area?Number(palette[area.kind]===water):Number(coastal))*(1-edge);
     earth.lerp(background,edge);color.set([earth.r,earth.g,earth.b],i*3);
   }
-  base.setAttribute('color',new T.BufferAttribute(color,3));base.computeVertexNormals();
+  base.setAttribute('color',new T.BufferAttribute(color,3));base.setAttribute('waterMask',new T.BufferAttribute(waterMask,1));base.computeVertexNormals();
   const near=[],far=[];for(let i=0;i<base.index.count;i+=3){const tri=[base.index.getX(i),base.index.getX(i+1),base.index.getX(i+2)];(tri.some(k=>distances[k]<96)?near:far).push(...tri);}
   const group=new T.Group();group.name='nasa-srtm-landscape';material.dispose();
   const materials=[new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,depthWrite:false}),new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide})];
+  for(const surface of materials){
+    surface.customProgramCacheKey=()=>`terrain-water-${ppm}`;
+    surface.onBeforeCompile=shader=>{
+    shader.vertexShader='attribute float waterMask; varying float surfaceWater; varying vec3 surfacePosition;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
+      #include <begin_vertex>
+      surfaceWater=waterMask;
+      surfacePosition=(modelMatrix*vec4(position,1.)).xyz;
+    `);
+    shader.fragmentShader='varying float surfaceWater; varying vec3 surfacePosition;\n'+shader.fragmentShader.replace('#include <opaque_fragment>',`
+      vec3 eye=normalize(cameraPosition-surfacePosition);
+      vec2 wave=surfacePosition.xz/${ppm.toFixed(8)};
+      float distanceFade=1.-smoothstep(120.,480.,length(cameraPosition-surfacePosition)/${ppm.toFixed(8)});
+      float ripple=sin(dot(wave,vec2(.82,.19))+sin(wave.y*.24))*cos(dot(wave,vec2(.27,-.92)))*distanceFade;
+      float grazing=pow(1.-clamp(eye.y,0.,1.),3.);
+      vec3 sea=mix(vec3(.025,.20,.27),vec3(.28,.49,.64),grazing)+ripple*vec3(.012,.027,.031);
+      outgoingLight=mix(outgoingLight,sea,smoothstep(.35,.85,surfaceWater));
+      #include <opaque_fragment>
+    `);
+    };
+  }
   const geometries=[near,far].map(indices=>{const g=new T.BufferGeometry();for(const [name,attr]of Object.entries(base.attributes))g.setAttribute(name,attr);g.setIndex(indices);g.computeBoundingSphere();return g;});
   geometries.forEach((g,i)=>{const mesh=new T.Mesh(g,materials[i]);mesh.renderOrder=i?-9:-8;group.add(mesh);});
   // PlaneGeometry's diagonal is shared by this sampler and both draw batches.

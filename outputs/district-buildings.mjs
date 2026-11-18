@@ -50,7 +50,15 @@ export function createDistrictBuildings(track,scenery,ground,origin,data,exclusi
   }
   // Fine facades exist only around the camera; full urban silhouettes remain
   // cheap static batches. Hard cap avoids adding per-agent visual work.
-  const cap=14000,windows=new T.InstancedMesh(new T.PlaneGeometry(1,1),new T.MeshLambertMaterial({color:'#344e59',side:T.DoubleSide}),cap),object=new T.Object3D(),last=new T.Vector3(Infinity,Infinity,Infinity);windows.instanceMatrix.setUsage(T.DynamicDrawUsage);windows.count=0;windows.frustumCulled=false;group.add(windows);let lastMode='';
+  const width=16,height=24,pixels=new Uint8Array(width*height*4);
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const frame=x<2||x>=width-2||x===8||y<2||y>=height-2||y===11;
+    const pane=frame?[180,174,156]:y>13?[92,131,154]:[49,75,91];
+    pixels.set([...pane,255],(y*width+x)*4);
+  }
+  const glazing=new T.DataTexture(pixels,width,height);glazing.colorSpace=T.SRGBColorSpace;
+  glazing.generateMipmaps=true;glazing.minFilter=T.LinearMipmapLinearFilter;glazing.magFilter=T.LinearFilter;glazing.needsUpdate=true;
+  const cap=14000,windows=new T.InstancedMesh(new T.PlaneGeometry(1,1),new T.MeshPhongMaterial({map:glazing,shininess:26,specular:0x222a30,side:T.DoubleSide}),cap),object=new T.Object3D(),last=new T.Vector3(Infinity,Infinity,Infinity);windows.instanceMatrix.setUsage(T.DynamicDrawUsage);windows.count=0;windows.frustumCulled=false;group.add(windows);let lastMode='';
   return {group,plan,update(camera,mode){
     if(!group.visible||mode===lastMode&&camera.position.distanceToSquared(last)<(8*ppm)**2)return;
     last.copy(camera.position);lastMode=mode;let count=0;
@@ -61,5 +69,5 @@ export function createDistrictBuildings(track,scenery,ground,origin,data,exclusi
       }}
     }
     windows.count=count;windows.instanceMatrix.needsUpdate=true;
-  },setVisible(value){const was=group.visible;group.visible=Boolean(value);if(!was&&value)lastMode='';},info(){return {source:'OpenStreetMap',estimatedRegistration:true,illustrativeArchitecture:true,buildings:plan.placements.length,budget:plan.budget,mappedHeightTags:plan.placements.filter(p=>p.heightFromOsmTag).length,estimatedHeights:plan.placements.filter(p=>!p.heightFromOsmTag).length,windows:windows.count,windowCapacity:cap,drawCalls:meshes.filter(m=>m.geometry.attributes.position.count).length+(windows.count?1:0),triangles:meshes.reduce((n,m)=>n+m.geometry.attributes.position.count/3,0)+windows.count*2,visible:group.visible};},dispose(){for(const m of [...meshes,windows]){m.geometry.dispose();m.material.dispose();m.dispose?.();m.removeFromParent();}group.removeFromParent();}};
+  },setVisible(value){const was=group.visible;group.visible=Boolean(value);if(!was&&value)lastMode='';},info(){return {source:'OpenStreetMap',estimatedRegistration:true,illustrativeArchitecture:true,buildings:plan.placements.length,budget:plan.budget,mappedHeightTags:plan.placements.filter(p=>p.heightFromOsmTag).length,estimatedHeights:plan.placements.filter(p=>!p.heightFromOsmTag).length,windows:windows.count,windowCapacity:cap,drawCalls:meshes.filter(m=>m.geometry.attributes.position.count).length+(windows.count?1:0),triangles:meshes.reduce((n,m)=>n+m.geometry.attributes.position.count/3,0)+windows.count*2,visible:group.visible};},dispose(){glazing.dispose();for(const m of [...meshes,windows]){m.geometry.dispose();m.material.dispose();m.dispose?.();m.removeFromParent();}group.removeFromParent();}};
 }

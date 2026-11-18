@@ -74,6 +74,8 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
           check('Pit focus never changes paused learning state',hash(await engine.exportProgress())===hash(original));
           await js('document.getElementById("track-reset").click();render()');await snap('monza-overview',1540,980);
           await change('camera-select','follow');await js('render()');await snap('monza-follow',1540,980);
+          await change('camera-select','first-person');await js('render()');await snap('monza-daylight',1540,980);
+          await change('camera-select','follow');
         }else{
           await change('track-landmark','district');await js('render()');
           check(circuitId+': building details are reachable through the normal selector without changing progress',hash(await engine.exportProgress())===hash(original)&&await js('document.getElementById("track-landmark").value==="district"&&circuitLab.circuit3D.districts.info().windows>0'));

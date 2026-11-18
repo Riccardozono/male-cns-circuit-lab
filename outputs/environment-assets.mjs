@@ -61,7 +61,23 @@ export class EnvironmentInstances{
     const threshold=mode==='overview'?this.threshold*.65:this.threshold;
     for(const p of this.prepared){const d=p.position.distanceTo(camera.position);p.lod=mode==='overview'||d<this.maxDistance?(d<threshold?0:1):-1;}
     this.lodCounts=[this.prepared.filter(p=>p.lod===0).length,this.prepared.filter(p=>p.lod===1).length];
-    for(const {mesh,part}of this.parts){let count=0;for(const p of this.prepared)if(p.variant===part.variant&&p.lod===part.lod)mesh.setMatrixAt(count++,p.matrix);mesh.count=count;mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}
+    const tree=/tree$/.test(this.asset.id),tint=new T.Color();
+    for(const {mesh,part}of this.parts){
+      let count=0;
+      for(const p of this.prepared)if(p.variant===part.variant&&p.lod===part.lod){
+        mesh.setMatrixAt(count,p.matrix);
+        if(tree){
+          const seed=Math.sin(p.position.x*.119+p.position.z*.071)*43758.5453;
+          const shade=seed-Math.floor(seed);
+          tint.setRGB(.79+.21*shade,.85+.15*shade,.72+.27*shade);
+          mesh.setColorAt(count,tint);
+        }
+        count++;
+      }
+      mesh.count=count;mesh.instanceMatrix.needsUpdate=true;
+      if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+      mesh.computeBoundingSphere();
+    }
     this.onDirty();
   }
   info(){return {revision:ENVIRONMENT_ASSET_REVISION,asset:this.asset.id,instances:this.prepared.length,variants:this.asset.variants.size,drawCalls:this.parts.length,lodCounts:this.lodCounts,textures:new Set(this.asset.parts.flatMap(p=>Object.values(p.material).filter(t=>t?.isTexture))).size,triangles:this.parts.reduce((n,p)=>n+p.mesh.count*p.part.triangles,0),visible:this.group.visible};}

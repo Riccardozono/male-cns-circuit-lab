@@ -84,10 +84,45 @@ export class Circuit3D{
     this.canvas=canvas;this.onChange=onChange;this.onSelect=onSelect;this.onFallback=onFallback;this.onReset=onReset;this.origin={x:0,y:0};this.mode='follow';this.yaw=2.3;this.pitch=.64;this.distance=20;this.followDistance=18;this.focus=new T.Vector3();this.visible=true;this.dirty=true;this.lost=false;this.width=0;this.height=0;
     this.renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(1.5,globalThis.devicePixelRatio||1));this.renderer.outputColorSpace=T.SRGBColorSpace;
-    this.scene=new T.Scene();this.scene.background=new T.Color('#101a20');
+    this.scene=new T.Scene();
+    this.sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({
+      side:T.BackSide,depthTest:false,depthWrite:false,
+      vertexShader:`
+        varying vec3 direction;
+        void main(){
+          direction=position;
+          gl_Position=projectionMatrix * vec4(mat3(viewMatrix)*position,1.0);
+        }`,
+      fragmentShader:`
+        varying vec3 direction;
+        float hash(vec2 p){
+          vec3 v=fract(vec3(p.xyx)*.1031);
+          v+=dot(v,v.yzx+33.33);
+          return fract((v.x+v.y)*v.z);
+        }
+        float noise(vec2 p){
+          vec2 i=floor(p),f=fract(p);
+          f=f*f*(3.0-2.0*f);
+          return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y);
+        }
+        void main(){
+          vec3 ray=normalize(direction);
+          float elevation=max(0.,ray.y);
+          vec3 sky=mix(vec3(.70,.80,.87),vec3(.065,.26,.54),pow(elevation,.46));
+          vec2 p=ray.xz/(elevation+.23)*2.4;
+          float clouds=noise(p)*.60+noise(p*2.1)*.28+noise(p*4.3)*.12;
+          float cover=smoothstep(.49,.70,clouds)*smoothstep(.015,.18,elevation);
+          sky=mix(sky,mix(vec3(.63,.70,.78),vec3(.99,.98,.93),smoothstep(.50,.78,clouds)),cover*.91);
+          float sun=max(0.,dot(ray,normalize(vec3(-.43,.67,.49))));
+          sky+=vec3(.29,.21,.12)*pow(sun,24.)+vec3(1.,.88,.64)*smoothstep(.9994,.9998,sun);
+          gl_FragColor=vec4(sky,1.);
+          #include <colorspace_fragment>
+        }`
+    }));
+    this.sky.frustumCulled=false;this.sky.renderOrder=-100;this.scene.add(this.sky);
     this.camera=new T.PerspectiveCamera(48,1,.08,20000);this.camera.up.set(0,1,0);
     this.lookYaw=0;this.lookPitch=0;this.firstPersonFov=70;this.driverPose=createDriverPose();this.cockpit=createCockpit();this.scene.add(this.cockpit.group);
-    this.scene.add(new T.HemisphereLight(0xc7d8e8,0x40513c,2.1));const sunlight=new T.DirectionalLight(0xffedc8,2.3);sunlight.position.set(-70,160,80);this.scene.add(sunlight);
+    this.scene.add(new T.HemisphereLight(0xc5dfff,0x60634a,1.65));const sunlight=new T.DirectionalLight(0xffefd7,2.1);sunlight.position.set(-86,134,98);this.scene.add(sunlight);
     this.staticGroup=new T.Group();this.scene.add(this.staticGroup);this.carGroup=new T.Group();this.scene.add(this.carGroup);this.fleet=new CarFleet(this.carGroup);
     this.rayGeometry=new T.BufferGeometry();this.rayGeometry.setAttribute('position',new T.BufferAttribute(new Float32Array(11*6),3));
     this.rays=new T.LineSegments(this.rayGeometry,new T.LineBasicMaterial({color:0xff7658,depthTest:false,transparent:true,opacity:.85}));this.rays.frustumCulled=false;this.rays.renderOrder=5;this.scene.add(this.rays);
@@ -127,7 +162,6 @@ export class Circuit3D{
   setTrack(track,model,onRoad){
     if(this.track===track&&this.model===model)return;
     this.clearStatic();this.track=track;this.model=model;this.houseError=null;this.worldError=null;const b=track.bounds;this.origin={x:b.x+b.width/2,y:b.y+b.height/2};
-    this.scene.background.set(model.theme.ground);
     const add=(geometry,material)=>{const mesh=new T.Mesh(geometry,material);this.staticGroup.add(mesh);return mesh;};
     this.scenery=createTrackScenery(track,model,this.origin);this.staticGroup.add(this.scenery.group);
     this.ground=Terrain.forTrack(track);this.terrainInfo=this.ground.info();
@@ -232,5 +266,5 @@ export class Circuit3D{
     this.renderer.render(this.scene,this.camera);this.dirty=false;
   }
   info(){return {backend:'WebGL 2',carRevision:this.carRevision||CAR_VISUAL_REVISION,mode:this.mode,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles,geometries:this.renderer.info.memory.geometries,textures:this.renderer.info.memory.textures,roadVertices:this.road?.geometry.attributes.position.count,carCount:this.fleet.carCount??this.fleet.parts[0].mesh.count,carLods:this.fleet.info?.(),scenery:this.scenery?.info(),terrain:this.terrainInfo,landscape:this.worldData?this.terrainObject.userData.info:null,districts:this.districts?.info(),vegetation:this.vegetation?.info(),buildings:this.buildings?.info(),facilities:this.facilities?.info(),environmentError:this.treeError||this.houseError||this.worldError||null,lost:this.lost};}
-  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.fleet.dispose();this.environmentAssets.dispose();const materials=new Set();this.cockpit.group.traverse(o=>{if(o.isMesh){o.geometry.dispose();materials.add(o.material);}});for(const m of materials)m.dispose();this.cockpit.group.removeFromParent();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
+  dispose(){this.disposed=true;for(const args of this.listeners)this.canvas.removeEventListener(...args);this.clearStatic();this.sky.geometry.dispose();this.sky.material.dispose();this.fleet.dispose();this.environmentAssets.dispose();const materials=new Set();this.cockpit.group.traverse(o=>{if(o.isMesh){o.geometry.dispose();materials.add(o.material);}});for(const m of materials)m.dispose();this.cockpit.group.removeFromParent();for(const object of [this.rays,this.markers,this.selection]){object.geometry.dispose();object.material.dispose();}this.renderer.dispose();}
 }
