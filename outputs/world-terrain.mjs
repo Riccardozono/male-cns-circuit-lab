@@ -1,5 +1,6 @@
 /* NASA SRTM scenery only. Does not import the solver, policy or save engine. */
 import * as T from './vendor/three.module.js';
+import {SURFACE_DETAIL_GLSL} from './track-scenery.mjs';
 export const WORLD_RADIUS_M=1000;
 export const landscapeRadius=data=>data?.entry?.coverageM===2000?2000:WORLD_RADIUS_M;
 const contains=(ring,x,y)=>{let inside=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const a=ring[i],b=ring[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;};
@@ -62,24 +63,64 @@ export function gridHeight(data,x,y){
   const ix=Math.min(g.columns-2,Math.floor(u)),iy=Math.min(g.rows-2,Math.floor(v)),fx=u-ix,fy=v-iy,a=iy*g.columns+ix,h=data.heights;
   return h[a]*(1-fx)*(1-fy)+h[a+1]*fx*(1-fy)+h[a+g.columns]*(1-fx)*fy+h[a+g.columns+1]*fx*fy;
 }
+function extendCoastalBackdrop(geometry,indices,nx,nz,ppm,background){
+  const stride=nx+1,perimeter=[];
+  for(let x=0;x<nx;x++)perimeter.push(x);
+  for(let z=0;z<nz;z++)perimeter.push(z*stride+nx);
+  for(let x=nx;x>0;x--)perimeter.push(nz*stride+x);
+  for(let z=nz;z>0;z--)perimeter.push(z*stride);
+
+  const start=geometry.attributes.position.count,count=perimeter.length,scales=[1.6,10];
+  for(const name of ['position','normal','color','waterMask']){
+    const attr=geometry.attributes[name],size=attr.itemSize;
+    const values=new Float32Array((start+count*scales.length)*size);
+    values.set(attr.array);
+    for(const [ring,scale] of scales.entries())for(const [i,vertex] of perimeter.entries()){
+      const offset=(start+ring*count+i)*size;
+      if(name==='position'){
+        const altitude=ring===0?attr.getY(vertex)*.46:-.16*ppm;
+        values.set([attr.getX(vertex)*scale,altitude,attr.getZ(vertex)*scale],offset);
+      }
+      else if(name==='normal')values.set([0,1,0],offset);
+      else if(name==='color'){
+        const color=ring===0?new T.Color(attr.getX(vertex),attr.getY(vertex),attr.getZ(vertex)).lerp(background,.8):background;
+        values.set([color.r,color.g,color.b],offset);
+      }
+      else if(name==='waterMask'){
+        const blur=ring===0?4:18;
+        let wet=0;
+        for(let j=-blur;j<=blur;j++)wet+=attr.getX(perimeter[(i+j+count)%count]);
+        values[offset]=wet/(2*blur+1);
+      }
+    }
+    geometry.setAttribute(name,new T.BufferAttribute(values,size));
+  }
+  geometry.deleteAttribute('uv');
+  for(const [i,a] of perimeter.entries()){
+    const j=(i+1)%count,b=perimeter[j],middleA=start+i,middleB=start+j;
+    indices.push(a,b,middleB,a,middleB,middleA,middleA,middleB,middleB+count,middleA,middleB+count,middleA+count);
+  }
+}
 export function createWorldTerrain(track,ground,data,material){
   const ppm=track.pixelsPerMeter||1,b=track.bounds,radius=landscapeRadius(data),padding=(radius+100)*ppm,origin={x:b.x+b.width/2,y:b.y+b.height/2},width=b.width+2*padding,height=b.height+2*padding,spacing=radius>1000?32:24;
   const nx=Math.ceil(width/(spacing*ppm)),nz=Math.ceil(height/(spacing*ppm)),base=new T.PlaneGeometry(width,height,nx,nz);base.rotateX(-Math.PI/2);
   const p=base.attributes.position,distances=new Float32Array(p.count),color=new Float32Array(p.count*3),distanceAt=roadDistance(track),anchor=track.center[0];
-  const datumM=gridHeight(data,anchor.x,anchor.y)-ground.sample(anchor.x,anchor.y).height,background=new T.Color(material.color),earth=new T.Color(),low=new T.Color('#52774a'),high=new T.Color('#8b9573'),water=new T.Color('#335e69');
+  const coastalCircuit=data.entry.srtm.producerGranuleId.startsWith('N43');
+  const datumM=gridHeight(data,anchor.x,anchor.y)-ground.sample(anchor.x,anchor.y).height,background=new T.Color(coastalCircuit?'#596958':material.color),earth=new T.Color(),low=new T.Color('#52774a'),high=new T.Color('#8b9573'),water=new T.Color('#335e69');
   const cover=createLandCoverIndex(data),palette={forest:new T.Color('#456847'),wood:new T.Color('#486c48'),park:new T.Color('#72915b'),grass:new T.Color('#91a66c'),meadow:new T.Color('#9aac6f'),farmland:new T.Color('#b2ad78'),orchard:new T.Color('#728854'),scrub:new T.Color('#7b8860'),water,basin:water,reservoir:water,residential:new T.Color('#a29d8e'),industrial:new T.Color('#a3a18e'),commercial:new T.Color('#aaa595')};
   const waterMask=new Float32Array(p.count);
   let min=Infinity,max=-Infinity;
   for(let i=0;i<p.count;i++){
-    const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y,d=distanceAt(x,y),absolute=gridHeight(data,x/ppm,y/ppm),raw=absolute-datumM,w=smooth(clamp((d-120)/180,0,1)),edge=smooth(clamp((d-radius)/90,0,1));
+    const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y,d=distanceAt(x,y),absolute=gridHeight(data,x/ppm,y/ppm),raw=absolute-datumM,w=smooth(clamp((d-120)/180,0,1));
+    const edge=smooth(clamp((d-radius)/(coastalCircuit?420:90),0,1));
     const near= w<1 ? ground.visualHeight(x,y) : 0;
     const h=((near*(1-w)+raw*w)*(1-edge)-.12)*ppm;p.setY(i,h);distances[i]=d;min=Math.min(min,h/ppm);max=Math.max(max,h/ppm);
     earth.copy(low).lerp(high,clamp((absolute-data.entry.grid.absoluteRangeM[0])/Math.max(1,data.entry.grid.absoluteRangeM[1]-data.entry.grid.absoluteRangeM[0]),0,1)*.65);
     // Coastal tint is an inference from zero-elevation samples, not a water map.
-    const coastal=data.entry.srtm.producerGranuleId.startsWith('N43')&&absolute<=.15&&d>160;
-    if(coastal)earth.copy(water);
+    const coastal=coastalCircuit&&absolute<=.15&&d>160;
     const area=cover.at(x/ppm,y/ppm);if(area&&palette[area.kind]){earth.lerp(palette[area.kind],smooth(clamp((d-18)/70,0,1)));earth.multiplyScalar(.94+((area.osmWay%17)/17)*.12);}
-    waterMask[i]=(area?Number(palette[area.kind]===water):Number(coastal))*(1-edge);
+    const mappedWater=palette[area?.kind]===water;
+    waterMask[i]=area&&edge===0?Number(mappedWater):Math.max(Number(coastal),mappedWater?1-edge:0);
     earth.lerp(background,edge);color.set([earth.r,earth.g,earth.b],i*3);
   }
   base.setAttribute('color',new T.BufferAttribute(color,3));base.setAttribute('waterMask',new T.BufferAttribute(waterMask,1));base.computeVertexNormals();
@@ -87,26 +128,47 @@ export function createWorldTerrain(track,ground,data,material){
   const group=new T.Group();group.name='nasa-srtm-landscape';material.dispose();
   const materials=[new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,depthWrite:false}),new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide})];
   for(const surface of materials){
-    surface.customProgramCacheKey=()=>`terrain-water-${ppm}`;
+    surface.customProgramCacheKey=()=>`terrain-surface-${ppm}`;
     surface.onBeforeCompile=shader=>{
     shader.vertexShader='attribute float waterMask; varying float surfaceWater; varying vec3 surfacePosition;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
       #include <begin_vertex>
       surfaceWater=waterMask;
       surfacePosition=(modelMatrix*vec4(position,1.)).xyz;
     `);
-    shader.fragmentShader='varying float surfaceWater; varying vec3 surfacePosition;\n'+shader.fragmentShader.replace('#include <opaque_fragment>',`
-      vec3 eye=normalize(cameraPosition-surfacePosition);
-      vec2 wave=surfacePosition.xz/${ppm.toFixed(8)};
-      float distanceFade=1.-smoothstep(120.,480.,length(cameraPosition-surfacePosition)/${ppm.toFixed(8)});
-      float ripple=sin(dot(wave,vec2(.82,.19))+sin(wave.y*.24))*cos(dot(wave,vec2(.27,-.92)))*distanceFade;
-      float grazing=pow(1.-clamp(eye.y,0.,1.),3.);
-      vec3 sea=mix(vec3(.025,.20,.27),vec3(.28,.49,.64),grazing)+ripple*vec3(.012,.027,.031);
-      outgoingLight=mix(outgoingLight,sea,smoothstep(.35,.85,surfaceWater));
+    shader.fragmentShader='varying float surfaceWater; varying vec3 surfacePosition;\n'+SURFACE_DETAIL_GLSL+shader.fragmentShader.replace('#include <opaque_fragment>',`
+      vec2 metres=surfacePosition.xz/${ppm.toFixed(8)};
+      float land=surfaceDetail(metres,1.9,.21,.17);
+      land+=(surfaceNoise(metres*.027)-.5)*.15;
+      outgoingLight*=land;
+      float wet=smoothstep(.30,.76,surfaceWater);
+      if(wet>0.){
+        vec3 sight=cameraPosition-surfacePosition;
+        vec3 eye=normalize(sight);
+        float distanceFade=1.-smoothstep(65.,850.,length(sight)/${ppm.toFixed(8)});
+        float swell=cos(dot(metres,vec2(.24,.11))+sin(metres.y*.09));
+        float wave=cos(dot(metres,vec2(-.41,.85))+cos(metres.x*.17));
+        vec3 normal=normalize(vec3((swell*.038-wave*.019)*distanceFade,1.,(wave*.049+swell*.018)*distanceFade));
+        float grazing=pow(1.-clamp(dot(eye,normal),0.,1.),4.);
+        vec3 sun=normalize(vec3(-.43,.67,.49));
+        float glint=pow(max(0.,dot(normal,normalize(eye+sun))),48.);
+        float variation=surfaceNoise(metres*.018);
+        vec3 base=mix(vec3(.017,.113,.151),vec3(.027,.145,.185),variation);
+        vec3 sea=mix(base,vec3(.34,.53,.69),grazing)+vec3(.36,.27,.17)*glint;
+        sea+=(swell+wave)*distanceFade*vec3(.004,.010,.012);
+        outgoingLight=mix(outgoingLight,sea,wet);
+      }
       #include <opaque_fragment>
     `);
     };
   }
-  const geometries=[near,far].map(indices=>{const g=new T.BufferGeometry();for(const [name,attr]of Object.entries(base.attributes))g.setAttribute(name,attr);g.setIndex(indices);g.computeBoundingSphere();return g;});
+  const geometries=[near,far].map((indices,i)=>{
+    const g=new T.BufferGeometry();
+    for(const [name,attr] of Object.entries(base.attributes))g.setAttribute(name,attr);
+    // Taper the coastal relief and carry the sea past the DEM perimeter.
+    // The continuation is visual and adds no measured samples.
+    if(i===1&&coastalCircuit)extendCoastalBackdrop(g,indices,nx,nz,ppm,background);
+    g.setIndex(indices);g.computeBoundingSphere();return g;
+  });
   geometries.forEach((g,i)=>{const mesh=new T.Mesh(g,materials[i]);mesh.renderOrder=i?-9:-8;group.add(mesh);});
   // PlaneGeometry's diagonal is shared by this sampler and both draw batches.
   const heightAt=(x,y)=>{
@@ -116,6 +178,6 @@ export function createWorldTerrain(track,ground,data,material){
   const footprint=[];
   // Fit what the requested 1 km band actually draws, not the blank fade margin.
   for(let i=0;i<p.count;i+=7)if(distances[i]<=radius)footprint.push({x:p.getX(i)+origin.x,y:p.getZ(i)+origin.y,height:p.getY(i)});
-  group.userData={heightAt,distanceAt,data,footprint,landCover:cover,info:{revision:data.manifest.revision,source:'NASA SRTMGL1 v003',coverageM:radius,sampleSpacingM:spacing,landCoverAreas:cover.areas.length,estimatedRegistration:true,rmseM:data.entry.registration.rmseM,blendM:[120,300],verticalScale:1,sourceAbsoluteRangeM:data.entry.grid.absoluteRangeM,renderedRangeM:[min,max],vertices:p.count,triangles:base.index.count/3,drawCalls:2,physicalSurfaceUnchanged:true},dispose(){for(const g of geometries)g.dispose();base.dispose();for(const m of materials)m.dispose();group.removeFromParent();}};
+  group.userData={heightAt,distanceAt,data,footprint,landCover:cover,info:{revision:data.manifest.revision,source:'NASA SRTMGL1 v003',coverageM:radius,sampleSpacingM:spacing,landCoverAreas:cover.areas.length,estimatedRegistration:true,rmseM:data.entry.registration.rmseM,blendM:[120,300],verticalScale:1,sourceAbsoluteRangeM:data.entry.grid.absoluteRangeM,renderedRangeM:[min,max],vertices:geometries[1].attributes.position.count,triangles:(near.length+far.length)/3,drawCalls:2,coastalBackdropEstimated:coastalCircuit,physicalSurfaceUnchanged:true},dispose(){for(const g of geometries)g.dispose();base.dispose();for(const m of materials)m.dispose();group.removeFromParent();}};
   return group;
 }

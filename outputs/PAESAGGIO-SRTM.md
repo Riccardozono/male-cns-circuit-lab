@@ -73,8 +73,10 @@ La quota di riferimento è traslata per raccordarsi alla partenza già modellata
 Entro 120 m dai bordi stradali resta il terreno illustrativo preesistente;
 fra 120 e 300 m una transizione continua unisce i due profili. Oltre 300 m e
 fino a 1000 m a Monza/Monaco o 2000 m a Le Mans si usa SRTM, con scala verticale **1:1**. Fuori dalla fascia
-richiesta il margine viene raccordato allo sfondo. La tintura delle aree costiere
-quasi a quota zero a Monaco è un'inferenza visiva, non una carta nautica.
+richiesta il margine viene raccordato allo sfondo. A Monaco l'acqua combina le
+aree OSM con una stima visiva basata sulle quote vicine a zero. Il raccordo
+prolunga il mare e attenua il rilievo oltre il bordo della griglia, in modo
+illustrativo e senza aggiungere misurazioni.
 
 La superficie fisica della pista rimane quella stimata della 5.5.0. Cambiare
 la scenografia non cambia salite, frenata, carichi, input neurali o progressi.

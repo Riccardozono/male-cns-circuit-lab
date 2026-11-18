@@ -19,6 +19,13 @@ for(const id of ['monza','monaco','le-mans']){
     const T=await import('../vendor/three.module.js'),{createWorldTerrain,gridHeight}=await import('../world-terrain.mjs'),s=sim(id),before=JSON.stringify({track:s.track,cars:s.cars,rng:s.rng}),ground=F.Vehicle.Terrain.forTrack(s.track),physical=s.track.center.map(p=>ground.sample(p.x,p.y)),world=createWorldTerrain(s.track,ground,data(id),new T.MeshLambertMaterial({color:'#355c37'}));
     const info=world.userData.info;assert.equal(info.coverageM,id==='le-mans'?2000:1000);assert.equal(info.verticalScale,1);assert.equal(info.physicalSurfaceUnchanged,true);assert.equal(info.drawCalls,2);assert.ok(info.triangles<165000);assert.equal(world.children[0].material.depthWrite,false);assert.equal(world.children[1].material.depthWrite,true);
     const p=world.children[0].geometry.attributes.position,origin={x:s.track.bounds.x+s.track.bounds.width/2,y:s.track.bounds.y+s.track.bounds.height/2};
+    const far=world.children[1].geometry.attributes;
+    assert.equal(info.coastalBackdropEstimated,id==='monaco');
+    if(id==='monaco'){
+      const continuation=far.waterMask.array.slice(p.count);
+      assert.ok(continuation.some(value=>value===1)&&continuation.some(value=>value===0),'Both sea and land continue from the DEM perimeter');
+      assert.ok(world.children[1].geometry.boundingSphere.radius>8*world.children[0].geometry.boundingSphere.radius);
+    }else assert.equal(far.position.count,p.count);
     for(let i=0;i<p.count;i+=137){const x=p.getX(i)+origin.x,y=p.getZ(i)+origin.y;assert.ok(Math.abs(world.userData.heightAt(x,y)-p.getY(i))<.005);assert.ok(Number.isFinite(gridHeight(data(id),x,y)));}
     assert.deepEqual(s.track.center.map(p=>ground.sample(p.x,p.y)),physical);assert.equal(JSON.stringify({track:s.track,cars:s.cars,rng:s.rng}),before);world.userData.dispose();assert.equal(world.parent,null);
   });

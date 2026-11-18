@@ -4,7 +4,7 @@
  * No controller, physics tick, random generator or training command lives here. */
 import * as T from './vendor/three.module.js';
 import {CarFleet,CAR_VISUAL_REVISION,DRIVER_EYE} from './car-3d.mjs';
-import {createTrackScenery} from './track-scenery.mjs';
+import {createRoadMask,createTrackScenery,surfaceMaterial} from './track-scenery.mjs';
 import {Terrain,drape,refineRoad,terrainMesh,placeCar} from './terrain-3d.mjs';
 import {createVegetation} from './vegetation.mjs';
 import {EnvironmentAssets} from './environment-assets.mjs';
@@ -69,6 +69,39 @@ function quad(out,a,b,c,d){out.push(...a,...b,...c,...a,...c,...d);}
 function boundaryGeometry(track,origin,height){
   const p=[];for(const wall of track.walls){const a=wall.a,b=wall.b;quad(p,[a.x-origin.x,.02,a.y-origin.y],[a.x-origin.x,height,a.y-origin.y],[b.x-origin.x,height,b.y-origin.y],[b.x-origin.x,.02,b.y-origin.y]);}return triangles(p);
 }
+export function edgePaintGeometry(track,origin){
+  const rings=[track.outer,track.inner].map(ring=>({
+    ring,area:ring.reduce((sum,a,i)=>{const b=ring[(i+1)%ring.length];return sum+a.x*b.y-b.x*a.y;},0)
+  })).sort((a,b)=>Math.abs(b.area)-Math.abs(a.area));
+  const ppm=track.pixelsPerMeter||1,positions=[];
+  const inside=createRoadMask({...track,outer:rings[0].ring,inner:rings[1].ring});
+  for(const [index,{ring,area}] of rings.entries()){
+    const side=Math.sign(area)*(index===0?1:-1);
+    const normals=ring.map((point,i)=>{
+      const before=ring[(i+ring.length-1)%ring.length],after=ring[(i+1)%ring.length];
+      const a=new T.Vector2(point.x-before.x,point.y-before.y).normalize();
+      const b=new T.Vector2(after.x-point.x,after.y-point.y).normalize();
+      const direction=a.add(b).normalize();
+      return {x:-direction.y*side,y:direction.x*side};
+    });
+    const paintPoint=(point,normal,offset)=>[point.x+normal.x*offset*ppm-origin.x,.063*ppm,point.y+normal.y*offset*ppm-origin.y];
+    const left=ring.map((point,i)=>paintPoint(point,normals[i],.29));
+    const right=ring.map((point,i)=>paintPoint(point,normals[i],.45));
+    const interpolate=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1],a[2]+(b[2]-a[2])*t];
+    const centroid=(a,b,c)=>[(a[0]+b[0]+c[0])/3,a[1],(a[2]+b[2]+c[2])/3];
+    for(let i=0;i<ring.length;i++){
+      const j=(i+1)%ring.length,steps=Math.max(1,Math.ceil(Math.hypot(ring[j].x-ring[i].x,ring[j].y-ring[i].y)/(8*ppm)));
+      for(let step=0;step<steps;step++){
+        const t=step/steps,u=(step+1)/steps;
+        const a=interpolate(left[i],left[j],t),b=interpolate(left[i],left[j],u);
+        const c=interpolate(right[i],right[j],u),d=interpolate(right[i],right[j],t);
+        const probes=[a,b,c,d,centroid(a,b,c),centroid(a,c,d)];
+        if(probes.every(([x,,z])=>inside(x+origin.x,z+origin.y)))quad(positions,a,b,c,d);
+      }
+    }
+  }
+  return triangles(positions);
+}
 function curbGeometry(model,track,origin,onRoad){
   const colors=[[],[]],width=Math.min(.7,(track.halfWidth||5)*.15),ppm=track.pixelsPerMeter||1;
   for(const edge of model.curbs)for(let color=0;color<edge.length;color++)for(const run of edge[color])for(let i=0;i<run.length-1;i++){
@@ -84,7 +117,7 @@ export class Circuit3D{
     this.canvas=canvas;this.onChange=onChange;this.onSelect=onSelect;this.onFallback=onFallback;this.onReset=onReset;this.origin={x:0,y:0};this.mode='follow';this.yaw=2.3;this.pitch=.64;this.distance=20;this.followDistance=18;this.focus=new T.Vector3();this.visible=true;this.dirty=true;this.lost=false;this.width=0;this.height=0;
     this.renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
     this.renderer.setPixelRatio(Math.min(1.5,globalThis.devicePixelRatio||1));this.renderer.outputColorSpace=T.SRGBColorSpace;
-    this.scene=new T.Scene();
+    this.scene=new T.Scene();this.scene.fog=new T.Fog(0xb3c5d2,850,10500);
     this.sky=new T.Mesh(new T.SphereGeometry(1,32,16),new T.ShaderMaterial({
       side:T.BackSide,depthTest:false,depthWrite:false,
       vertexShader:`
@@ -182,7 +215,10 @@ export class Circuit3D{
     this.notifyModelStatus();
     this.environmentReady=Promise.all([this.treeReady,house,landscape]).then(([tree,,world])=>{if(!this.disposed&&this.track===track){this.refreshDressing();this.notifyModelStatus();return tree&&world;}return false;}).catch(error=>{if(!this.disposed&&this.track===track){this.houseError='Edifici non disponibili: riprova cambiando circuito. '+error.message;this.notifyModelStatus();}return false;});
     this.staticGroup.add(groundMesh(b,this.scenery.groundMaterial(),track.pixelsPerMeter||1));
-    this.road=add(roadGeometry(track,this.origin),new T.MeshLambertMaterial({color:model.theme.road,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+    this.road=add(roadGeometry(track,this.origin),surfaceMaterial(model.theme.road,'asphalt',track.pixelsPerMeter||1,{polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+    this.edgePaint=add(drape(edgePaintGeometry(track,this.origin),this.origin,this.ground),new T.MeshLambertMaterial({color:0xdedbd1,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}));
+    this.scene.fog.near=850*(track.pixelsPerMeter||1);
+    this.scene.fog.far=10500*(track.pixelsPerMeter||1);
     const outline=[];for(const wall of track.walls)outline.push(wall.a.x-this.origin.x,.06,wall.a.y-this.origin.y,wall.b.x-this.origin.x,.06,wall.b.y-this.origin.y);
     const outlineGeometry=new T.BufferGeometry();outlineGeometry.setAttribute('position',new T.Float32BufferAttribute(outline,3));drape(outlineGeometry,this.origin,this.ground);
     this.outline=new T.LineSegments(outlineGeometry,new T.LineBasicMaterial({color:0x82999d}));this.staticGroup.add(this.outline);
@@ -253,7 +289,7 @@ export class Circuit3D{
     else{this.camera.up.set(0,1,0);this.camera.position.set(this.focus.x+Math.sin(yaw)*Math.cos(this.pitch)*distance,this.focus.y+Math.sin(this.pitch)*distance,this.focus.z+Math.cos(yaw)*Math.cos(this.pitch)*distance);this.camera.lookAt(this.focus);}
     this.camera.updateMatrixWorld();
     this.fleet.update(sim.cars,this.origin,palette,{selected,camera:this.camera,height:this.height,mode:this.mode,ground:this.ground});
-    this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
+    this.edges.visible=boundaries||details;this.outline.visible=this.mode==='overview'||boundaries;this.edgePaint.visible=details&&this.mode!=='overview';this.edges.material.color.set(boundaries?0xffc476:0x9aaba4);for(const curb of this.kerbs)curb.visible=details;
     this.scenery?.setVisible(details,this.mode);
     this.vegetation?.setVisible(details);
     this.buildings?.setVisible(details);this.districts?.setVisible(details);this.facilities?.setVisible(details);this.vegetation?.update(this.camera,this.mode);this.buildings?.update(this.camera,this.mode);this.districts?.update(this.camera,this.mode);this.facilities?.update(this.camera);

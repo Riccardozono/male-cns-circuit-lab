@@ -26,6 +26,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       await change('camera-select','overview');await js('render()');
       const metrics=await js('circuitLab.circuit3D.info()');
       const landscapeExpected=circuitId!=='lab';
+      check(circuitId+': only Monaco has an estimated sea continuation',Boolean(metrics.landscape?.coastalBackdropEstimated)===(circuitId==='monaco'),metrics.landscape);
       check(circuitId+': offline NASA landscape and OSM districts cover the requested band without replacing the physical surface',landscapeExpected?metrics.landscape?.coverageM===(circuitId==='le-mans'?2000:1000)&&metrics.landscape.source==='NASA SRTMGL1 v003'&&metrics.landscape.physicalSurfaceUnchanged&&metrics.landscape.verticalScale===1&&metrics.districts?.buildings>50&&metrics.districts.drawCalls<=4&&!await js('document.getElementById("landscape-source-note").hidden'):!metrics.landscape&&!metrics.districts, {landscape:metrics.landscape,districts:metrics.districts});
       const transform=metrics.carLods?.livery?.transform;
       check(circuitId+': 100 real agents and bounded instanced LOD draw calls',metrics.carCount===100&&metrics.drawCalls<150&&metrics.carRevision==='992-user-glb-lod-3'&&metrics.carLods?.livery?.loaded&&JSON.stringify(transform)===JSON.stringify({offset:[0,2],scale:[1,-1]})&&metrics.roadVertices>20&&!metrics.lost,metrics);
@@ -55,6 +56,9 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
       }
       await change('camera-select','follow');await js('render()');
       check(circuitId+': orbit/zoom/follow never alter physics or training',hash(await engine.exportProgress())===hash(original)&&await js('JSON.stringify(circuitLab.sim.cars.map(c=>[c.x,c.y,c.heading,c.outputs,c.fitness]))')===beforeMotion);
+      await change('camera-select','first-person');await js('render()');
+      check(circuitId+': edge paint is visible in first person and preserves progress',await js('circuitLab.circuit3D.mode==="first-person"&&circuitLab.circuit3D.edgePaint.visible&&circuitLab.circuit3D.edgePaint.geometry.attributes.position.count>0')&&hash(await engine.exportProgress())===hash(original));
+      await change('camera-select','follow');await js('render()');
       await js(`(()=>{const select=document.getElementById('track-landmark'),option=[...select.options].find(o=>o.value.startsWith('facility:'));if(!option)throw Error('Facility selector unavailable');select.value=option.value;select.dispatchEvent(new Event('change',{bubbles:true}));render();})()`);
       check(circuitId+': stand focus is findable, paused-safe and reveals near seats',hash(await engine.exportProgress())===hash(original)&&await js('circuitLab.circuit3D.mode==="overview"&&circuitLab.circuit3D.info().facilities.seatInstances>0&&document.getElementById("track-landmark").value.startsWith("facility:")'));
       wc.focus();await js('document.getElementById("track-landmark").focus()');await wc.sendInputEvent({type:'keyDown',keyCode:'End'});await wc.sendInputEvent({type:'keyUp',keyCode:'End'});await wait(120);
@@ -97,7 +101,8 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
   if(capture){await snap('desktop-split',1540,980);await js('document.getElementById("view-circuit").click()');await snap('desktop',1540,980);await snap('user-1280',1280,900);await snap('mobile',390,1100);await snap('mobile-opening',390,1100);}
   const unexpected=errors.filter(e=>!(forceCpuFallback&&/WebGL|context|GL context/i.test(e)));check('No unexpected renderer errors',unexpected.length===0,errors);
   const compute=await js('({workers:circuitLab.sim.engine?.pool?.size||null,gpu:circuitLab.sim.engine?.gpu||null})');
-  const result={passed:true,version,forceCpuFallback,generatedAt:new Date().toISOString(),checks,views,compute,consoleErrors:errors,boundary:'Rendering and runtime checks, not learned laps or official car/track CAD validation.'};await fs.writeFile(path.join(output,'ui-smoke.json'),JSON.stringify(result,null,2));console.log('CIRCUIT_3D_QA '+JSON.stringify({passed:true,checks:checks.length,output}));return result;
+  const graphics=await js('(()=>{const gl=circuitLab.circuit3D?.renderer.getContext(),ext=gl?.getExtension("WEBGL_debug_renderer_info");return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):null;})()');
+  const result={passed:true,version,forceCpuFallback,generatedAt:new Date().toISOString(),checks,views,compute,graphics,consoleErrors:errors,boundary:'Rendering and runtime checks, not learned laps or official car/track CAD validation.'};await fs.writeFile(path.join(output,'ui-smoke.json'),JSON.stringify(result,null,2));console.log('CIRCUIT_3D_QA '+JSON.stringify({passed:true,checks:checks.length,output}));return result;
   async function snap(name,width,height,extra={}){
     window.setSize(width,height);await js('window.scrollTo(0,0);resize();render()');await wait(200);await js('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
     const metrics={...await js('({width:innerWidth,documentWidth:document.documentElement.scrollWidth,duplicateIds:document.querySelectorAll("[id]").length-new Set([...document.querySelectorAll("[id]")].map(e=>e.id)).size,focusSelection:document.getElementById("track-landmark").selectedOptions[0]?.textContent,camera:circuitLab.circuit3D?{mode:circuitLab.circuit3D.mode,focus:circuitLab.circuit3D.focus.toArray(),distance:circuitLab.circuit3D.distance,yaw:circuitLab.circuit3D.yaw,pitch:circuitLab.circuit3D.pitch}:null,three:circuitLab.circuit3D?.info()})'),...extra};

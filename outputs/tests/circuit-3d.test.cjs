@@ -8,11 +8,20 @@ test('Kilometre-wide terrain is a backdrop and cannot occlude the physical road 
     assert.equal(mesh.material.depthWrite,false);assert.ok(mesh.renderOrder<0);assert.ok(mesh.position.y<0);assert.equal(mesh.geometry.index.count,6);mesh.geometry.dispose();mesh.material.dispose();}
 });
 for(const circuit of [{id:'lab'},...catalog.circuits])test(circuit.id+': triangulated 3D road is the actual physical corridor',async()=>{
-  const {roadGeometry}=await import('../circuit-3d.mjs'),sim=new F.Simulation(Legacy.buildV2(data),{population:4,circuits:catalog,circuitId:circuit.id}),track=sim.track,before=JSON.stringify([track,sim.cars[0].genome]),origin={x:track.bounds.x+track.bounds.width/2,y:track.bounds.y+track.bounds.height/2};
+  const {edgePaintGeometry,roadGeometry}=await import('../circuit-3d.mjs'),{createRoadMask}=await import('../track-scenery.mjs'),sim=new F.Simulation(Legacy.buildV2(data),{population:4,circuits:catalog,circuitId:circuit.id}),track=sim.track,before=JSON.stringify([track,sim.cars[0].genome]),origin={x:track.bounds.x+track.bounds.width/2,y:track.bounds.y+track.bounds.height/2};
   const geometry=roadGeometry(track,origin),p=geometry.attributes.position,index=geometry.index.array;let trianglesArea=0;
   for(let i=0;i<index.length;i+=3){const a=index[i],b=index[i+1],c=index[i+2];trianglesArea+=Math.abs((p.getX(b)-p.getX(a))*(p.getZ(c)-p.getZ(a))-(p.getZ(b)-p.getZ(a))*(p.getX(c)-p.getX(a)))/2;}
   const expected=area(track.outer)-area(track.inner);assert.ok(Math.abs(trianglesArea-expected)/expected<1e-5,`${trianglesArea} != ${expected}`);
   for(const ring of [track.outer,track.inner])for(let i=0;i<ring.length;i+=Math.max(1,Math.floor(ring.length/30))){const v=ring[i];let nearest=Infinity;for(let j=0;j<p.count;j++)nearest=Math.min(nearest,Math.hypot(p.getX(j)+origin.x-v.x,p.getZ(j)+origin.y-v.y));assert.ok(nearest<.001);}
+  const paint=edgePaintGeometry(track,origin),points=paint.attributes.position;
+  const inside=createRoadMask(area(track.outer)>area(track.inner)?track:{...track,outer:track.inner,inner:track.outer});
+  assert.ok(points.count>=track.walls.length*3,'Paint is retained along the circuit');
+  for(let i=0;i<points.count;i+=3){
+    const x=(points.getX(i)+points.getX(i+1)+points.getX(i+2))/3+origin.x;
+    const y=(points.getZ(i)+points.getZ(i+1)+points.getZ(i+2))/3+origin.y;
+    assert.ok(inside(x,y),'Edge marking stays on the driveable road');
+  }
+  paint.dispose();
   assert.equal(JSON.stringify([track,sim.cars[0].genome]),before);geometry.dispose();
 });
 test('Overview camera fits all track bounds in landscape and narrow windows',async()=>{

@@ -162,18 +162,41 @@ export function buildSceneryPlan(track,model,origin={x:0,y:0}){
   for(const p of [...track.outer,...footprint]){limits.minX=Math.min(limits.minX,p.x);limits.minY=Math.min(limits.minY,p.y);limits.maxX=Math.max(limits.maxX,p.x);limits.maxY=Math.max(limits.maxY,p.y);}
   return {buffers,stats,entry,footprint,barrierContours,zones:zones.map((z,i)=>({...z,renderedTiles:zoneTiles[i]})),bounds:{x:limits.minX,y:limits.minY,width:limits.maxX-limits.minX,height:limits.maxY-limits.minY},origin:{...origin}};
 }
-function surfaceMaterial(color,kind){
-  const material=new T.MeshLambertMaterial({color,side:T.DoubleSide});
-  if(kind==='gravel'||kind==='asphalt'||kind==='grass'){
-    const scale=kind==='gravel'?10:kind==='grass'?2.3:7,amount=kind==='gravel'?.22:kind==='grass'?.12:.08;
-    material.onBeforeCompile=shader=>{
-      shader.vertexShader='varying vec3 sceneryPosition;\n'+shader.vertexShader;
-      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nsceneryPosition = position;');
-      shader.fragmentShader='varying vec3 sceneryPosition;\n'+shader.fragmentShader;
-      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>\nvec2 cell = floor(sceneryPosition.xz * ${scale.toFixed(2)});\nfloat stone = fract(sin(dot(cell,vec2(127.1,311.7)))*43758.5453);\ndiffuseColor.rgb *= (1.0 - ${amount.toFixed(2)} + stone * ${(amount*2).toFixed(2)});`);
-    };
-    material.customProgramCacheKey=()=>SCENERY_REVISION+'-'+kind;
+export const SURFACE_DETAIL_GLSL=`
+  float surfaceHash(vec2 p){
+    vec3 v=fract(vec3(p.xyx)*.1031);
+    v+=dot(v,v.yzx+33.33);
+    return fract((v.x+v.y)*v.z);
   }
+  float surfaceNoise(vec2 p){
+    vec2 cell=floor(p), f=fract(p);
+    f*=f*(3.-2.*f);
+    return mix(mix(surfaceHash(cell),surfaceHash(cell+vec2(1.,0.)),f.x),
+               mix(surfaceHash(cell+vec2(0.,1.)),surfaceHash(cell+vec2(1.)),f.x),f.y);
+  }
+  float surfaceDetail(vec2 metres,float grainScale,float grainStrength,float patchStrength){
+    vec2 grain=metres*grainScale;
+    float fade=1.-smoothstep(.20,.85,max(length(dFdx(grain)),length(dFdy(grain))));
+    float coarse=surfaceNoise(metres*.125);
+    float fine=fade>0. ? (surfaceNoise(grain)-.5)*fade : 0.;
+    return 1.+(coarse-.5)*patchStrength+fine*grainStrength;
+  }
+`;
+export function surfaceMaterial(color,kind,ppm=1,options={}){
+  const material=new T.MeshLambertMaterial({color,side:T.DoubleSide,...options});
+  const detail={asphalt:[24,.48,.14],gravel:[14,.58,.22],grass:[3,.24,.24],roof:[4,.22,.16]}[kind];
+  if(!detail)return material;
+  material.onBeforeCompile=shader=>{
+    shader.vertexShader='varying vec2 surfaceMetres;\n'+shader.vertexShader.replace('#include <begin_vertex>',`
+      #include <begin_vertex>
+      surfaceMetres=(modelMatrix*vec4(position,1.)).xz/${ppm.toFixed(8)};
+    `);
+    shader.fragmentShader='varying vec2 surfaceMetres;\n'+SURFACE_DETAIL_GLSL+shader.fragmentShader.replace('#include <color_fragment>',`
+      #include <color_fragment>
+      diffuseColor.rgb*=surfaceDetail(surfaceMetres,${detail.map(n=>n.toFixed(2)).join(',')});
+    `);
+  };
+  material.customProgramCacheKey=()=>`surface-${kind}-${ppm}`;
   return material;
 }
 export function createTrackScenery(track,model,origin={x:0,y:0}){
@@ -184,11 +207,11 @@ export function createTrackScenery(track,model,origin={x:0,y:0}){
     const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeBoundingSphere();
     let object;
     if(kind==='fence')object=new T.LineSegments(geometry,new T.LineBasicMaterial({color:'#9faeab',transparent:true,opacity:.42}));
-    else{geometry.computeVertexNormals();object=new T.Mesh(geometry,surfaceMaterial(colors[kind],kind));}
+    else{geometry.computeVertexNormals();object=new T.Mesh(geometry,surfaceMaterial(colors[kind],kind,track.pixelsPerMeter||1));}
     object.name='scenery-'+kind;group.add(object);
   }
   return {
-    group,plan,groundMaterial:()=>surfaceMaterial(plan.entry.ground,'grass'),
+    group,plan,groundMaterial:()=>surfaceMaterial(plan.entry.ground,'grass',track.pixelsPerMeter||1),
     setVisible(details,mode){group.visible=Boolean(details);const fence=group.children.find(o=>o.name==='scenery-fence');if(fence)fence.visible=mode!=='overview';},
     info(){return {...plan.stats,visible:group.visible,meshes:group.children.length,triangles:group.children.filter(o=>o.isMesh).reduce((n,o)=>n+o.geometry.attributes.position.count/3,0),referenceYear:plan.entry.referenceYear,source:plan.entry.source,estimated:true,zones:plan.zones.map(z=>({station:z.station,surface:z.surface,renderedTiles:z.renderedTiles}))};},
     dispose(){group.removeFromParent();for(const object of [...group.children]){object.geometry.dispose();object.material.dispose();group.remove(object);}}
