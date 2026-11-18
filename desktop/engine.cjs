@@ -7,7 +7,7 @@ const os = require('node:os');
 const {Worker} = require('node:worker_threads');
 const F=require('../outputs/simulation.js'),{compareAgents,compareLearningAgents}=F;
 const Progress=require('../outputs/progress-save.js');
-const { PROFILE: IMITATION_PROFILE } = require('./imitation-trial.cjs');
+const { IMITATION_PROFILE, REFINEMENT_POPULATION } = require('../outputs/model-test.js');
 
 const MAX_WORKERS = Math.max(1, Number(os.availableParallelism?.() || os.cpus().length || 1));
 // The connectome workers are deliberately CPU-heavy even when worker 0 sends
@@ -129,6 +129,7 @@ class DesktopEngine {
 
   async start(rawOptions = {}, restoredWorkers = null) {
     const imitation = rawOptions.trialProfile === IMITATION_PROFILE;
+    const refineActuators=imitation&&rawOptions.refineActuators===true;
     if (rawOptions.trialProfile && (!imitation || !this.imitationModel || restoredWorkers || rawOptions.modelId !== 'v3' || rawOptions.circuitId !== this.imitationModel.circuitId)) {
       throw Error('Il circuito della prova deve corrispondere al decoder V3 caricato.');
     }
@@ -147,14 +148,14 @@ class DesktopEngine {
     const recommendedWorkers = bundle.full ? DEFAULT_FULL_WORKERS : this.defaultWorkerCount();
     const workerCount = imitation?1:restoredWorkers?restoredWorkers.length:clampInteger(rawOptions.workerCount ?? recommendedWorkers, 1, MAX_WORKERS);
     this.options = {
-      population: imitation ? 1 : clampInteger(rawOptions.population ?? DEFAULT_POPULATION, 4, MAX_POPULATION),
+      population: imitation ? (refineActuators?REFINEMENT_POPULATION:1) : clampInteger(rawOptions.population ?? DEFAULT_POPULATION, 4, MAX_POPULATION),
       mutation: imitation?0:Math.max(0, Math.min(.35, Number(rawOptions.mutation ?? .32))),
       speedMultiplier: Math.max(.5, Math.min(30, Number(rawOptions.speedMultiplier ?? 1))),
       circuitId: rawOptions.circuitId || 'lab',
       mode: rawOptions.mode || 'connectome',
       modelId,
       workerCount,
-      ...(imitation?{trialProfile:IMITATION_PROFILE}:{}),
+      ...(imitation?{trialProfile:IMITATION_PROFILE,...(refineActuators?{refineActuators}:{})}:{}),
       rendererToken:typeof rawOptions.rendererToken==='string'?rawOptions.rendererToken.slice(0,64):null
     };
     this.options.running=imitation?false:(rawOptions.running??true);

@@ -3,7 +3,7 @@
 // inside a disposable profile supplied by the runner, never the user's app.
 const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function reportDialog(output){return{showSaveDialog:async()=>({canceled:false,filePath:path.join(output,'exported-report.json')})};}
+function reportDialog(output){return{showSaveDialog:async(_window,options)=>({canceled:false,filePath:path.join(output,options.title==='Salva decoder affinato'?'refined-decoder.json.gz':'exported-report.json')})};}
 async function run(window,{output,engine,version,forceCpuFallback,capture}){
   await fs.mkdir(output,{recursive:true});const wc=window.webContents,checks=[],errors=[];
   wc.on('console-message',d=>{if(d.level==='error'||d.level===3)errors.push(d.message);});
@@ -153,3 +153,73 @@ async function runImitation(window,{output,engine,version,refined=false,circuitI
   return result;
 }
 module.exports.runImitation=runImitation;
+
+async function runActuatorRefinement(window,{output,engine,version,imitationModel}){
+  await fs.mkdir(output,{recursive:true});
+  const wc=window.webContents,checks=[],errors=[];
+  wc.on('console-message',details=>{if(details.level==='error'||details.level===3)errors.push(details.message);});
+  const js=code=>wc.executeJavaScript(code,true);
+  const check=(name,passed,detail)=>{checks.push({name,passed,detail});if(!passed)throw Error(name+' '+JSON.stringify(detail));};
+  const until=async(code,timeout=60000)=>{
+    const deadline=Date.now()+timeout;
+    while(!await js(code)){
+      if(Date.now()>deadline)throw Error('Timeout '+code+' '+JSON.stringify(errors));
+      await wait(150);
+    }
+  };
+  const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+  await until("Boolean(globalThis.circuitLab?.tests&&circuitLab.sim.cars.length&&!document.getElementById('model-test-refine').hidden)");
+  await js('globalThis.normalRefinementSim=circuitLab.sim;normalRefinementSim.running=false;normalRefinementSim.speedMultiplier=6;void 0');
+  await until('!normalRefinementSim.running&&normalRefinementSim._pendingRunning===null&&normalRefinementSim.speedMultiplier===6');
+  const session=engine.sessionId;
+  const ordinary=hash(await engine.exportProgress());
+  await js("document.getElementById('open-model-test').click();document.getElementById('model-test-refine').click();void 0");
+  await until("circuitLab.sim.modelTest?.status==='running'&&circuitLab.sim.cars[0]?.lifetime>.2");
+  const setup=await js("({cars:circuitLab.sim.cars.length,model:circuitLab.sim.modelId,circuit:circuitLab.sim.circuitId,speed:circuitLab.sim.speedMultiplier})");
+  check('Refinement starts a separate four-car V3 comparison',setup.cars===4&&setup.model==='v3'&&setup.circuit===imitationModel.circuitId&&setup.speed===30,setup);
+  check('Normal engine is paused and saving a decoder stays locked during training',engine.sessionId===session&&await js("!normalRefinementSim.running&&document.getElementById('model-test-save-refinement').disabled"));
+  await until("circuitLab.tests.suite.cases[0]?.rewardTraining?.rounds.length>=1||!circuitLab.tests.busy",600000);
+  const first=await js('circuitLab.tests.suite.cases[0]?.rewardTraining?.rounds[0]??null');
+  console.log('ACTUATOR_ROUND '+JSON.stringify(first));
+  check('First generation reports four measured outcomes',first?.candidates.length===4,first);
+  await until("!circuitLab.tests.busy&&Boolean(circuitLab.tests.suite?.finishedAt)",600000);
+  const report=await js('circuitLab.tests.suite.report()');
+  const row=report.cases[0],training=row.rewardTraining;
+  check('Two real reward updates ended with a safe two-lap winner',report.execution==='pretrained-v3-reward-refinement'&&row.status==='completed'&&row.generations===2&&row.maxLaps===2&&training?.rounds.length===2&&training.rounds.every(round=>round.candidates.length===4)&&training.selected?.completed,report);
+  check('Second generation re-evaluates the selected parameters as its elite',
+    JSON.stringify(training.rounds[0].candidates.find(car=>car.agentId===training.rounds[0].selected).parameters)===
+    JSON.stringify(training.rounds[1].candidates.find(car=>car.agentId===0).parameters),training);
+  check('The selected Monza parameters improved actual lap time and fitness',
+    training.improvementSeconds>0&&training.selected.fitness>training.baseline.fitness,training);
+  check('Original normal session and progress have been restored',
+    engine.sessionId===session&&hash(await engine.exportProgress())===ordinary&&
+    await js('circuitLab.sim===normalRefinementSim&&!normalRefinementSim.running&&normalRefinementSim.speedMultiplier===6'));
+  await until("!document.getElementById('model-test-save-refinement').disabled&&document.getElementById('model-test-status').textContent.includes('guadagnati')");
+  await js("document.getElementById('model-test-save-refinement').scrollIntoView({block:'center'});void 0");
+  if(!wc.debugger.isAttached())wc.debugger.attach('1.3');
+  const shot=await wc.debugger.sendCommand('Page.captureScreenshot',{format:'png',captureBeyondViewport:false,fromSurface:true});
+  await fs.writeFile(path.join(output,'refinement-result.png'),Buffer.from(shot.data,'base64'));
+  await js("document.getElementById('model-test-save-refinement').click();void 0");
+  await until("document.getElementById('model-test-status').textContent.startsWith('Decoder affinato salvato')");
+  const Imitation=require('./imitation-trial.cjs');
+  const file=path.join(output,'refined-decoder.json.gz');
+  const saved=await Imitation.load(file,engine.outputsDir);
+  check('Saved bundle reloads with the exact selected settings',
+    JSON.stringify(saved.actor.actuatorRefinement)===JSON.stringify(training.selected.parameters)&&
+    saved.sha256!==imitationModel.sha256&&saved.circuitId===imitationModel.circuitId&&
+    JSON.stringify(saved.genome)===JSON.stringify(imitationModel.genome));
+  await js("document.getElementById('model-test-export').click();void 0");
+  await until("document.getElementById('model-test-status').textContent.startsWith('Rapporto salvato')");
+  check('The report export matches the real training results',JSON.stringify(JSON.parse(await fs.readFile(path.join(output,'exported-report.json'),'utf8')))===JSON.stringify(report));
+  await js("document.getElementById('model-test-refine').click();void 0");
+  await until("circuitLab.sim.modelTest?.status==='running'&&circuitLab.sim.cars[0]?.lifetime>.2");
+  await js("document.getElementById('model-test-stop').click();void 0");
+  await until("!circuitLab.tests.busy&&circuitLab.tests.suite?.stopRequested");
+  check('Cancel recovers the normal session and disarms saving an incomplete decoder',
+    hash(await engine.exportProgress())===ordinary&&await js("circuitLab.sim===normalRefinementSim&&document.getElementById('model-test-save-refinement').disabled"));
+  check('No renderer errors',errors.length===0,errors);
+  const result={passed:true,version,checks,report,savedSha256:saved.sha256};
+  await fs.writeFile(path.join(output,'actuator-refinement-smoke.json'),JSON.stringify(result,null,2)+'\n');
+  return result;
+}
+module.exports.runActuatorRefinement=runActuatorRefinement;

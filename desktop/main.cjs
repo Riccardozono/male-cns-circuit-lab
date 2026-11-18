@@ -4,7 +4,7 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const {app, BrowserWindow, ipcMain, protocol, dialog} = require('electron');
 const {DesktopEngine} = require('./engine.cjs');
-const {ProgressFiles}=require('./progress-files.cjs');
+const {ProgressFiles,writeAtomically}=require('./progress-files.cjs');
 const Imitation=require('./imitation-trial.cjs');
 const Progress=require('../outputs/progress-save.js');
 
@@ -123,7 +123,8 @@ function createWindow(imitationModel = null) {
   if(imitationSmokeDir){
     const output=path.resolve(imitationSmokeDir);
     const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output);
-    mainWindow.webContents.once('did-finish-load',()=>harness.runImitation(mainWindow,{output,engine,version:app.getVersion(),refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
+    const validate=process.argv.includes('--actuator-refinement-smoke')?harness.runActuatorRefinement:harness.runImitation;
+    mainWindow.webContents.once('did-finish-load',()=>validate(mainWindow,{output,engine,version:app.getVersion(),imitationModel,refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
   }
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));
@@ -553,15 +554,34 @@ app.whenReady().then(async () => {
   ipcMain.handle('compute:command', (_event, command) => engine.command(command));
   ipcMain.handle('compute:info', () => engine.info());
   ipcMain.handle('compute:gpu-response', (_event, payload) => engine.gpuResponse(payload));
-  testEngine=new DesktopEngine(outputsDirectory(),payload=>mainWindow?.webContents.send('test:snapshot',payload),error=>mainWindow?.webContents.send('test:error',{message:error.message}),request=>mainWindow?.webContents.send('test:gpu-request',request),{imitationModel});
-  ipcMain.handle('test:start',(_event,options)=>testEngine.start({...options,workerCount:1,running:false,mode:'connectome'}));
+  let latestRefinement=null;
+  testEngine=new DesktopEngine(outputsDirectory(),payload=>{
+    const trial=payload.modelTest,selected=trial?.rewardTraining?.selected;
+    if(trial?.status==='completed'&&selected?.completed&&trial.decoderSha256===imitationModel?.sha256)latestRefinement=selected.parameters;
+    mainWindow?.webContents.send('test:snapshot',payload);
+  },error=>mainWindow?.webContents.send('test:error',{message:error.message}),request=>mainWindow?.webContents.send('test:gpu-request',request),{imitationModel});
+  ipcMain.handle('test:start',(_event,options)=>{
+    latestRefinement=null;
+    return testEngine.start({...options,workerCount:1,running:false,mode:'connectome'});
+  });
   ipcMain.handle('test:command',(_event,command)=>testEngine.command(command));
   ipcMain.handle('test:info',()=>testEngine.info());
   ipcMain.handle('test:gpu-response',(_event,payload)=>testEngine.gpuResponse(payload));
   ipcMain.handle('test:stop',()=>testEngine.stop());
+  ipcMain.handle('test:save-refinement',async()=>{
+    if(!imitationModel||!latestRefinement)throw Error('Nessun decoder affinato disponibile.');
+    const bytes=Imitation.encodeRefinement(imitationModel,latestRefinement);
+    const selection=await testReportDialog.showSaveDialog(mainWindow,{
+      title:'Salva decoder affinato',defaultPath:`V3-${imitationModel.circuitId}-affinato.json.gz`,
+      filters:[{name:'Decoder V3 compresso',extensions:['gz']}],properties:['createDirectory','showOverwriteConfirmation'],
+    });
+    if(selection.canceled||!selection.filePath)return {canceled:true};
+    await writeAtomically(selection.filePath,bytes);
+    return {canceled:false,name:path.basename(selection.filePath)};
+  });
   ipcMain.handle('test:save-report',async (_event,report)=>{
     const comparison=report?.execution==='sequential-cold-start'&&report?.cases?.length===4;
-    const imitation=imitationModel&&report?.execution==='pretrained-v3-trial'&&report?.settings?.trialProfile===Imitation.PROFILE&&report?.settings?.circuitId===imitationModel.circuitId&&report?.cases?.length===1&&report.cases[0]?.modelId==='v3';
+    const imitation=imitationModel&&['pretrained-v3-trial','pretrained-v3-reward-refinement'].includes(report?.execution)&&report?.settings?.trialProfile===Imitation.PROFILE&&report?.settings?.circuitId===imitationModel.circuitId&&report?.cases?.length===1&&report.cases[0]?.modelId==='v3';
     if(report?.schema!==1||(!comparison&&!imitation))throw Error('Rapporto del test non valido.');
     const text=JSON.stringify(report,null,2);if(text.length>100000)throw Error('Rapporto troppo grande.');
     const choice=await testReportDialog.showSaveDialog(mainWindow,{title:'Esporta risultati del test',defaultPath:imitation?`malecns-v3-addestrato-${imitationModel.circuitId}.json`:`malecns-test-2-giri-${report.settings.circuitId}.json`,filters:[{name:'Risultati JSON',extensions:['json']}]});

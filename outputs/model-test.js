@@ -8,10 +8,12 @@
   const MODELS=Object.freeze(['v2','v3','v4','v5']);
   const IMITATION_PROFILE='v3-imitation';
   const IMITATION_CIRCUITS=Object.freeze(['monza','monaco','le-mans']);
+  const REFINEMENT_POPULATION=4,REFINEMENT_UPDATES=2;
   const TERMINAL=new Set(['completed','failed','limit','stopped','error']);
   function settings(raw={}){
     const imitation=raw.trialProfile===IMITATION_PROFILE;
-    const value={...(imitation?{trialProfile:IMITATION_PROFILE}:{}),circuitId:raw.circuitId||(imitation?'monza':'lab'),population:imitation?1:Number(raw.population??16),mutation:imitation?0:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
+    const refineActuators=imitation&&raw.refineActuators===true;
+    const value={...(imitation?{trialProfile:IMITATION_PROFILE,...(refineActuators?{refineActuators}: {})}:{}),circuitId:raw.circuitId||(imitation?'monza':'lab'),population:imitation?(refineActuators?REFINEMENT_POPULATION:1):Number(raw.population??16),mutation:imitation?0:Number(raw.mutation??.32),speedMultiplier:Number(raw.speedMultiplier??30),limitSeconds:Number(raw.limitSeconds??600),seed:7717,workerCount:1};
     if(imitation&&!IMITATION_CIRCUITS.includes(value.circuitId))throw Error('Circuito incompatibile con la prova addestrata.');
     if(!imitation&&(!Number.isInteger(value.population)||value.population<4||value.population>100))throw Error('Scegli da 4 a 100 agenti.');
     if(!Number.isFinite(value.mutation)||value.mutation<0||value.mutation>.35)throw Error('Mutazione non valida (0–35%).');
@@ -26,8 +28,7 @@
       this.hit=null;this.finished=null;this.backend=null;this.error=null;
     }
     get done(){return TERMINAL.has(this.status);}
-    observe(sim,now,dt){
-      if(this.done)return;
+    recordTick(sim,dt){
       // Invoked AFTER physical/reward updates and BEFORE the natural reset.
       // Reading renderer snapshots alone can miss the final lap entirely.
       this.simSeconds+=dt;this.currentGeneration=sim.generation;
@@ -36,6 +37,11 @@
         this.maxLaps=Math.max(this.maxLaps,car.laps||0);
         this.bestProgressMeters=Math.max(this.bestProgressMeters,(car.bestProgress||0)/(sim.track.pixelsPerMeter||1));
       }
+      return eligible;
+    }
+    observe(sim,now,dt){
+      if(this.done)return;
+      const eligible=this.recordTick(sim,dt);
       if(this.checkLimit(now))return;
       if(!this.hit){
         const completed=eligible.filter(car=>car.laps===2&&car.reason==='limite 2 giri'&&car.lapTimes?.length===2&&car.lapTimes.every(t=>Number.isFinite(t)&&t>0));
@@ -99,11 +105,14 @@
     }
     stop(){this.stopRequested=true;}
     report(){
+      if(this.settings.refineActuators){
+        return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'pretrained-v3-reward-refinement',goal:'Affinamento per ricompense di tre coefficienti dei comandi.',cases:JSON.parse(JSON.stringify(this.cases))};
+      }
       if(this.settings.trialProfile===IMITATION_PROFILE){
         return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'pretrained-v3-trial',goal:'Una vettura completa due giri misurati del circuito del decoder.',boundary:'Decoder addestrato offline. La prova esegue un solo episodio CPU senza aggiornare i pesi.',cases:JSON.parse(JSON.stringify(this.cases))};
       }
       return {schema:1,appVersion:this.version,startedAt:this.startedAt,finishedAt:this.finishedAt??null,settings:{...this.settings},execution:'sequential-cold-start',goal:'One real non-diagnostic agent completes two ordered laps, then its generation ends naturally. Failed generations do not meet the goal.',timing:'Wall clock excludes graph loading; simSeconds counts every fixed physical tick, including failed generations. Zero limitSeconds means no wall-time limit.',boundary:'One seed on one circuit; not a statistical convergence or hardware-normalized model ranking. No teacher, route policy, imported champion or forced generation.',cases:JSON.parse(JSON.stringify(this.cases))};
     }
   }
-  return Object.freeze({MODELS,IMITATION_PROFILE,IMITATION_CIRCUITS,settings,Trial,Suite});
+  return Object.freeze({MODELS,IMITATION_PROFILE,IMITATION_CIRCUITS,REFINEMENT_POPULATION,REFINEMENT_UPDATES,settings,Trial,Suite});
 });

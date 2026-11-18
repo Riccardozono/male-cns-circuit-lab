@@ -35,6 +35,7 @@ contextBridge.exposeInMainWorld('desktopTest', {
   info:()=>ipcRenderer.invoke('test:info'),
   stop:()=>ipcRenderer.invoke('test:stop'),
   saveReport:report=>ipcRenderer.invoke('test:save-report',report),
+  saveRefinement:()=>ipcRenderer.invoke('test:save-refinement'),
   gpuResponse:payload=>ipcRenderer.invoke('test:gpu-response',payload),
   onSnapshot(callback){const listener=(_event,payload)=>callback(payload);ipcRenderer.on('test:snapshot',listener);return()=>ipcRenderer.removeListener('test:snapshot',listener);},
   onError(callback){const listener=(_event,payload)=>callback(payload);ipcRenderer.on('test:error',listener);return()=>ipcRenderer.removeListener('test:error',listener);},

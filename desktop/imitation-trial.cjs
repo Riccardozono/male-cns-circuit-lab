@@ -3,7 +3,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createHash } = require('node:crypto');
-const { gunzipSync } = require('node:zlib');
+const { gunzipSync, gzipSync } = require('node:zlib');
 
 const { IMITATION_PROFILE: PROFILE, IMITATION_CIRCUITS } = require('../outputs/model-test.js');
 const FORMAT = 'male-cns-v3-imitation-trial-v1';
@@ -13,6 +13,7 @@ const RUNTIME_FILES = [
   'terrain.js', 'rewards.js', 'legacy-models.js', 'data/circuits.json', 'data/connectome.json',
 ];
 const MAX_BYTES = 2 * 1024 * 1024;
+const REFINEMENT_BOUNDS=Object.freeze({steeringScale:Object.freeze([.94,1.06]),pedalScale:Object.freeze([.9,1.18]),accelerationBias:Object.freeze([0,.075])});
 const digest = value => createHash('sha256').update(value).digest('hex');
 
 function vector(value, length) {
@@ -33,10 +34,8 @@ function validate(bundle) {
     throw Error('Decoder V3 di prova non valido.');
   }
   if (actor.actuatorRefinement !== undefined) {
-    const {steeringScale, pedalScale, accelerationBias} = actor.actuatorRefinement ?? {};
-    if (!Number.isFinite(steeringScale) || steeringScale < .94 || steeringScale > 1.06 ||
-        !Number.isFinite(pedalScale) || pedalScale < .9 || pedalScale > 1.18 ||
-        !Number.isFinite(accelerationBias) || accelerationBias < 0 || accelerationBias > .075) {
+    const values=actor.actuatorRefinement??{};
+    if (Object.entries(REFINEMENT_BOUNDS).some(([key,[min,max]])=>!Number.isFinite(values[key])||values[key]<min||values[key]>max)) {
       throw Error('Affinamento dei comandi del V3 incompatibile.');
     }
   }
@@ -68,10 +67,10 @@ async function load(file, outputsDir) {
   if (RUNTIME_FILES.some(name => bundle.runtimeHashes?.[name] !== hashes[name])) {
     throw Error('Decoder V3 incompatibile con questo motore. Serve il bundle della stessa build.');
   }
-  return { actor: bundle.actor, genome: bundle.genome, circuitId: bundle.circuitId, sha256: digest(bytes) };
+  return { ...bundle, sha256: digest(bytes) };
 }
 
-function createDecoder(actor, graph) {
+function createDecoder(actor, graph, refinementForCar=()=>actor.actuatorRefinement) {
   const bySignature = new Map();
   graph.inputs.forEach((id, index) => {
     const key = [graph.inputChannels[index], graph.physicsChannels[index], graph.roadChannels[index]].join('/');
@@ -118,8 +117,9 @@ function createDecoder(actor, graph) {
       inputs = next;
     }
     let [steering, pedal] = inputs;
-    if (actor.actuatorRefinement) {
-      const {steeringScale, pedalScale, accelerationBias} = actor.actuatorRefinement;
+    const refinement=refinementForCar(car);
+    if (refinement) {
+      const {steeringScale, pedalScale, accelerationBias} = refinement;
       const bias = pedal > 0 ? accelerationBias * Math.exp(-7 * Math.abs(steering)) : 0;
       steering = Math.max(-1, Math.min(1, steering * steeringScale));
       pedal = Math.max(-1, Math.min(1, pedal * pedalScale + bias));
@@ -128,4 +128,9 @@ function createDecoder(actor, graph) {
   };
 }
 
-module.exports = { PROFILE, FORMAT, runtimeHashes, load, createDecoder };
+function encodeRefinement(bundle, actuatorRefinement){
+  const {format,circuitId,runtimeHashes,actor,genome}=bundle;
+  return gzipSync(JSON.stringify(validate({format,circuitId,runtimeHashes,actor:{...actor,actuatorRefinement},genome})),{level:5});
+}
+
+module.exports = { PROFILE, FORMAT, REFINEMENT_BOUNDS, runtimeHashes, load, createDecoder, encodeRefinement };

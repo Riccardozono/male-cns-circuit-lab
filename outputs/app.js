@@ -567,13 +567,17 @@ function syncModelTestControls(){
   $('next-generation').disabled=locked||sim.mode!=='connectome';
   $('save-progress').disabled=locked||sim.mode!=='connectome';$('load-progress').disabled=locked;
   if(locked){$('gear-up').disabled=true;$('gear-down').disabled=true;}
-  $('model-test-start').disabled=locked;$('model-test-imitation').disabled=locked;$('model-test-limit').disabled=locked;
+  $('model-test-start').disabled=locked;$('model-test-imitation').disabled=locked;$('model-test-refine').disabled=locked;$('model-test-limit').disabled=locked;
   $('model-test-stop').disabled=!modelTestBusy||Boolean(modelTestSuite?.stopRequested);
   $('model-test-export').disabled=modelTestBusy||!modelTestSuite?.finishedAt;
   const currentSettings=modelTestSuite?.settings;
+  const refineButton=$('model-test-save-refinement');
+  const refinement=modelTestSuite?.cases[0];
+  refineButton.hidden=!currentSettings?.refineActuators;
+  refineButton.disabled=locked||refinement?.status!=='completed'||!refinement.rewardTraining?.selected?.completed;
   const s=modelTestBusy||currentSettings?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE?currentSettings:null;
   $('model-test-settings').textContent=s?.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
-    ? `${sim.circuits.find(c=>c.id===s.circuitId)?.name||s.circuitId} · V3 addestrato offline · 1 auto · CPU · ${s.speedMultiplier}× richiesti`
+    ? `${sim.circuits.find(c=>c.id===s.circuitId)?.name||s.circuitId} · ${s.refineActuators?'Affinamento V3':'V3 addestrato offline'} · ${s.population} auto · CPU · ${s.speedMultiplier}× richiesti`
     : `V2 → V3 → V4 → V5 · ${s?sim.circuits.find(c=>c.id===s.circuitId)?.name:sim.circuit.name} · ${s?.population??sim.population} agenti · mutazione ${Math.round((s?.mutation??sim.mutation)*100)}% · ${s?.speedMultiplier??sim.speedMultiplier}× richiesti · seed 7717 · un worker. Partenza da zero, nessun campione importato.`;
 }
 function updateModelTestResults(suite){
@@ -581,7 +585,7 @@ function updateModelTestResults(suite){
     const modelId=MaleCNSModelTest.MODELS[i],row=modelTestRows[i],cells=row.cells;
     const imitation=suite?.settings.trialProfile===MaleCNSModelTest.IMITATION_PROFILE;
     row.hidden=imitation&&modelId!=='v3';
-    cells[0].textContent=imitation&&modelId==='v3'?'V3 addestrato':modelId.toUpperCase();
+    cells[0].textContent=imitation&&modelId==='v3'?(suite.settings.refineActuators?'V3 · ricompense':'V3 addestrato'):modelId.toUpperCase();
     const item=suite?.cases.find(candidate=>candidate.modelId===modelId)||{modelId,status:'pending'};
     modelTestRows[i].dataset.status=item.status;
     cells[1].textContent=testLabels[item.status]||item.status;
@@ -596,12 +600,22 @@ function updateModelTestResults(suite){
     const config=suite.settings,name=sim.circuits.find(c=>c.id===config.circuitId)?.name||config.circuitId;
     const limitLabel=config.limitSeconds===0?'senza limite':config.limitSeconds<60?`${config.limitSeconds.toLocaleString('it-IT')} s reali per modello`:`${(config.limitSeconds/60).toLocaleString('it-IT',{maximumFractionDigits:2})} min reali per modello`;
     $('model-test-caption').textContent=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE
-      ? `V3 addestrato · ${name} · 1 auto · ${config.speedMultiplier}× richiesti · ${limitLabel}.`
+      ? `${config.refineActuators?'Affinamento V3':'V3 addestrato'} · ${name} · ${config.population} auto · ${config.speedMultiplier}× richiesti · ${limitLabel}.`
       : `Risultati: ${name} · ${config.population} agenti · mutazione ${Math.round(config.mutation*100)}% · ${config.speedMultiplier}× richiesti · ${limitLabel}.`;
     const current=suite.cases.find(c=>c.status==='running'||c.status==='loading'),done=suite.cases.filter(c=>c.status==='completed').length;
     const imitation=config.trialProfile===MaleCNSModelTest.IMITATION_PROFILE;
     const text=suite.active?(suite.stopRequested?'Interruzione del test e ripristino della prova corrente…':`${current?.modelId.toUpperCase()||'Test'}: ${current?.status==='loading'?'caricamento escluso dal cronometro':`generazione ${current?.currentGeneration||1}, ${current?.maxLaps||0}/2 giri massimi`}. Addestramento normale in pausa.`):modelTestBusy?'Test terminato. Ripristino della prova precedente…':`Test ${suite.stopRequested?'interrotto':'concluso'}: ${done}/${suite.cases.length} ${imitation?'prove del V3 addestrato':'modelli'} con due giri completati. Prova precedente ripristinata.`;
-    if($('model-test-status').textContent!==text)$('model-test-status').textContent=text;
+    const training=suite.cases[0]?.rewardTraining;
+    let status=text;
+    if(config.refineActuators&&training){
+      if(suite.active&&!suite.stopRequested)status=`Affinamento V3 · aggiornamento ${suite.cases[0].currentGeneration}/${training.targetUpdates} · ${suite.cases[0].maxLaps}/2 giri massimi.`;
+      if(!suite.active&&!modelTestBusy&&suite.cases[0].status==='completed'){
+        const difference=training.improvementSeconds;
+        const summary=Number.isFinite(difference)&&difference>0?` ${difference.toLocaleString('it-IT',{maximumFractionDigits:2})} s guadagnati sui due giri.`:'';
+        status=`Affinamento concluso · ${training.rounds.length} aggiornamenti.${summary}`;
+      }
+    }
+    if($('model-test-status').textContent!==status)$('model-test-status').textContent=status;
   }
   syncModelTestControls();
 }
@@ -679,12 +693,27 @@ function initModelTestControls(){
     imitationCircuitId=circuit.id;
     imitationButton.textContent='Prova V3 addestrato · '+circuit.name;
     imitationButton.hidden=false;
+    $('model-test-refine').hidden=false;
   }).catch(()=>{});
   imitationButton.onclick=()=>{
     if(!$('model-test-limit').reportValidity())return;
     runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE,circuitId:imitationCircuitId,speedMultiplier:30}).catch(error=>{
       $('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';
     });
+  };
+  $('model-test-refine').onclick=()=>{
+    if(!$('model-test-limit').reportValidity())return;
+    runModelTest({trialProfile:MaleCNSModelTest.IMITATION_PROFILE,circuitId:imitationCircuitId,speedMultiplier:30,refineActuators:true}).catch(error=>{
+      $('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';
+    });
+  };
+  $('model-test-save-refinement').onclick=async()=>{
+    const button=$('model-test-save-refinement');button.disabled=true;
+    try{
+      const result=await desktopTest.saveRefinement();
+      if(!result.canceled)$('model-test-status').textContent='Decoder affinato salvato in '+result.name+'.';
+    }catch(error){$('model-test-status').textContent=error.message;$('model-test-status').dataset.error='true';}
+    finally{syncModelTestControls();}
   };
   $('model-test-stop').onclick=()=>{modelTestSuite?.stop();syncModelTestControls();};
   $('model-test-export').onclick=async()=>{

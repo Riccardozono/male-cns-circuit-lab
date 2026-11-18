@@ -772,3 +772,13 @@ Nell’app Windows, la prova nominale misura 394,278 e 394,101 s, per 788,379 s 
 Il decoder apprende da esempi di guida e inferisce i comandi dall’attività MaleCNS. Le prestazioni nel giro veloce, la robustezza delle altre due partenze e l’aggiornamento per ricompense dentro l’app restano da verificare prima della candidata distribuibile.
 
 [Evidenze delle partenze e della prova Windows](../outputs/research/v3-monaco-second-lap-2026-11-17/report.json).
+
+### Affinamento V3 dall’app Windows
+
+Avviare la prova con un bundle V3 compatibile per il circuito. Nel pannello **Confronto modelli**, **Affina V3 con ricompense** esegue due generazioni isolate con quattro auto per generazione. Il worker parte dal decoder caricato e varia i coefficienti di sterzo, pedali e accelerazione. Il punteggio della simulazione seleziona fra gli agenti che completano entrambi i giri senza urti o violazioni. L’élite viene riprovata nella seconda generazione. I pesi neurali rimangono fissi e le auto continuano a leggere l’attività MaleCNS.
+
+Su Monza la partenza nominale passa da 592,222 a 556,430 s simulati per due giri, un guadagno di 35,792 s. Tutti gli otto episodi completano due giri senza urti. Dopo la prova si può usare **Salva decoder affinato…**. Un nuovo avvio Windows con il file esportato riproduce gli stessi tempi al giro, 279,595 e 276,835 s. Al termine e dopo l’interruzione, l’app ripristina la sessione ordinaria.
+
+La verifica dell’affinamento dall’app riguarda un genoma V3 e la partenza nominale di Monza. Servono ancora prove su altre partenze e la verifica dei pacchetti Windows della candidata.
+
+[Risultati delle due generazioni e verifica del file esportato](../outputs/research/v3-actuator-training-desktop-2026-11-18/report.json).

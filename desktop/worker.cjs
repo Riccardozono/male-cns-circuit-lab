@@ -11,6 +11,7 @@ const Progress=require(require('node:path').join(require('node:path').dirname(wo
 const ModelTest=require(require('node:path').join(require('node:path').dirname(workerData.simulationPath),'model-test.js'));
 const Imitation = require('./imitation-trial.cjs');
 const imitation = workerData.imitationModel;
+const {ActuatorTrial}=require('./actuator-training.cjs');
 const data = workerData.modelData || {...workerData.metadata, compact: true};
 if (!workerData.modelData) {
   for (const [name, descriptor] of Object.entries(workerData.metadata.arrays)) {
@@ -267,7 +268,8 @@ parentPort.on('message', message => {
     switch (message.type) {
       case 'beginModelTest':
         if(sim.generation!==1||sim.ticks!==0||sim.history.length)throw Error('Il test deve partire da zero.');
-        modelTest=new ModelTest.Trial({...message.options,trialProfile:workerData.trialProfile,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,circuitId:sim.circuitId},performance.now());
+        const options={...message.options,trialProfile:workerData.trialProfile,refineActuators:workerData.refineActuators,population:sim.population,mutation:sim.mutation,speedMultiplier:sim.speedMultiplier,circuitId:sim.circuitId};
+        modelTest=workerData.refineActuators?new ActuatorTrial(options,performance.now(),imitation,sim):new ModelTest.Trial(options,performance.now());
         if(imitation)modelTest.decoderSha256=imitation.sha256;
         sim.onTrialTick=state=>{modelTest.backend=gpuEnabled?'WebGPU + CPU':'CPU';modelTest.observe(state,performance.now(),F.DT);};
         sim.running=true;sim.accumulator=0;last=performance.now();break;
@@ -316,7 +318,7 @@ try {
   });
   if(imitation){
     if(imitation.actor.footprintSensors===true)sim.graph.sensorProfile=require('../outputs/legacy-models.js').V3_CURRENT_SENSOR_PROFILE;
-    sim.spawn([imitation.genome]);
+    sim.spawn(Array.from({length:workerData.population},()=>imitation.genome));
     sim.motorDecoder=Imitation.createDecoder(imitation.actor,sim.graph);
   }
   sim.mode = workerData.mode;

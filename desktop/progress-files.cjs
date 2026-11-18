@@ -1,6 +1,11 @@
 'use strict';
 const fs=require('node:fs/promises'),path=require('node:path'),{randomUUID}=require('node:crypto');
 const Progress=require('../outputs/progress-save.js');
+async function writeAtomically(target,content){
+  const temporary=path.join(path.dirname(target),'.'+path.basename(target)+'.'+randomUUID()+'.tmp');
+  try{await fs.writeFile(temporary,content,{flag:'wx',mode:0o600});await fs.rename(temporary,target);}
+  catch(error){await fs.unlink(temporary).catch(()=>{});throw Error('Salvataggio non scritto: '+error.message);}
+}
 class ProgressFiles{
   constructor({engine,dialog,window,version}){this.engine=engine;this.dialog=dialog;this.window=window;this.version=version;this.busy=false;}
   async save(){
@@ -14,9 +19,7 @@ class ProgressFiles{
         const overwrite=await this.dialog.showMessageBox(this.window,{type:'question',title:'Sostituire il file?',message:path.basename(target),detail:'Il file con estensione .malecns-save esiste già. Vuoi sostituirlo?',buttons:['Sostituisci','Annulla'],defaultId:1,cancelId:1,noLink:true});
         if(overwrite.response!==0)return {canceled:true};
       }
-      const temporary=path.join(path.dirname(target),'.'+path.basename(target)+'.'+randomUUID()+'.tmp');
-      try{await fs.writeFile(temporary,text,{encoding:'utf8',flag:'wx',mode:0o600});await fs.rename(temporary,target);}
-      catch(error){await fs.unlink(temporary).catch(()=>{});throw Error('Salvataggio non scritto: '+error.message);}
+      await writeAtomically(target,text);
       return {canceled:false,name:path.basename(target),appVersion:this.version,modelId:payload.modelId,circuitId:payload.circuitId,generation:payload.workers[0].state.generation,workers:payload.workers.length,rewardRevisions:[...new Set(payload.workers.map(worker=>worker.state.rewardRevision))]};
     }finally{this.busy=false;}
   }
@@ -42,4 +45,4 @@ class ProgressFiles{
     }finally{this.busy=false;}
   }
 }
-module.exports={ProgressFiles};
+module.exports={ProgressFiles,writeAtomically};

@@ -1,6 +1,7 @@
 'use strict';
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const T=require('../model-test.js'),F=require('../simulation.js'),Legacy=require('../legacy-models.js');
+const {ActuatorTrial}=require('../../desktop/actuator-training.cjs');
 const source=require('../data/connectome.json');
 const car=(extra={})=>({id:0,alive:true,laps:0,bestProgress:0,lapTimes:[],reason:'',...extra});
 const state=(cars,generation=1)=>({cars,generation,elapsed:90,track:{pixelsPerMeter:2}});
@@ -98,4 +99,39 @@ test('The trained V3 is reported separately from the four cold-start models',()=
   assert.deepEqual(suite.cases.map(item=>item.modelId),['v3']);
   assert.equal(suite.report().execution,'pretrained-v3-trial');
   assert.equal(suite.report().settings.trialProfile,T.IMITATION_PROFILE);
+});
+
+test('Reward refinement is restricted to a trained V3 with a fixed test population',()=>{
+  const suite=new T.Suite({options:{...options,population:100,trialProfile:T.IMITATION_PROFILE,refineActuators:true}});
+  assert.deepEqual(suite.cases.map(item=>item.modelId),['v3']);
+  assert.equal(suite.settings.population,T.REFINEMENT_POPULATION);
+  assert.equal(suite.report().execution,'pretrained-v3-reward-refinement');
+  assert.equal(T.settings({...options,refineActuators:true}).refineActuators,undefined);
+});
+
+test('Reward refinement advances a safe elite and rejects unsafe finalists',()=>{
+  const genome={};
+  const bundle={genome,actor:{featureLayout:{descending:0,inputGroupMeans:0,adjacentDifference:0},layers:[]}};
+  const collision={rewardBreakdown:{penalties:{collision:1}}};
+  const sim={
+    ...state([completed({fitness:100}),completed({id:1,fitness:110}),completed({id:2,fitness:999,...collision})]),
+    graph:{inputs:[],learning:{nodes:[]}},
+    spawn(genomes){
+      assert.deepEqual(genomes,Array(T.REFINEMENT_POPULATION).fill(genome));
+      this.cars=genomes.map((_,id)=>car({id}));
+    },
+  };
+  const trial=new ActuatorTrial({...options,trialProfile:T.IMITATION_PROFILE,refineActuators:true},0,bundle,sim);
+  trial.observe(sim,1000,F.DT);
+  const first=trial.snapshot(1000).rewardTraining.rounds[0];
+  assert.equal(first.selected,1);
+  assert.equal(first.candidates[2].completed,false);
+  assert.deepEqual(trial.parameters[0],first.candidates[1].parameters);
+  assert.equal(sim.generation,2);
+  assert.ok(sim.cars.every(candidate=>candidate.previousGenerationLapTime===40));
+  sim.cars=sim.cars.map(candidate=>completed({id:candidate.id,fitness:999,...collision}));
+  trial.observe(sim,2000,F.DT);
+  assert.equal(trial.status,'failed');
+  assert.equal(trial.snapshot(2000).rewardTraining.selected,null);
+  assert.equal(trial.hit,null);
 });
