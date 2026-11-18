@@ -125,7 +125,7 @@ function createWindow(imitationModel = null) {
     const output=path.resolve(imitationSmokeDir);
     const harness=require('./model-test-smoke.cjs');testReportDialog=harness.reportDialog(output,imitationSmokeOpenFile);
     const validate=process.argv.includes('--actuator-refinement-smoke')?harness.runActuatorRefinement:harness.runImitation;
-    mainWindow.webContents.once('did-finish-load',()=>validate(mainWindow,{output,engine,version:app.getVersion(),imitationModel,openDecoder:Boolean(imitationSmokeOpenFile),refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
+    mainWindow.webContents.once('did-finish-load',()=>validate(mainWindow,{output,engine,version:app.getVersion(),imitationModel,openDecoder:imitationSmokeOpenFile,outputsDir:outputsDirectory(),refined:Boolean(imitationModel?.actor.actuatorRefinement),circuitId:imitationModel?.circuitId,footprintSensors:imitationModel?.actor.footprintSensors===true}).then(()=>app.exit(0)).catch(async error=>{console.error(error);await fs.mkdir(output,{recursive:true});await fs.writeFile(path.join(output,'imitation-error.json'),JSON.stringify({error:error.stack||error.message},null,2));app.exit(1);}));
   }
   if(modelTestSmoke){
     const output=path.resolve(process.argv.find(a=>a.startsWith('--model-test-output-dir='))?.slice('--model-test-output-dir='.length)||path.join(app.getPath('temp'),'male-cns-model-test-'+app.getVersion()));

@@ -101,7 +101,7 @@ async function run(window,{output,engine,version,forceCpuFallback,capture}){
 }
 module.exports={run,reportDialog};
 
-async function runImitation(window,{output,engine,version,openDecoder=false,refined=false,circuitId='monza',footprintSensors=false}){
+async function runImitation(window,{output,engine,version,openDecoder,outputsDir,refined=false,circuitId='monza',footprintSensors=false}){
   await fs.mkdir(output,{recursive:true});
   const wc=window.webContents,checks=[],errors=[];
   wc.on('console-message',details=>{if(details.level==='error'||details.level===3)errors.push(details.message);});
@@ -116,7 +116,13 @@ async function runImitation(window,{output,engine,version,openDecoder=false,refi
   };
   const hash=value=>crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
   await until("Boolean(globalThis.circuitLab?.tests&&circuitLab.sim.cars.length)");
+  let expectedDecoderSha;
   if(openDecoder){
+    const expected=await require('./imitation-trial.cjs').load(path.resolve(openDecoder),outputsDir);
+    circuitId=expected.circuitId;
+    refined=Boolean(expected.actor.actuatorRefinement);
+    footprintSensors=expected.actor.footprintSensors===true;
+    expectedDecoderSha=expected.sha256;
     await fs.writeFile(path.join(output,'invalid-decoder.gz'),'invalid');
     await js("document.getElementById('open-model-test').click()");
     const open="document.getElementById('model-test-open-decoder')";
@@ -151,6 +157,7 @@ async function runImitation(window,{output,engine,version,openDecoder=false,refi
   const report=await js('circuitLab.tests.suite.report()');
   const row=report.cases[0];
   check('The car completes two timed laps on the real desktop worker',report.execution==='pretrained-v3-trial'&&row.status==='completed'&&row.maxLaps===2&&row.generations===1&&row.backend==='CPU'&&/^[0-9a-f]{64}$/.test(row.decoderSha256),row);
+  if(expectedDecoderSha)check('The worker used the decoder selected via the open dialog',row.decoderSha256===expectedDecoderSha,row.decoderSha256);
   const expectedEnvelope=circuitId==='monaco'?[378,425]:circuitId==='le-mans'?[740,805]:refined?[270,288]:[292,300];
   check('Both lap times are in the verified range for the circuit',row.hit?.lapTimes?.length===2&&row.hit.lapTimes.every(time=>time>=expectedEnvelope[0]&&time<=expectedEnvelope[1]),row.hit);
   check('Recorded lap sum matches the worker’s fixed-tick episode',Math.abs(row.hit.twoLapSimSeconds-row.simSeconds)<1/60,row);

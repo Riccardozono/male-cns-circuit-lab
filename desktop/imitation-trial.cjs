@@ -7,6 +7,7 @@ const { gunzipSync, gzipSync } = require('node:zlib');
 
 const { IMITATION_PROFILE: PROFILE, IMITATION_CIRCUITS } = require('../outputs/model-test.js');
 const FORMAT = 'male-cns-v3-imitation-trial-v1';
+const CORRECTED_FORMAT = 'male-cns-v3-imitation-trial-v2';
 const MODEL_FORMAT = 'male-cns-neural-imitation-actor-v1';
 const RUNTIME_FILES = [
   'simulation.js', 'neural-learning.js', 'dense-neural.js', 'vehicle-992.js',
@@ -20,9 +21,32 @@ function vector(value, length) {
   return Array.isArray(value) && value.length === length && value.every(number => Number.isFinite(number) && Math.abs(number) <= 1000);
 }
 
+function validLayers(layers, sizes, outputActivation) {
+  return Array.isArray(layers) && layers.length === sizes.length - 1 && layers.every((layer, index) => {
+    const count = sizes[index + 1];
+    return layer?.activation === (index === layers.length - 1 ? outputActivation : 'silu') &&
+      vector(layer.bias, count) && Array.isArray(layer.weights) && layer.weights.length === count &&
+      layer.weights.every(row => vector(row, sizes[index]));
+  });
+}
+
+function validateCorrection(policy, featureCount) {
+  const {parameters, gate, adjustment, decays, threshold, exponent} = policy ?? {};
+  const bounded = (value, low, high) => Number.isFinite(value) && value >= low && value <= high;
+  if (!parameters || !bounded(parameters.steerGain, -.06, .06) ||
+      !bounded(parameters.steerBias, -.04, .04) || !bounded(parameters.pedalBias, -.05, .05) ||
+      !bounded(parameters.steerResidual, -.2, 1) || !bounded(parameters.pedalResidual, -.2, 1) ||
+      !bounded(threshold, .1, .9) || !bounded(exponent, .3, 1.5) ||
+      !vector(decays, 2) || !decays.every(decay => bounded(decay, .7, .99)) ||
+      !validLayers(gate, [featureCount * 2, 64, 32, 1], 'sigmoid') ||
+      !validLayers(adjustment, [featureCount * 2, 96, 60, 2], 'tanh')) {
+    throw Error('Correzione neurale V3 incompatibile.');
+  }
+}
+
 function validate(bundle) {
   const { actor, genome } = bundle ?? {};
-  if (bundle?.format !== FORMAT || !IMITATION_CIRCUITS.includes(bundle.circuitId) ||
+  if (![FORMAT, CORRECTED_FORMAT].includes(bundle?.format) || !IMITATION_CIRCUITS.includes(bundle.circuitId) ||
       actor?.format !== MODEL_FORMAT || actor.featureCount !== 332 ||
       (actor.footprintSensors !== undefined && typeof actor.footprintSensors !== 'boolean') ||
       actor.featureLayout?.descending !== 128 || actor.featureLayout?.inputGroupMeans !== 38 ||
@@ -39,13 +63,13 @@ function validate(bundle) {
       throw Error('Affinamento dei comandi del V3 incompatibile.');
     }
   }
-  const sizes = [332, 112, 80, 2];
-  for (const [index, layer] of actor.layers.entries()) {
-    if (layer?.activation !== (index === 2 ? 'tanh' : 'silu') ||
-        !vector(layer.bias, sizes[index + 1]) || !Array.isArray(layer.weights) ||
-        layer.weights.length !== sizes[index + 1] || !layer.weights.every(row => vector(row, sizes[index]))) {
-      throw Error('Strati del decoder V3 incompatibili.');
-    }
+  if (!validLayers(actor.layers, [332, 112, 80, 2], 'tanh')) {
+    throw Error('Strati del decoder V3 incompatibili.');
+  }
+  if (bundle.format === CORRECTED_FORMAT) {
+    validateCorrection(actor.neuralCorrection, actor.featureCount);
+  } else if (actor.neuralCorrection !== undefined) {
+    throw Error('La correzione neurale richiede il nuovo formato decoder V3.');
   }
   return bundle;
 }
@@ -76,6 +100,65 @@ async function load(file, outputsDir) {
   return { ...bundle, sha256: digest(bytes) };
 }
 
+const activation = {
+  silu: value => value / (1 + Math.exp(-value)),
+  sigmoid: value => 1 / (1 + Math.exp(-value)),
+  tanh: Math.tanh,
+};
+
+function compileNetwork(layers) {
+  const compiled = layers.map(layer => ({
+    weights: layer.weights.map(row => Float64Array.from(row)),
+    bias: Float64Array.from(layer.bias),
+    activate: activation[layer.activation],
+  }));
+  return inputs => {
+    for (const layer of compiled) {
+      const next = new Float64Array(layer.bias.length);
+      for (const [row, weights] of layer.weights.entries()) {
+        let sum = layer.bias[row];
+        for (let i = 0; i < inputs.length; i++) sum += inputs[i] * weights[i];
+        next[row] = layer.activate(sum);
+      }
+      inputs = next;
+    }
+    return inputs;
+  };
+}
+
+function createCorrection(policy) {
+  const gate = compileNetwork(policy.gate);
+  const adjust = compileNetwork(policy.adjustment);
+  const histories = new WeakMap();
+  const {decays, threshold, exponent, parameters} = policy;
+  return (car, inputs, steering, pedal) => {
+    const count = inputs.length;
+    const half = count / 2;
+    let history = histories.get(car);
+    if (!history) {
+      history = decays.map(() => inputs.slice(0, half));
+      histories.set(car, history);
+    }
+    const context = new Float64Array(2 * count);
+    context.set(inputs);
+    for (const [index, decay] of decays.entries()) {
+      const memory = history[index];
+      for (let i = 0; i < half; i++) {
+        memory[i] = decay * memory[i] + (1 - decay) * inputs[i];
+        context[count + index * half + i] = inputs[i] - memory[i];
+      }
+    }
+    const confidence = gate(context)[0];
+    const intensity = Math.max(0, Math.min(1, (confidence - threshold) / (1 - threshold))) ** exponent;
+    if (!intensity) return [steering, pedal];
+    const [steerResidual, pedalResidual] = adjust(context);
+    return [
+      steering + intensity * (steering * parameters.steerGain + parameters.steerBias + .55 * parameters.steerResidual * steerResidual),
+      pedal + intensity * (parameters.pedalBias + .55 * parameters.pedalResidual * pedalResidual),
+    ];
+  };
+}
+
 function createDecoder(actor, graph, refinementForCar=()=>actor.actuatorRefinement) {
   const bySignature = new Map();
   graph.inputs.forEach((id, index) => {
@@ -90,11 +173,8 @@ function createDecoder(actor, graph, refinementForCar=()=>actor.actuatorRefineme
     throw Error('Grafo MaleCNS incompatibile con il decoder V3.');
   }
 
-  const layers = actor.layers.map(layer => ({
-    weights: layer.weights.map(row => Float64Array.from(row)),
-    bias: Float64Array.from(layer.bias),
-    activate: layer.activation === 'tanh' ? Math.tanh : value => value / (1 + Math.exp(-value)),
-  }));
+  const predict = compileNetwork(actor.layers);
+  const correct = actor.neuralCorrection ? createCorrection(actor.neuralCorrection) : null;
   const previousByCar = new WeakMap();
   return car => {
     const brain = car.brain;
@@ -111,18 +191,12 @@ function createDecoder(actor, graph, refinementForCar=()=>actor.actuatorRefineme
     }
     previousByCar.set(car, features);
 
-    let inputs = Float64Array.from(features, (value, index) =>
+    const inputs = Float64Array.from(features, (value, index) =>
       Math.max(-8, Math.min(8, (value - actor.center[index]) / actor.scale[index])));
-    for (const layer of layers) {
-      const next = new Float64Array(layer.bias.length);
-      for (const [row, weights] of layer.weights.entries()) {
-        let sum = layer.bias[row];
-        for (let i = 0; i < inputs.length; i++) sum += inputs[i] * weights[i];
-        next[row] = layer.activate(sum);
-      }
-      inputs = next;
+    let [steering, pedal] = predict(inputs);
+    if (correct) {
+      [steering, pedal] = correct(car, inputs, steering, pedal);
     }
-    let [steering, pedal] = inputs;
     const refinement=refinementForCar(car);
     if (refinement) {
       const {steeringScale, pedalScale, accelerationBias} = refinement;
@@ -139,4 +213,4 @@ function encodeRefinement(bundle, actuatorRefinement){
   return gzipSync(JSON.stringify(validate({format,circuitId,runtimeHashes,actor:{...actor,actuatorRefinement},genome})),{level:5});
 }
 
-module.exports = { PROFILE, FORMAT, REFINEMENT_BOUNDS, runtimeHashes, load, createDecoder, encodeRefinement };
+module.exports = { PROFILE, FORMAT, CORRECTED_FORMAT, REFINEMENT_BOUNDS, runtimeHashes, load, createDecoder, encodeRefinement };
