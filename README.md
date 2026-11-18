@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Candidata 5.7.0](docs/assets/badges/version.svg)](#candidata-570)
+[![Versione 5.7.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**Windows 5.6.0 · [Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0)**
+**Windows 5.7.0 · [Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,12 +34,12 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
-## Candidata 5.7.0
+## Versione 5.7.0
 
-Il sorgente su **main** include la candidata 5.7.0. I download qui sopra sono della release pubblicata **5.6.0**.
+La release **5.7.0** è disponibile per Windows x64. [Verifica SHA-256](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/SHA256SUMS.txt).
 
 - **V3 a Monaco.** Il decoder corretto ha completato due giri senza urti in tutte le nove partenze verificate, comprese quattro inedite. Sulle quattro inedite il decoder precedente ne completava due.
-- **Decoder importabili.** La candidata apre i file da **Test modelli → Carica decoder V3…** e supporta l’affinamento per ricompense. Il decoder Monaco verificato è un profilo locale di prova.
+- **Decoder importabili.** La versione 5.7.0 apre i file da **Test modelli → Carica decoder V3…** e supporta l’affinamento per ricompense. Il decoder Monaco verificato è un profilo locale di prova.
 - **Verifica Windows.** Portable e installer silenzioso hanno riprodotto gli stessi tempi a Monaco. Sono passati 489 test automatici e 37 controlli del confronto breve V2–V5.
 
 [Rapporto e checksum della candidata](outputs/research/v3-monaco-verified-candidate-2026-11-18/report.json) · [Apprendimento e metodo](docs/LEARNING-ML.md) · [Mappatura dei sensori](docs/APPRENDIMENTO-MAPPATURA-SENSORI-DEV.md)
@@ -58,8 +58,8 @@ La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Mon
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-portable-5.6.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.6.0/MAL-E-CNS-Circuit-Lab-setup-5.6.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
 La [release 5.6.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode.
 
@@ -202,7 +202,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | **GPT-6 Luna** | OpenAI Codex | **26** |
 | **GPT-6.1 Sol** | OpenAI Codex | **27** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
-| **GPT-6.2 Sol** | OpenAI Codex | **14** |
+| **GPT-6.2 Sol** | OpenAI Codex | **15** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
