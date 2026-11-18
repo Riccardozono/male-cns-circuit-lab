@@ -814,3 +814,15 @@ La memoria temporale calcolata sulle osservazioni campionate riduce gli errori s
 Da dodici pose realmente raggiunte, distribuite su tre partenze, il simulatore prova 228 recuperi. Tre regolazioni del riferimento permettono di superare la chicane da tutte e dodici le pose. Il riferimento precedente ci riesce in dieci pose. Raccolte le traiettorie con una di quelle regolazioni, l’ultimo decoder riduce gli interventi fuori zona a circa il 4% e nella configurazione migliore conclude 1/5 prove. Le pose confermano la fattibilità fisica del recupero. La correzione appresa resta insufficiente. Il decoder usato per la verifica della candidata rimane quello precedente.
 
 [Risultati delle partenze e diagnosi del recupero fisico](../outputs/research/v3-monaco-neural-gate-2026-11-18/report.json).
+
+### Ricerca per esiti fisici e guida autonoma a Monaco (18 novembre 2026)
+
+Sono stati salvati otto stati fisici e neurali derivati da cinque partenze reali del V3. Ricaricandoli, il simulatore riproduce esattamente i tempi, gli urti e lo stato terminale. Il confronto prova 44 regolazioni di sterzo e pedali sugli stati delle due partenze critiche. Undici permettono di superare entrambe le ripartenze locali. Sulle otto pose, otto delle dieci regolazioni finaliste completano tutti i passaggi. Il V3 di partenza completa sei passaggi.
+
+Dalla griglia le due migliori regolazioni completano ciascuna cinque prove su cinque. La prima completa anche quattro partenze inedite su quattro, contro due su quattro del V3 precedente. L’app riceve solo l’attività MaleCNS e la sua memoria causale quando applica la correzione. La posizione serve a scegliere gli stati di verifica. Tutti e nove i replay della variante scelta riproducono i tempi esatti con il decoder integrato.
+
+Il decoder corretto usa il formato V2 dei file `.json.gz`. Si carica da **Test modelli → Carica decoder V3…**. La build precedente rifiuta il nuovo file. Il nuovo caricatore accetta ancora i precedenti file V1. Il test nominale Windows misura 397,082 s e 396,925 s e ripristina la sessione ordinaria al termine della prova.
+
+La candidata Windows 5.7.0 è stata compilata dal commit `cea36ce33f4e3a40f7e73247fa371f5d0b3d4992`. Il portable e l’app installata hanno importato il decoder e riprodotto i due tempi. L’installazione silenziosa per l’utente corrente ha creato i due collegamenti e la registrazione corretta. Il disinstallatore ha rimosso la copia di prova. Sono superati 489 test automatici e 37 controlli del confronto breve V2–V5 nella build. I due pacchetti sono privi di firma Authenticode.
+
+[Risultati, verifiche Windows e checksum della candidata](../outputs/research/v3-monaco-verified-candidate-2026-11-18/report.json).

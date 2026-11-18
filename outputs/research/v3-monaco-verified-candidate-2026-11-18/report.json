@@ -1,0 +1,995 @@
+{
+  "appVersion": "5.7.0",
+  "date": "2026-11-18",
+  "sourceCommit": "cea36ce33f4e3a40f7e73247fa371f5d0b3d4992",
+  "training": {
+    "scope": "Closed-loop physics search over bounded steering and pedal coefficients. The correction in both the research and integrated controller reads MaleCNS features and causal history.",
+    "checkpointReplay": {
+      "states": 8,
+      "exact": true,
+      "evidenceSha256": "27ab89754fc2ef666f5dfccc4e92667881ed1621bb8c27d4c93714a96f216b68"
+    },
+    "search": {
+      "criticalCandidates": 44,
+      "bothCritical": 11,
+      "retained": [
+        {
+          "name": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-27",
+          "parameters": {
+            "steerGain": -0.030232869148952887,
+            "steerBias": 0.01786642733373446,
+            "steerResidual": 0.16366182919288985,
+            "pedalBias": -0.02767929636349436,
+            "pedalResidual": 0.07648983575869352
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-35",
+          "parameters": {
+            "steerGain": -0.011825681116053602,
+            "steerBias": -0.004791639578912873,
+            "steerResidual": 0.07473888402571902,
+            "pedalBias": -0.02452265044383239,
+            "pedalResidual": 0.3619779696641489
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-04",
+          "parameters": {
+            "steerGain": -0.018086949300603013,
+            "steerBias": 0.004218811851437201,
+            "steerResidual": -0.0036176694121677483,
+            "pedalBias": -0.016664436512161047,
+            "pedalResidual": 0.5371670403797179
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-15",
+          "parameters": {
+            "steerGain": -0.008361478750070095,
+            "steerBias": -0.012959977272863032,
+            "steerResidual": 0.33928716199798514,
+            "pedalBias": -0.023812540427432395,
+            "pedalResidual": 0.3998074280889704
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-13",
+          "parameters": {
+            "steerGain": 0.018297295821947036,
+            "steerBias": -0.018671527032379526,
+            "steerResidual": 0.6012556909583509,
+            "pedalBias": -0.01926950555026997,
+            "pedalResidual": 0.6294430706696584
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-06",
+          "parameters": {
+            "steerGain": -0.00040085105717298924,
+            "steerBias": -0.00048631144854006936,
+            "steerResidual": 0.38026146673131733,
+            "pedalBias": -0.02672190128033981,
+            "pedalResidual": -0.06151299737393856
+          },
+          "completed": 8,
+          "total": 8
+        },
+        {
+          "name": "candidate-40",
+          "parameters": {
+            "steerGain": 0.024706214660312982,
+            "steerBias": -0.004696299755794459,
+            "steerResidual": 0.12578516094759104,
+            "pedalBias": -0.014104460407397712,
+            "pedalResidual": 0.05062372840940953
+          },
+          "completed": 7,
+          "total": 8
+        },
+        {
+          "name": "original",
+          "parameters": {
+            "steerGain": 0,
+            "steerBias": 0,
+            "steerResidual": 0,
+            "pedalBias": 0,
+            "pedalResidual": 0
+          },
+          "completed": 6,
+          "total": 8
+        },
+        {
+          "name": "candidate-29",
+          "parameters": {
+            "steerGain": 0.0387434303286427,
+            "steerBias": -0.011688970930175855,
+            "steerResidual": 0.7194414300459901,
+            "pedalBias": -0.0031771413881797363,
+            "pedalResidual": 0.3592002482293173
+          },
+          "completed": 6,
+          "total": 8
+        }
+      ],
+      "selected": "candidate-09",
+      "evidenceSha256": "4a2747c1131225c55453a865f3e4e2413c610a60621f81a7b401deee6b574783"
+    },
+    "knownStarts": {
+      "profiles": {
+        "candidate-09": {
+          "completed": 5,
+          "total": 5
+        },
+        "candidate-16": {
+          "completed": 5,
+          "total": 5
+        }
+      },
+      "results": [
+        {
+          "id": 0,
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47641,
+          "laps": 2,
+          "lapTimes": [
+            397.082034028589,
+            396.92522751760185
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10085.41743000524,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 606,
+            "outside": 10,
+            "firstActivationMeters": 0.01338332683679683
+          }
+        },
+        {
+          "id": 0,
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "profile": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "tick": 47785,
+          "laps": 2,
+          "lapTimes": [
+            397.96521838130826,
+            398.44724548785365
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10083.395575507548,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 536,
+            "outside": 10,
+            "firstActivationMeters": 0.01338332683679683
+          }
+        },
+        {
+          "id": 1,
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47770,
+          "laps": 2,
+          "lapTimes": [
+            398.16590668745266,
+            397.9876337841167
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10082.79312545095,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 615,
+            "outside": 27,
+            "firstActivationMeters": 0.013540952575936842
+          }
+        },
+        {
+          "id": 1,
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "profile": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "tick": 47935,
+          "laps": 2,
+          "lapTimes": [
+            399.4610952765321,
+            399.4429736808577
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10080.647096623019,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 574,
+            "outside": 23,
+            "firstActivationMeters": 0.013540952575936842
+          }
+        },
+        {
+          "id": 2,
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47778,
+          "laps": 2,
+          "lapTimes": [
+            398.3314453878418,
+            397.96207976146906
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10083.02543084291,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 585,
+            "outside": 25,
+            "firstActivationMeters": 0.013768731146307408
+          }
+        },
+        {
+          "id": 2,
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "profile": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "tick": 47988,
+          "laps": 2,
+          "lapTimes": [
+            399.86113289739035,
+            399.92663906870587
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10079.578286482283,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 642,
+            "outside": 40,
+            "firstActivationMeters": 0.013768731146307408
+          }
+        },
+        {
+          "id": 3,
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47819,
+          "laps": 2,
+          "lapTimes": [
+            398.2900048436734,
+            398.6803857330376
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10081.716066585574,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 623,
+            "outside": 53,
+            "firstActivationMeters": 0.01341768066448599
+          }
+        },
+        {
+          "id": 3,
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "profile": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "tick": 47928,
+          "laps": 2,
+          "lapTimes": [
+            399.25979286131206,
+            399.5240319678414
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10080.771923422886,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 610,
+            "outside": 59,
+            "firstActivationMeters": 0.01341768066448599
+          }
+        },
+        {
+          "id": 4,
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47728,
+          "laps": 2,
+          "lapTimes": [
+            397.30381419080106,
+            398.1529090781497
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10084.627699759312,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 591,
+            "outside": 43,
+            "firstActivationMeters": 0.013355237936091837
+          }
+        },
+        {
+          "id": 4,
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "profile": "candidate-16",
+          "parameters": {
+            "steerGain": 0.02713552337916917,
+            "steerBias": -0.021397323047975078,
+            "steerResidual": 0.2725935766159091,
+            "pedalBias": -0.0220891605935758,
+            "pedalResidual": -0.02572517276741565
+          },
+          "tick": 47930,
+          "laps": 2,
+          "lapTimes": [
+            399.04283316244306,
+            399.7780359096096
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10080.67673447543,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 602,
+            "outside": 25,
+            "firstActivationMeters": 0.013355237936091837
+          }
+        }
+      ]
+    },
+    "freshStarts": {
+      "profiles": {
+        "candidate-09": {
+          "completed": 4,
+          "total": 4
+        },
+        "original": {
+          "completed": 2,
+          "total": 4
+        }
+      },
+      "results": [
+        {
+          "id": 10,
+          "offset": -1.25,
+          "noise": 0.014,
+          "seed": 42591,
+          "group": "held-out",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47788,
+          "laps": 2,
+          "lapTimes": [
+            398.44749053832,
+            398.01822946899784
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10082.811680381325,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 567,
+            "outside": 31,
+            "firstActivationMeters": 0.013231665708926504
+          }
+        },
+        {
+          "id": 10,
+          "offset": -1.25,
+          "noise": 0.014,
+          "seed": 42591,
+          "group": "held-out",
+          "profile": "original",
+          "parameters": null,
+          "tick": 47601,
+          "laps": 2,
+          "lapTimes": [
+            397.10237432486525,
+            396.2471211226884
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10085.610845850442,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 0,
+            "outside": 0,
+            "firstActivationMeters": null
+          }
+        },
+        {
+          "id": 11,
+          "offset": -0.48,
+          "noise": 0.018,
+          "seed": 42592,
+          "group": "held-out",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47876,
+          "laps": 2,
+          "lapTimes": [
+            399.13625820050123,
+            398.79291262536645
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10081.222947189377,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 599,
+            "outside": 60,
+            "firstActivationMeters": 0.013580135247585846
+          }
+        },
+        {
+          "id": 11,
+          "offset": -0.48,
+          "noise": 0.018,
+          "seed": 42592,
+          "group": "held-out",
+          "profile": "original",
+          "parameters": null,
+          "tick": 14992,
+          "laps": 0,
+          "lapTimes": [],
+          "safe": false,
+          "alive": false,
+          "reason": "urto",
+          "progressMeters": 2093.8940384786106,
+          "fitness": -125.70177590077856,
+          "completed": false,
+          "activityCorrection": {
+            "frames": 0,
+            "outside": 0,
+            "firstActivationMeters": null
+          }
+        },
+        {
+          "id": 12,
+          "offset": 0.52,
+          "noise": 0.017,
+          "seed": 42593,
+          "group": "held-out",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47845,
+          "laps": 2,
+          "lapTimes": [
+            398.44358251646815,
+            398.9580716538509
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10081.34629662715,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 601,
+            "outside": 33,
+            "firstActivationMeters": 0.013284406100687074
+          }
+        },
+        {
+          "id": 12,
+          "offset": 0.52,
+          "noise": 0.017,
+          "seed": 42593,
+          "group": "held-out",
+          "profile": "original",
+          "parameters": null,
+          "tick": 38655,
+          "laps": 1,
+          "lapTimes": [
+            397.3704448662848
+          ],
+          "safe": false,
+          "alive": false,
+          "reason": "urto",
+          "progressMeters": 5413.745010630592,
+          "fitness": 6873.39788171014,
+          "completed": false,
+          "activityCorrection": {
+            "frames": 0,
+            "outside": 0,
+            "firstActivationMeters": null
+          }
+        },
+        {
+          "id": 13,
+          "offset": 1.22,
+          "noise": 0.015,
+          "seed": 42594,
+          "group": "held-out",
+          "profile": "candidate-09",
+          "parameters": {
+            "steerGain": 0.03479907137772533,
+            "steerBias": 0.01912723178942688,
+            "steerResidual": 0.4231422380707226,
+            "pedalBias": -0.020086854960536586,
+            "pedalResidual": 0.1078756081871688
+          },
+          "tick": 47820,
+          "laps": 2,
+          "lapTimes": [
+            398.49286442003114,
+            398.4957270066663
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10081.976320477934,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 598,
+            "outside": 27,
+            "firstActivationMeters": 0.013351971811232202
+          }
+        },
+        {
+          "id": 13,
+          "offset": 1.22,
+          "noise": 0.015,
+          "seed": 42594,
+          "group": "held-out",
+          "profile": "original",
+          "parameters": null,
+          "tick": 47655,
+          "laps": 2,
+          "lapTimes": [
+            397.3321839810357,
+            396.91142549595105
+          ],
+          "safe": true,
+          "alive": false,
+          "reason": "limite 2 giri",
+          "progressMeters": 6674.00000070401,
+          "fitness": 10084.523544743799,
+          "completed": true,
+          "activityCorrection": {
+            "frames": 0,
+            "outside": 0,
+            "firstActivationMeters": null
+          }
+        }
+      ]
+    },
+    "integrated": {
+      "exact": [
+        {
+          "offset": 0,
+          "noise": 0,
+          "seed": 41650,
+          "group": "nominal",
+          "lapTimes": [
+            397.082034028589,
+            396.92522751760185
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": -0.22,
+          "noise": 0.018,
+          "seed": 41672,
+          "group": "recovery",
+          "lapTimes": [
+            398.16590668745266,
+            397.9876337841167
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": 1.05,
+          "noise": 0.014,
+          "seed": 41674,
+          "group": "recovery",
+          "lapTimes": [
+            398.3314453878418,
+            397.96207976146906
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": -1.05,
+          "noise": 0.014,
+          "seed": 41671,
+          "group": "retention",
+          "lapTimes": [
+            398.2900048436734,
+            398.6803857330376
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": 0.33,
+          "noise": 0.015,
+          "seed": 41673,
+          "group": "retention",
+          "lapTimes": [
+            397.30381419080106,
+            398.1529090781497
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": -1.25,
+          "noise": 0.014,
+          "seed": 42591,
+          "group": "held-out",
+          "lapTimes": [
+            398.44749053832,
+            398.01822946899784
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": -0.48,
+          "noise": 0.018,
+          "seed": 42592,
+          "group": "held-out",
+          "lapTimes": [
+            399.13625820050123,
+            398.79291262536645
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": 0.52,
+          "noise": 0.017,
+          "seed": 42593,
+          "group": "held-out",
+          "lapTimes": [
+            398.44358251646815,
+            398.9580716538509
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        },
+        {
+          "offset": 1.22,
+          "noise": 0.015,
+          "seed": 42594,
+          "group": "held-out",
+          "lapTimes": [
+            398.49286442003114,
+            398.4957270066663
+          ],
+          "reason": "limite 2 giri",
+          "laps": 2,
+          "progressMeters": 6674.00000070401,
+          "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+          "safe": true
+        }
+      ],
+      "evidenceSha256": "2ddf756b0fe0391958069ae54771fc8a145530b47b6ac0b266a20bfe994a7254"
+    }
+  },
+  "candidate": {
+    "assets": [
+      {
+        "file": "MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe",
+        "bytes": 133692686,
+        "sha256": "f28d56b8c78e66b8d16a041aa7cace05e445c75a68c0fb901261eb7a381938c4",
+        "signature": "NotSigned"
+      },
+      {
+        "file": "MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe",
+        "bytes": 133922788,
+        "sha256": "8ce1cc6840594700ae951bba9a7afb93dcf66432ec3866226aec5602fb777a60",
+        "signature": "NotSigned"
+      },
+      {
+        "file": "Monaco-V3-5.7.0.decoder.json.gz",
+        "bytes": 1501061,
+        "sha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+        "signature": null
+      }
+    ],
+    "suitePassed": 489,
+    "source": {
+      "checks": 16,
+      "lapTimes": [
+        397.082034028589,
+        396.92522751760185
+      ],
+      "twoLapSimSeconds": 794.0072615461909,
+      "decoderSha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+      "evidenceSha256": "7fa468f173977b5ca6be3687628d4a35ee3e6ff55d2804c3170ca4951fac369a"
+    },
+    "portable": {
+      "checks": 16,
+      "lapTimes": [
+        397.082034028589,
+        396.92522751760185
+      ],
+      "twoLapSimSeconds": 794.0072615461909,
+      "decoderSha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+      "evidenceSha256": "5a8ef9e69f63de92d75278ed33e003f5c589f8df4f9b9337590f700730b6a872"
+    },
+    "installer": {
+      "checks": 16,
+      "lapTimes": [
+        397.082034028589,
+        396.92522751760185
+      ],
+      "twoLapSimSeconds": 794.0072615461909,
+      "decoderSha256": "5ad8dbb90281596d747b86fd9571f852c37f300d541274cd78056b429a4a8fc4",
+      "evidenceSha256": "8f044caec08981621e70f9ee9d0a76a5f10554525d4a29dbd5c86c7325afdeec",
+      "installation": {
+        "installerSha256": "8ce1cc6840594700ae951bba9a7afb93dcf66432ec3866226aec5602fb777a60",
+        "installationMode": "current user / silent",
+        "installExitCode": 0,
+        "verifiedRegistration": true,
+        "verifiedShortcuts": true,
+        "nativeChecks": 16,
+        "uninstallExitCode": 0,
+        "testInstallRemoved": true,
+        "lapTimes": [
+          397.082034028589,
+          396.92522751760185
+        ],
+        "nativeReportSha256": "8F044CAEC08981621E70F9EE9D0A76A5F10554525D4A29DBD5C86C7325AFDEEC"
+      }
+    },
+    "comparison": {
+      "checks": 37,
+      "results": [
+        {
+          "modelId": "v2",
+          "status": "limit",
+          "backend": "CPU",
+          "simSeconds": 59.616666666664564
+        },
+        {
+          "modelId": "v3",
+          "status": "limit",
+          "backend": "CPU",
+          "simSeconds": 12.616666666666873
+        },
+        {
+          "modelId": "v4",
+          "status": "limit",
+          "backend": "WebGPU + CPU",
+          "simSeconds": 12.016666666666843
+        },
+        {
+          "modelId": "v5",
+          "status": "limit",
+          "backend": "WebGPU + CPU",
+          "simSeconds": 8.71666666666668
+        }
+      ],
+      "evidenceSha256": "06787678b3e4bebd2411be14f5b985a004b153ac9e996b26fd1ffd752dcc2597"
+    },
+    "decoderCompatibility": "The corrected V2 decoder is rejected in the older package. The new package still supports V1 decoders.",
+    "installerScope": "Silent install and uninstall for the current Windows user. Guided installer UI outside the proof.",
+    "releaseNotesSha256": "491573f306c9366a8c57f9d1ee4014bc0f7bbc54bb70e9af7c416b7c51cb566d"
+  },
+  "cleanup": {
+    "installerTestRemoved": true,
+    "removedFixtures": [
+      {
+        "path": "native-source/invalid-decoder.gz",
+        "bytes": 7
+      },
+      {
+        "path": "native-portable/invalid-decoder.gz",
+        "bytes": 7
+      },
+      {
+        "path": "native-installer/invalid-decoder.gz",
+        "bytes": 7
+      }
+    ],
+    "staging": {
+      "stagingDeletionBlocked": true,
+      "files": 208,
+      "before": 434946294,
+      "after": 306950211,
+      "savedBytes": 127996083,
+      "allHashesUnchanged": true
+    }
+  }
+}
