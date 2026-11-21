@@ -46,7 +46,7 @@ test('Unknown preferences and invalid theme commands do not inject arbitrary the
 test('Theme script is local, packaged and runs before the stylesheet',()=>{
   const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),pkg=require('../../package.json');
   assert.ok(html.indexOf('src="ui-theme.js"')<html.indexOf('href="styles.css"'));assert.ok(pkg.build.files.includes('outputs/ui-theme.js'));
-  assert.match(html,/<button[^>]+id="theme-toggle"[^>]+type="button"[^>]+aria-pressed="false"/);assert.equal(pkg.version,'5.7.0');
+  assert.match(html,/<button[^>]+id="theme-toggle"[^>]+type="button"[^>]+aria-pressed="false"/);
 });
 test('Both themes keep readable text, action, hover, selection, chart and focus contrast',()=>{
   const css=fs.readFileSync(path.join(__dirname,'../styles.css'),'utf8'),blocks=[...css.matchAll(/:root(?:\[data-theme="dark"\])?\s*\{([^}]+)\}/g)];

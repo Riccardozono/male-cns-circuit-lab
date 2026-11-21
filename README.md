@@ -6,13 +6,13 @@
 
 **Osserva il cervello. Segui le auto. Confronta l'apprendimento.**
 
-[![Versione 5.7.0](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)
+[![Versione 5.7.1](docs/assets/badges/version.svg)](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.1)
 [![Windows x64](docs/assets/badges/windows.svg)](#avvio-rapido)
 [![Simulazione locale](docs/assets/badges/offline.svg)](#faq)
 [![CPU e WebGPU](docs/assets/badges/compute.svg)](#faq)
 [![Vibe coding](docs/assets/badges/vibe-coding.svg)](#sviluppo-con-openai-codex)
 
-**Windows 5.7.0 · [Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0)**
+**Windows 5.7.1 · [Scarica la portable](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.1/MAL-E-CNS-Circuit-Lab-portable-5.7.1-x64.exe) · [Scarica l'installer](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.1/MAL-E-CNS-Circuit-Lab-setup-5.7.1-x64.exe) · [Note della release](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.1)**
 
 [Avvio rapido](#avvio-rapido) · [Come funziona](#come-funziona) · [Anteprime](#anteprime) · [Modelli](#modelli-neurali) · [FAQ](#faq) · [Documentazione](#documentazione)
 
@@ -34,9 +34,17 @@ La struttura anatomica fa riferimento a **[natverse/malecns](https://github.com/
 
 La simulazione usa risorse locali, senza inviare le decisioni di guida a un servizio AI cloud. Il progetto è stato sviluppato in **vibe coding con OpenAI Codex**; i modelli OpenAI utilizzati nello sviluppo sono elencati [qui](#sviluppo-con-openai-codex).
 
+## Versione 5.7.1
+
+- **Pista in 3D.** Asfalto e terreno con dettaglio alla scala metrica, segnaletica laterale visibile dal posto guida e cielo con nuvole e foschia.
+- **Edifici e vegetazione.** Facciate con cornici e persiane, tetti con colori più vari e tonalità diverse fra gli alberi.
+- **Monaco.** Mare con riflessi e increspature. Il raccordo panoramico oltre la copertura altimetrica è illustrativo. [Fonti e limiti del paesaggio](outputs/PAESAGGIO-SRTM.md).
+
+[Note di rilascio](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.1) · [Verifica SHA-256](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.1/SHA256SUMS.txt)
+
 ## Versione 5.7.0
 
-La release **5.7.0** è disponibile per Windows x64. [Verifica SHA-256](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/SHA256SUMS.txt).
+La [release 5.7.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0) resta disponibile per i salvataggi creati con quella versione.
 
 - **V3 a Monaco.** Il decoder corretto ha completato due giri senza urti in tutte le nove partenze verificate, comprese quattro inedite. Sulle quattro inedite il decoder precedente ne completava due.
 - **Decoder importabili.** La versione 5.7.0 apre i file da **Test modelli → Carica decoder V3…** e supporta l’affinamento per ricompense. Il decoder Monaco verificato è un profilo locale di prova.
@@ -58,10 +66,10 @@ La scenografia introdotta nella 5.2.0 rimane: sei vie di fuga a Monza, tre a Mon
 
 ### Scarica e apri l'app
 
-- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-portable-5.7.0-x64.exe)** — avvio senza installazione; non richiede Node.js.
-- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.0/MAL-E-CNS-Circuit-Lab-setup-5.7.0-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
+- **[Portable Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.1/MAL-E-CNS-Circuit-Lab-portable-5.7.1-x64.exe)** — avvio senza installazione; non richiede Node.js.
+- **[Installer Windows x64](https://github.com/Riccardozono/male-cns-circuit-lab/releases/download/v5.7.1/MAL-E-CNS-Circuit-Lab-setup-5.7.1-x64.exe)** — installazione con collegamenti nel menu Start e sul desktop.
 
-La [release 5.6.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.6.0) contiene note e checksum. Gli eseguibili non sono firmati Authenticode.
+La [release 5.7.1](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.1) include note e checksum. Gli eseguibili non sono firmati Authenticode.
 
 ### Esplora una prova
 
@@ -202,7 +210,7 @@ I modelli OpenAI utilizzati dall'autore sono elencati con il numero di commit at
 | **GPT-6 Luna** | OpenAI Codex | **26** |
 | **GPT-6.1 Sol** | OpenAI Codex | **27** |
 | **GPT-6.1 Terra** | OpenAI Codex | **1** |
-| **GPT-6.2 Sol** | OpenAI Codex | **17** |
+| **GPT-6.2 Sol** | OpenAI Codex | **20** |
 
 
 Dall'11 ottobre 2026, i nuovi commit assistiti da IA indicano il modello usato. Ogni nuova versione dell'app riporta i modelli di sviluppo anche nelle note della release, insieme a portable, installer Windows e checksum. [Regole di pubblicazione e attribuzione](docs/RELEASING.md).
@@ -244,7 +252,7 @@ No. V4 e V5 caricano l'anatomia completa inclusa nel bundle, ma il solver elabor
 <details>
 <summary><strong>I salvataggi funzionano fra versioni diverse?</strong></summary>
 
-No. Un file `.malecns-save` creato con **5.7.0** richiede **5.7.0**; quelli 5.6.0, 5.5.0, 5.4.0, 5.3.0, 5.2.0 e 5.1.0 richiedono le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
+No. Un file `.malecns-save` creato con **5.7.1** richiede **5.7.1**. I salvataggi 5.7.0, 5.6.0, 5.5.0, 5.4.0, 5.3.0, 5.2.0 e 5.1.0 richiedono le rispettive [release precedenti](https://github.com/Riccardozono/male-cns-circuit-lab/releases), che restano disponibili. I progressi non vengono migrati automaticamente e si riprendono in pausa dalla partenza della generazione, non a metà giro. [Formato e controlli](outputs/SALVATAGGI-v462.md).
 
 </details>
 
@@ -307,7 +315,7 @@ npm run dist
 
 Il benchmark CLI copre **V2–V5** e tutte le piste del catalogo, fermando ogni combinazione al primo giro o al limite di sicurezza configurato. V4/V5 usano il percorso sparse CPU, non WebGPU: i tempi non misurano il throughput dell'app desktop. Il report distingue progresso grezzo e progresso sicuro; completare un giro nel benchmark non garantisce convergenza né apprendimento generale. [Protocollo CLI](work/benchmark-all-models.cjs).
 
-La configurazione genera i pacchetti in `dist-learning-v570/`. La cartella conserva portable e installer della candidata 5.7.0 separati dalle vecchie distribuzioni. Gli eseguibili ufficiali sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
+La configurazione genera portable e installer 5.7.1 in `dist-v571/`. Gli eseguibili ufficiali sono nelle **[Releases](https://github.com/Riccardozono/male-cns-circuit-lab/releases)**, non nella cronologia del sorgente.
 
 <details>
 <summary><strong>Struttura del repository</strong></summary>

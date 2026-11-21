@@ -1,4 +1,9 @@
-# MAL-E CNS / Circuit Lab — Windows 5.7.0
+# MAL-E CNS / Circuit Lab — Windows 5.7.1
+
+La 5.7.1 migliora asfalto, luce, facciate e costa di Monaco nella vista 3D.
+I nuovi salvataggi richiedono la 5.7.1. [Fonti del paesaggio](PAESAGGIO-SRTM.md).
+
+## Distribuzione precedente 5.7.0
 
 La candidata 5.7.0 allinea i guadagni sensoriali della pratica locale alla
 simulazione sulle piste strette e, quando una policy sicura si arresta senza
@@ -8,9 +13,9 @@ media delle tre generazioni successive è 277,86 m contro 138,71 m nel
 controllo; la media degli agenti sicuri oltre 500 m è 8,67 contro 4,33.
 Entrambi i rami sono rimasti senza giri completati e al tetto sicuro di
 790,46 m. È un risultato limitato a un seed, non una prova di convergenza.
-[Note](RELEASE-v570.md) · [Verifica](VERIFICA-v570.md).
+[Release 5.7.0](https://github.com/Riccardozono/male-cns-circuit-lab/releases/tag/v5.7.0).
 
-I nuovi salvataggi richiedono esattamente **5.7.0**; i file 5.6.0 e precedenti
+I salvataggi 5.7.0 richiedono esattamente **5.7.0**; i file 5.6.0 e precedenti
 si aprono con le rispettive release conservate. Nessuna migrazione automatica.
 
 ## Distribuzione precedente 5.6.0

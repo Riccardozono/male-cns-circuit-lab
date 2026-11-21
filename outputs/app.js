@@ -16,7 +16,7 @@ const agentSelection=new MaleCNSAgents.Selection();
 const importedTrainingSessions=new WeakSet();
 let carPreviewKey='';
 const trackPointers=new Map();
-const APP_VERSION='5.7.0',number=n=>n.toLocaleString('it-IT');
+const APP_VERSION='5.7.1',number=n=>n.toLocaleString('it-IT');
 const TRAINING_COPY_VARIANT=new URLSearchParams(location.search).get('training-copy');
 const TRAINING_COPY_PROFILE=['verified-v3-wide','verified-v3-baseline','verified-v3-current'].includes(TRAINING_COPY_VARIANT);
 const TRAINING_COPY_WIDE=TRAINING_COPY_VARIANT==='verified-v3-wide';
@@ -499,8 +499,8 @@ async function switchModel(modelId){
 }
 function progressStatus(message,error=false){const status=$('progress-status');status.textContent=message;status.dataset.error=String(error);}
 function progressCompatibility(revisions){
-  return APP_VERSION==='5.7.0'&&revisions.some(revision=>revision!==FlySim.Rewards.REVISION)
-    ?' Richiede una copia di sviluppo compatibile: la release 5.7.0 distribuita non lo apre.'
+  return revisions.some(revision=>revision!==FlySim.Rewards.REVISION)
+    ?' Il file conserva una revisione storica delle ricompense.'
     :'';
 }
 async function progressOperation(task){

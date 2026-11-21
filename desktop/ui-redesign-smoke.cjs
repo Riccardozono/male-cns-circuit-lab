@@ -17,7 +17,7 @@ async function run(window,{output,version}){
     const sim=circuitLab.sim;
     const fingerprint=()=>JSON.stringify({elapsed:sim.elapsed,generation:sim.generation,learning:sim.learningStats,history:sim.history,cars:sim.cars.map(c=>({id:c.id,x:c.x,y:c.y,heading:c.heading,outputs:c.outputs,fitness:c.fitness,genome:c.genome,activity:Array.from(c.brain.activity)}))});
     let baseline=fingerprint();for(let i=0;i<10;i++){await wait(150);const next=fingerprint();if(next===baseline)break;baseline=next;}
-    check('Version is 5.7.0',circuitLab.version==='5.7.0');
+    check('Desktop and visible app versions agree',circuitLab.version===${JSON.stringify(version)}&&$('build-version').textContent===circuitLab.version);
     check('Configuration separate on left',$('session-config')?.contains($('controller-select'))&&$('session-config').contains($('speed-range')));
     check('Generation history empty state',!!$('generation-empty')&&!!$('generation-results'));
     const stage=$('visual-stage'),rect=$('track-3d-canvas').getBoundingClientRect();
@@ -56,7 +56,7 @@ async function run(window,{output,version}){
     $('population-number').value='16';$('population-number').dispatchEvent(new Event('change',{bubbles:true}));await until(()=>sim.population===16&&sim.cars.length===16);
     const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);check('Unique IDs',ids.length===new Set(ids).size);
     check('Manual diagnostic controls remain',!!$('vehicle-gearbox')&&!!$('vehicle-abs')&&!!$('vehicle-tc')&&!!$('score-details'));
-    check('Save controls remain version locked',!!$('save-progress')&&!!$('load-progress')&&$('progress-file-note').textContent.includes('5.7.0'));
+    check('Save controls remain version locked',!!$('save-progress')&&!!$('load-progress')&&$('progress-file-note').textContent.includes('stessa versione'));
     check('Actual selected car telemetry',$('agent-speed').textContent.includes('km/h')&&$('vehicle-rpm').textContent.includes('rpm'));
     const forceResume=$('toggle-run');forceResume.click();themeButton.click();
     check('Theme switch leaves running simulation running',sim.running&&theme.getTheme()==='dark');

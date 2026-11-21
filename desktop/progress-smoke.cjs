@@ -48,8 +48,8 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
     check(modelId+': UI creates a valid portable file for every worker',p.modelId===modelId&&p.circuitId===circuitId&&p.workers.length===workerCount&&hash(p)===hash(before),{bytes:Buffer.byteLength(text),workers:p.workers.length});
     check(modelId+': learned optimizer and real histories are present',p.workers.every(w=>w.state.optimizer.updates>=2&&w.state.history.length>=2&&w.state.genomes.length===4),p.workers.map(w=>({generation:w.state.generation,updates:w.state.optimizer.updates,episodes:w.state.optimizer.episodes})));
     const status=await js("document.getElementById('progress-status').textContent");check(modelId+': saved file name and version are visible',status.includes(path.basename(filePath))&&status.includes(version),status);
-    if(version==='5.7.0'&&p.workers.some(worker=>worker.state.rewardRevision!==F.Rewards.REVISION))
-      check(modelId+': incompatible reward revision displays its compatibility warning',status.includes('release 5.7.0 distribuita non lo apre'),status);
+    if(p.workers.some(worker=>worker.state.rewardRevision!==F.Rewards.REVISION))
+      check(modelId+': historical reward revision is identified',status.includes('revisione storica delle ricompense'),status);
     await change('controller-select',modelId==='v2'?'v3':'v2');await until(`circuitLab.sim.modelId==='${modelId==='v2'?'v3':'v2'}'&&!document.getElementById('controller-select').disabled`);
     await js('circuitLab.sim.running=false');await until('!circuitLab.sim.running');
     queue('open',{canceled:false,filePaths:[filePath]});queue('confirm',{response:0});await click('load-progress');
@@ -110,9 +110,9 @@ async function run(window,{output,engine,version,forceCpuFallback=false,capture=
       await js("circuitLab.sim.modelId==='v3'&&circuitLab.sim.circuitId==='monza'&&!circuitLab.sim.running&&circuitLab.sim.cars.length===40&&circuitLab.sim.engine.workerCount===5"));
     check('Experimental copy keeps its validated full worker state',hash(normalized(await stable()))===hash(normalized(p)));
     check('Imported-session description is truthful',await js("document.getElementById('mode-note').textContent.includes('salvataggio importato')&&!document.getElementById('mode-note').textContent.includes('nessun salvataggio importato')"));
-    check('The visible import status warns about 5.7.0 release compatibility',await js("document.getElementById('progress-status').textContent.includes('release 5.7.0 distribuita non lo apre')"));
-    check('Historical progress-3 scoring shows a compatibility warning',await js("progressCompatibility(['progress-3']).includes('release 5.7.0 distribuita non lo apre')") );
-    check('Save controls explain strict version and reward compatibility',await js("document.getElementById('progress-file-note').textContent.includes('non si aprono nella release 5.7.0 distribuita')"));
+    check('The visible import status identifies historical scoring',await js("document.getElementById('progress-status').textContent.includes('revisione storica delle ricompense')"));
+    check('Historical progress-3 scoring is identified',await js("progressCompatibility(['progress-3']).includes('revisione storica delle ricompense')") );
+    check('Save controls explain exact-version and reward requirements',await js("document.getElementById('progress-file-note').textContent.includes('stessa versione')"));
     movingCopy={workers:p.workers.length,population:p.workers[0].state.population,rewardRevision:p.workers[0].state.rewardRevision,
       sha256:crypto.createHash('sha256').update(text).digest('hex')};
     if(capture){
