@@ -1,0 +1,29 @@
+[package]
+name = "male-cns-native"
+version = "5.7.1"
+edition = "2024"
+publish = false
+
+[features]
+default = ["desktop"]
+desktop = ["dep:bevy", "dep:earcutr", "dep:rfd"]
+
+[dependencies]
+bevy = { version = "=0.18.1", optional = true, default-features = false, features = [
+    "std", "async_executor", "bevy_winit", "multi_threaded", "bevy_log",
+    "3d_bevy_render", "ui_bevy_render", "bevy_scene", "bevy_gizmos",
+    "default_font", "png", "jpeg",
+] }
+earcutr = { version = "0.5", optional = true }
+rfd = { version = "0.15", optional = true }
+rquickjs = { version = "=0.14.0", features = ["array-buffer"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+
+[profile.dev]
+opt-level = 1
+debug = 0
+
+[profile.dev.package."*"]
+opt-level = 2

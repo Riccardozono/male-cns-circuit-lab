@@ -10,6 +10,8 @@
   const Vehicle=typeof module!=='undefined'&&module.exports?require('./vehicle-992.js'):root.MaleCNSVehicle;
   const Rewards=typeof module!=='undefined'&&module.exports?require('./rewards.js'):root.MaleCNSRewards;
   const Dense=typeof module!=='undefined'&&module.exports?require('./dense-neural.js'):root.MaleCNSDense;
+  const NativeSparse=root.MaleCNSNativeSparse;
+  const NativeGeometry=root.MaleCNSNativeGeometry;
   if(!Vehicle)throw Error('Modello fisico Porsche mancante');
   if(!Rewards)throw Error('Sistema di ricompense mancante');
   const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
@@ -144,6 +146,10 @@
       bounds:sampled?{x:minX-100,y:minY-100,width:maxX-minX+200,height:maxY-minY+200}:{x:0,y:0,width:1200,height:760}};
   }
   function locate(track,x,y) {
+    if(NativeGeometry) {
+      const [px,py,t,distance,along]=NativeGeometry(track).locate(x,y);
+      return {x:px,y:py,t,distance,along};
+    }
     let closest={distance:Infinity};
     for(const seg of track.segments) {
       const p=pointSegment(x,y,seg.a,seg.b);
@@ -164,6 +170,7 @@
       alongMeters:d/(track.pixelsPerMeter||1),label:station?.label||'Pista di laboratorio',estimated:Boolean(track.dimensions?.widthEstimated),station};
   }
   function onRoad(track,x,y) {
+    if(NativeGeometry)return NativeGeometry(track).onRoad(x,y);
     const inside=ring=>{let result=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){
       const a=ring[i],b=ring[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)result=!result;
     }return result;};
@@ -171,6 +178,7 @@
   }
   function raycast(track,x,y,angle,max=SENSOR_MAX) {
     const dx=Math.cos(angle),dy=Math.sin(angle); let distance=max;
+    if(NativeGeometry)return NativeGeometry(track).raycast(x,y,dx,dy,max);
     const minX=Math.min(x,x+dx*max),maxX=Math.max(x,x+dx*max),minY=Math.min(y,y+dy*max),maxY=Math.max(y,y+dy*max);
     for(const wall of track.walls) {
       if(wall.maxX<minX || wall.minX>maxX || wall.maxY<minY || wall.minY>maxY)continue;
@@ -271,6 +279,7 @@
     // Ghost cars: this function deliberately never receives other cars.
     const cos=Math.cos(car.heading),sin=Math.sin(car.heading),ppm=car.pixelsPerMeter||1;
     const hx=Vehicle.SPEC.lengthM*.5*ppm,hy=Vehicle.SPEC.widthM*.5*ppm;
+    if(NativeGeometry)return NativeGeometry(track).collided(car.x,car.y,cos,sin,hx,hy);
     const wx=Math.abs(cos)*hx+Math.abs(sin)*hy,wy=Math.abs(sin)*hx+Math.abs(cos)*hy;
     for(const wall of track.walls){
       if(wall.maxX<car.x-wx||wall.minX>car.x+wx||wall.maxY<car.y-wy||wall.minY>car.y+wy)continue;
@@ -646,7 +655,9 @@
     const gains=genome.policyWeights?Learning.synapticGains(graph,genome):null;
     if(graph.full){
       graph.inputs.forEach((index,k)=>{brain.inputDrive[k]=sensorDrive(graph,genome,sensors,k,physicsGain);});
-      for(let iter=0;iter<(graph.solver?.iterationsPerControlTick??4);iter++)sparseIteration(graph,brain,edgesEnabled,gains);
+      const iterations=graph.solver?.iterationsPerControlTick??4;
+      if(NativeSparse)NativeSparse(graph,brain,iterations,edgesEnabled,gains);
+      else for(let iter=0;iter<iterations;iter++)sparseIteration(graph,brain,edgesEnabled,gains);
     }else{
       const injection=brain.injection;injection.fill(0);graph.inputs.forEach((index,k)=>{injection[index]=sensorDrive(graph,genome,sensors,k,physicsGain);});
       const iterations=graph.modelId==='v2'?V2_ITERATIONS_PER_CONTROL_TICK:V3_ITERATIONS_PER_CONTROL_TICK;
