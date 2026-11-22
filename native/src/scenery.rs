@@ -4,6 +4,7 @@ use bevy::{
     prelude::*,
 };
 use flate2::read::GzDecoder;
+use serde::Deserialize;
 use std::io::{self, Read};
 
 pub struct Layer {
@@ -12,7 +13,31 @@ pub struct Layer {
 }
 pub struct Scenery {
     pub layers: Vec<Layer>,
-    pub trees: Vec<[f32; 5]>,
+}
+
+#[derive(Deserialize)]
+pub struct Layout {
+    pub props: Vec<Prop>,
+    pub landmarks: Vec<crate::engine::Landmark>,
+}
+
+#[derive(Deserialize)]
+pub struct Prop {
+    pub asset: String,
+    pub meshes: [Vec<usize>; 2],
+    pub position: [f32; 3],
+    pub yaw: f32,
+    pub scale: f32,
+}
+
+pub fn layout(id: &str) -> crate::engine::Result<Layout> {
+    let bytes: &[u8] = match id {
+        "monza" => include_bytes!(concat!(env!("OUT_DIR"), "/monza.layout.json.gz")),
+        "monaco" => include_bytes!(concat!(env!("OUT_DIR"), "/monaco.layout.json.gz")),
+        "le-mans" => include_bytes!(concat!(env!("OUT_DIR"), "/le-mans.layout.json.gz")),
+        _ => include_bytes!(concat!(env!("OUT_DIR"), "/lab.layout.json.gz")),
+    };
+    Ok(serde_json::from_reader(GzDecoder::new(bytes))?)
 }
 
 fn take_u32(input: &mut &[u8]) -> io::Result<u32> {
@@ -42,7 +67,7 @@ pub fn load(id: &str) -> io::Result<Scenery> {
     }
     input = &input[4..];
     let count = take_u32(&mut input)?;
-    let trees = take_u32(&mut input)?;
+    let _unused = take_u32(&mut input)?;
     let mut layers = Vec::with_capacity(count as usize);
     for _ in 0..count {
         let size = take_u32(&mut input)?;
@@ -75,10 +100,7 @@ pub fn load(id: &str) -> io::Result<Scenery> {
         }
         layers.push(Layer { mesh, role });
     }
-    let trees = (0..trees)
-        .map(|_| read_vector::<5>(&mut input))
-        .collect::<io::Result<_>>()?;
-    Ok(Scenery { layers, trees })
+    Ok(Scenery { layers })
 }
 
 fn read_vector<const N: usize>(input: &mut &[u8]) -> io::Result<[f32; N]> {

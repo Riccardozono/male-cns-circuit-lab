@@ -203,6 +203,17 @@
       // An identical return supplies no preference signal. Never learn a
       // direction just because an agent happened to be first in the array.
       if(eligible.every(agent=>compare(agent,eligible[0])===0))return;
+      if(typeof globalThis.nativeLearningUpdate==='function'){
+        const count=this.mean.length, trials=new Float64Array(count*eligible.length), groups=new Uint32Array(eligible.length);
+        for(let i=0,leader=0;i<eligible.length;i++){
+          if(compare(eligible[i],eligible[leader])!==0)leader=i;
+          groups[i]=leader;
+          trials.set(eligible[i].genome.policyWeights,i*count);
+        }
+        const values=globalThis.nativeLearningUpdate(Float64Array.from(this.mean),Float64Array.from(this.sigma),Float64Array.from(this.graph.learning.scales),trials,groups);
+        this.mean=Array.from(values.subarray(0,count));this.sigma=Array.from(values.subarray(count));
+        return;
+      }
       const count=Math.min(eligible.length,Math.max(1,Math.min(Math.floor(eligible.length/2),Math.max(2,Math.ceil(eligible.length/4)))));
       const eliteWeights=Array.from({length:count},(_,i)=>Math.log(count+.5)-Math.log(i+1)),total=eliteWeights.reduce((a,b)=>a+b,0);
       eliteWeights.forEach((_,i)=>eliteWeights[i]/=total);
@@ -233,6 +244,10 @@
     }
     sample(r,amount=.16,stagnation=0,mirror=null){
       const p=this.graph.learning,scale=Math.max(0,amount)/.16*Math.min(2.2,1+stagnation*.055);
+      if(typeof globalThis.nativeLearningSample==='function'){
+        const variation=mirror?Float64Array.from(mirror):Float64Array.from(this.mean,()=>normal(r));
+        return Array.from(globalThis.nativeLearningSample(Float64Array.from(this.mean),Float64Array.from(this.sigma),variation,scale,Boolean(mirror)));
+      }
       if(mirror)return this.mean.map((v,j)=>clamp(2*v-mirror[j],-8,8));
       // Cap the perturbation rather than clipping each child independently:
       // mirrored trials stay opposite even at the parameter bounds.
@@ -245,6 +260,10 @@
       // the search radius while the car is stuck at the same corner.
       if(stagnation<3)return;
       const p=this.graph.learning;
+      if(typeof globalThis.nativeLearningExplore==='function'){
+        this.sigma=Array.from(globalThis.nativeLearningExplore(Float64Array.from(this.sigma),Float64Array.from(p.scales)));
+        return;
+      }
       this.sigma=this.sigma.map((s,j)=>Math.min(p.scales[j]*3,Math.max(s*1.2,p.scales[j]*.8)));
     }
     metrics(){return {algorithm:'diagonal evolution strategy',version:this.graph.learning.version,updates:this.updates,episodes:this.episodes,parameters:this.mean.length,meanExploration:this.sigma.reduce((a,b)=>a+b,0)/this.sigma.length,warmStart:false};}

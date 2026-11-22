@@ -1,0 +1,11 @@
+{
+  "simulation.js": "c436c2d429ddf222987f0946647a07a12a27d584de3e9c4f8b1f405984c1bf9f",
+  "neural-learning.js": "29eac7379568a6acaa08ef43804cf005a3f3f284848a6f518da38c4e612bbb1a",
+  "dense-neural.js": "22e21b33d0e613ecc65ad3b75a48297f77f12f90ab22cf627f761e52c7495d63",
+  "vehicle-992.js": "2c8040b32dda557d34e629529a8581c3b914fbf0915122190b79725a75bc7896",
+  "terrain.js": "4daddff8146f3faebbfd70430a64a5e18397eb7b4c5b82de369dce5fcba9ddfa",
+  "rewards.js": "c11e33413d44f71fcb0a9e55c24081e987324cd4390a9ca3aa96a41302a32be2",
+  "legacy-models.js": "7d64cb740a3ae56be01c92c366926ddc05e416285d1754a06cb28f50aeaf433f",
+  "data/circuits.json": "d982c05e03a5602cfd5a296c6233991da76b9a51cc59596e8d2d60aef59c7ed4",
+  "data/connectome.json": "245eca6301a1e0a53776d8e02f2187d4195bf39eb42f8282c3097c08ea6e5698"
+}

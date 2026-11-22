@@ -2979,12 +2979,15 @@ name = "male-cns-native"
 version = "5.7.1"
 dependencies = [
  "bevy",
+ "bytemuck",
  "flate2",
+ "pollster",
  "rfd",
  "rquickjs",
  "serde",
  "serde_json",
  "sha2",
+ "wgpu",
 ]
 
 [[package]]

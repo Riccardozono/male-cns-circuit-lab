@@ -4,7 +4,10 @@ use crate::{
 };
 use bevy::{
     app::AppExit,
-    camera::{ScalingMode, visibility::RenderLayers},
+    camera::{
+        ScalingMode,
+        visibility::{RenderLayers, VisibilityRange},
+    },
     gltf::GltfAssetLabel,
     gltf::{Gltf, GltfMesh},
     input::mouse::{AccumulatedMouseMotion, AccumulatedMouseScroll},
@@ -15,7 +18,7 @@ use bevy::{
     },
     window::PrimaryWindow,
 };
-use std::{fs, path::PathBuf, time::Instant};
+use std::{collections::HashMap, fs, path::PathBuf, time::Instant};
 
 #[derive(Component)]
 pub(crate) struct CircuitSurface;
@@ -46,6 +49,7 @@ pub(crate) struct Geometry {
 pub(crate) struct TrackView {
     revision: u64,
     camera: CameraMode,
+    reset: u64,
     yaw: f32,
     pitch: f32,
     pan: Vec3,
@@ -57,14 +61,20 @@ pub fn view_input(
     bounds: Res<Geometry>,
     canvas: Query<(&ComputedNode, &UiGlobalTransform), With<crate::dashboard::TrackCanvas>>,
     window: Query<&Window, With<PrimaryWindow>>,
+    camera: Query<(&Camera, &GlobalTransform), With<CameraRig>>,
+    buttons: Query<&Interaction, With<Button>>,
     mouse: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
     scroll: Res<AccumulatedMouseScroll>,
 ) {
-    if view.revision != session.revision || view.camera != session.camera {
+    if view.revision != session.revision
+        || view.camera != session.camera
+        || view.reset != session.camera_reset
+    {
         *view = TrackView {
             revision: session.revision,
             camera: session.camera,
+            reset: session.camera_reset,
             ..default()
         };
     }
@@ -74,13 +84,35 @@ pub fn view_input(
     let Some(cursor) = window.physical_cursor_position() else {
         return;
     };
-    if !matches!(session.page, Page::Session | Page::Split)
+    if session.menu.is_some()
+        || !matches!(session.page, Page::Session | Page::Split)
         || !(cursor - transform.translation)
             .abs()
             .cmple(node.size() / 2.0)
             .all()
     {
         return;
+    }
+    if mouse.just_released(MouseButton::Left)
+        && !buttons.iter().any(|i| *i != Interaction::None)
+        && let (Some(frame), Ok((camera, transform)), Some(cursor)) =
+            (&session.frame, camera.single(), window.cursor_position())
+    {
+        let picked = frame
+            .cars
+            .iter()
+            .enumerate()
+            .filter_map(|(i, car)| {
+                let position = point(car, bounds.origin);
+                let pixel = camera.world_to_viewport(transform, position).ok()?;
+                let distance = pixel.distance_squared(cursor);
+                (distance < 18.0 * 18.0).then_some((distance, i))
+            })
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+            .map(|(_, i)| i);
+        if let Some(selected) = picked {
+            session.selected = Some(selected);
+        }
     }
     if scroll.delta.y != 0.0 {
         session.zoom = (session.zoom * (scroll.delta.y * 0.12).exp()).clamp(0.5, 6.0);
@@ -144,10 +176,111 @@ pub fn setup_fleet(
     *loaded = true;
 }
 
+pub(crate) const DECOR_ASSETS: [(&str, &[u8]); 5] = [
+    (
+        "tree",
+        include_bytes!("../../outputs/assets/trees-supplied-v1.glb"),
+    ),
+    (
+        "european",
+        include_bytes!("../../outputs/assets/trees-european-v1.glb"),
+    ),
+    (
+        "oak",
+        include_bytes!("../../outputs/assets/tree-oak-v1.glb"),
+    ),
+    (
+        "monaco",
+        include_bytes!("../../outputs/assets/monaco-building-v1.glb"),
+    ),
+    (
+        "le-mans",
+        include_bytes!("../../outputs/assets/le-mans-house-v1.glb"),
+    ),
+];
+
 #[derive(Resource)]
-pub(crate) struct Woodland {
-    meshes: [Handle<Mesh>; 2],
-    material: Handle<StandardMaterial>,
+pub(crate) struct Decor(HashMap<&'static str, Handle<Gltf>>);
+
+#[derive(Component)]
+pub(crate) struct PropMesh;
+
+pub fn decorate(
+    mut commands: Commands,
+    session: Res<Session>,
+    decor: Res<Decor>,
+    gltfs: Res<Assets<Gltf>>,
+    primitives: Res<Assets<GltfMesh>>,
+    existing: Query<Entity, With<PropMesh>>,
+    mut revision: Local<u64>,
+) {
+    if *revision == session.revision {
+        return;
+    }
+    let Some(layout) = &session.decoration else {
+        return;
+    };
+    let mut batches = HashMap::new();
+    for prop in &layout.props {
+        if batches.contains_key(prop.asset.as_str()) {
+            continue;
+        }
+        let Some(file) = decor
+            .0
+            .get(prop.asset.as_str())
+            .and_then(|id| gltfs.get(id))
+        else {
+            return;
+        };
+        let nodes = file
+            .meshes
+            .iter()
+            .map(|mesh| primitives.get(mesh))
+            .collect::<Option<Vec<_>>>();
+        let Some(nodes) = nodes else {
+            return;
+        };
+        batches.insert(prop.asset.as_str(), nodes);
+    }
+    for entity in &existing {
+        commands.entity(entity).despawn();
+    }
+    for prop in &layout.props {
+        let transform = Transform::from_translation(Vec3::from_array(prop.position))
+            .with_rotation(Quat::from_rotation_y(prop.yaw))
+            .with_scale(Vec3::splat(prop.scale));
+        let threshold = if matches!(prop.asset.as_str(), "monaco" | "le-mans") {
+            230.
+        } else {
+            130.
+        };
+        for (lod, ids) in prop.meshes.iter().enumerate() {
+            let limit = if lod == 0 {
+                VisibilityRange::abrupt(0., threshold)
+            } else {
+                VisibilityRange::abrupt(threshold, 18000.)
+            };
+            for index in ids {
+                let Some(mesh) = batches[prop.asset.as_str()].get(*index) else {
+                    continue;
+                };
+                for part in &mesh.primitives {
+                    let Some(material) = &part.material else {
+                        continue;
+                    };
+                    commands.spawn((
+                        PropMesh,
+                        Mesh3d(part.mesh.clone()),
+                        MeshMaterial3d(material.clone()),
+                        RenderLayers::layer(1),
+                        transform,
+                        limit.clone(),
+                    ));
+                }
+            }
+        }
+    }
+    *revision = session.revision;
 }
 
 pub fn setup(
@@ -169,21 +302,12 @@ pub fn setup(
         gltf: assets.load("embedded://porsche.glb"),
     });
     commands.spawn((Porsche, SceneRoot(porsche), Visibility::Hidden));
-    let tree_mesh = |mesh| {
-        assets.load(
-            GltfAssetLabel::Primitive { mesh, primitive: 0 }.from_asset("embedded://trees.glb"),
-        )
-    };
-    commands.insert_resource(Woodland {
-        meshes: [tree_mesh(2), tree_mesh(3)],
-        material: assets.load(
-            GltfAssetLabel::Material {
-                index: 0,
-                is_scale_inverted: false,
-            }
-            .from_asset("embedded://trees.glb"),
-        ),
-    });
+    commands.insert_resource(Decor(
+        DECOR_ASSETS
+            .into_iter()
+            .map(|(id, _)| (id, assets.load(format!("embedded://{id}.glb"))))
+            .collect(),
+    ));
     commands.spawn((
         Camera3d::default(),
         Camera {
@@ -201,7 +325,7 @@ pub fn setup(
         RenderLayers::from_layers(&[0, 1]),
     ));
     commands.spawn((
-        RenderLayers::from_layers(&[0, 1]),
+        RenderLayers::from_layers(&[0, 1, 3]),
         DirectionalLight {
             illuminance: 14_000.0,
             ..default()
@@ -237,7 +361,7 @@ pub fn setup(
             unlit: true,
             ..default()
         })),
-        RenderLayers::layer(1),
+        RenderLayers::from_layers(&[1, 3]),
     ));
     cockpit_model(&mut commands, &mut meshes, &mut materials);
     for id in 0..100 {
@@ -327,7 +451,6 @@ pub fn update(
     mut geometry: ResMut<Geometry>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    woodland: Res<Woodland>,
     view: Res<TrackView>,
     surfaces: Query<Entity, With<CircuitSurface>>,
     mut transforms: ParamSet<(
@@ -384,23 +507,16 @@ pub fn update(
                     ..default()
                 });
                 for layer in scenery.layers {
-                    let render_layer = if layer.role == 0 { 0 } else { 1 };
+                    let render_layers = match layer.role {
+                        0 => RenderLayers::layer(0),
+                        1 | 3 => RenderLayers::from_layers(&[1, 3]),
+                        _ => RenderLayers::layer(1),
+                    };
                     commands.spawn((
                         CircuitSurface,
                         Mesh3d(meshes.add(layer.mesh)),
                         MeshMaterial3d(mat.clone()),
-                        RenderLayers::layer(render_layer),
-                    ));
-                }
-                for (i, [x, y, z, height, yaw]) in scenery.trees.into_iter().enumerate() {
-                    commands.spawn((
-                        CircuitSurface,
-                        Mesh3d(woodland.meshes[i % 2].clone()),
-                        MeshMaterial3d(woodland.material.clone()),
-                        RenderLayers::layer(1),
-                        Transform::from_xyz(x, y, z)
-                            .with_rotation(Quat::from_rotation_y(yaw))
-                            .with_scale(Vec3::splat(height)),
+                        render_layers,
                     ));
                 }
             }
@@ -450,19 +566,33 @@ pub fn update(
         }
     }
     let zoom = session.zoom.max(0.5);
+    let landmark = session.landmark.and_then(|i| track.landmarks.get(i));
+    let focus = landmark.map(|point| Vec3::from_array(point.point) - origin);
+    let camera_center = focus.unwrap_or(Vec3::ZERO);
+    let view_radius = if focus.is_some() {
+        geometry.view_radius.min(200.)
+    } else {
+        geometry.view_radius
+    };
     let (eye, target, up) = match session.camera {
-        CameraMode::Overview => (
-            Quat::from_euler(EulerRot::YXZ, view.yaw + 2.3, view.pitch - 0.9, 0.0)
-                * Vec3::Z
-                * geometry.view_radius
-                * 1.12
-                / zoom,
-            Vec3::ZERO,
-            Vec3::Y,
-        ),
+        CameraMode::Overview => {
+            let yaw = landmark.and_then(|p| p.yaw).unwrap_or(2.3);
+            let pitch = landmark.and_then(|p| p.pitch).unwrap_or(0.9);
+            let distance =
+                landmark.map_or(view_radius * 1.12, |point| point.distance.unwrap_or(95.));
+            (
+                Quat::from_euler(EulerRot::YXZ, view.yaw + yaw, view.pitch - pitch, 0.0)
+                    * Vec3::Z
+                    * distance
+                    / zoom
+                    + camera_center,
+                camera_center,
+                Vec3::Y,
+            )
+        }
         CameraMode::Map => (
-            view.pan + Vec3::Y * geometry.view_radius * 1.39,
-            view.pan,
+            view.pan + camera_center + Vec3::Y * geometry.view_radius * 1.39,
+            view.pan + camera_center,
             Vec3::NEG_Z,
         ),
         CameraMode::Follow => (
@@ -490,14 +620,26 @@ pub fn update(
         let next = if map {
             RenderLayers::layer(0)
         } else {
-            RenderLayers::from_layers(&[0, 1])
+            if session.details {
+                RenderLayers::from_layers(&[0, 1])
+            } else {
+                RenderLayers::from_layers(&[0, 3])
+            }
         };
         if *layers != next {
             *layers = next;
         }
         if map {
-            let min_width = track.bounds.width * 1.17 / zoom;
-            let min_height = track.bounds.height * 1.33 / zoom;
+            let min_width = if focus.is_some() {
+                view_radius
+            } else {
+                track.bounds.width * 1.17
+            } / zoom;
+            let min_height = if focus.is_some() {
+                view_radius * 0.7
+            } else {
+                track.bounds.height * 1.33
+            } / zoom;
             let needs_projection = !matches!(&*projection, Projection::Orthographic(value)
                 if matches!(value.scaling_mode, ScalingMode::AutoMin { min_width: w, min_height: h }
                     if w == min_width && h == min_height));
@@ -562,13 +704,27 @@ pub fn update(
             Color::srgb(1.0, 0.73, 0.28),
         );
     }
-    if session.rays && !cockpit {
-        let leader = &frame.cars[frame.leader];
-        let start = point(leader, origin) + Vec3::Y * 0.58;
+    if session.boundaries {
+        for boundary in [&track.outer, &track.inner] {
+            if let Some(first) = boundary.first() {
+                gizmos.linestrip(
+                    boundary
+                        .iter()
+                        .chain(std::iter::once(first))
+                        .map(|[x, y, z]| {
+                            Vec3::new(*x as f32, *y as f32 + 0.17, *z as f32) - origin
+                        }),
+                    Color::srgb(0.98, 0.57, 0.15),
+                );
+            }
+        }
+    }
+    if session.rays && !cockpit && frame.ray_car == selected {
+        let start = point(car, origin) + Vec3::Y * 0.58;
         for (distance, angle) in frame.rays.iter().zip([
             -1.25, -0.8, -0.4, 0.0, 0.4, 0.8, 1.25, -1.45, -1.05, 1.05, 1.45,
         ]) {
-            let direction = angle + leader.heading;
+            let direction = angle + car.heading;
             let end = start
                 + Vec3::new(direction.cos() as f32, 0.0, direction.sin() as f32) * *distance as f32;
             gizmos.line(start, end, Color::srgb(0.96, 0.49, 0.30));
@@ -669,7 +825,7 @@ pub fn verify_window(
             && session
                 .activity
                 .as_ref()
-                .is_some_and(|(_, values)| values.iter().any(|v| v.abs() > 0.002))
+                .is_some_and(|sample| sample.values.iter().any(|v| v.abs() > 0.002))
             && smoke.phase.elapsed().as_millis() > 750 =>
         {
             capture(&mut commands, "native-split");
@@ -684,6 +840,18 @@ pub fn verify_window(
             smoke.step = 6;
         }
         6 if comparison.rows[0].elapsed > 0. => {
+            session
+                .smoke_action
+                .push(Action::SetDriver(crate::engine::Driver::Straight));
+            smoke.phase = Instant::now();
+            smoke.step = 60;
+        }
+        60 if smoke.phase.elapsed().as_millis() > 240 => {
+            if session.running || session.setup.driver != crate::engine::Driver::Connectome {
+                eprintln!("La diagnostica ha riattivato la prova durante il confronto");
+                exit.write(AppExit::error());
+                return;
+            }
             session.smoke_action.push(Action::StopComparison);
             smoke.step = 7;
         }
@@ -734,12 +902,79 @@ pub fn verify_window(
             smoke.step = 14;
         }
         14 if ready("native-cockpit") => {
+            session.smoke_action.push(Action::Run);
+            session
+                .smoke_action
+                .push(Action::Menu(crate::menus::Menu::Driver));
+            smoke.phase = Instant::now();
+            smoke.step = 15;
+        }
+        15 if session.menu == Some(crate::menus::Menu::Driver)
+            && smoke.phase.elapsed().as_millis() > 440 =>
+        {
+            capture(&mut commands, "native-menu");
+            smoke.step = 16;
+        }
+        16 if ready("native-menu") => {
+            session.smoke_action.push(Action::SetSpeed(2));
+            session
+                .smoke_action
+                .push(Action::SetDriver(crate::engine::Driver::Off));
+            smoke.step = 17;
+        }
+        17 if session.setup.driver == crate::engine::Driver::Off && frame.elapsed > 0.45 => {
+            if frame
+                .cars
+                .iter()
+                .any(|car| car.outputs != [0., 0., 0.] || car.speed != 0.)
+            {
+                eprintln!("La diagnostica a cervello spento ha mosso l'auto");
+                exit.write(AppExit::error());
+                return;
+            }
+            session
+                .smoke_action
+                .push(Action::SetDriver(crate::engine::Driver::Straight));
+            smoke.step = 18;
+        }
+        18 if session.setup.driver == crate::engine::Driver::Straight && frame.elapsed > 0.45 => {
+            if !frame
+                .cars
+                .iter()
+                .any(|car| car.outputs == [0., 0.7, 0.] && car.speed > 0.)
+            {
+                eprintln!("La diagnostica a sterzo zero non ha mosso l'auto");
+                exit.write(AppExit::error());
+                return;
+            }
+            session.smoke_action.push(Action::Evolve);
+            smoke.phase = Instant::now();
+            smoke.step = 61;
+        }
+        61 if smoke.phase.elapsed().as_millis() > 360 => {
+            if frame.generation != 1 || !frame.history.is_empty() {
+                eprintln!("Evoluzione consentita durante la diagnostica");
+                exit.write(AppExit::error());
+                return;
+            }
+            session.smoke_action.push(Action::SetModel(0));
+            smoke.step = 19;
+        }
+        19 if session.setup.model == "v2" => {
+            session.smoke_action.push(Action::SetPopulation(17));
+            smoke.step = 20;
+        }
+        20 if !session.busy && session.setup.population == 17 && frame.cars.len() == 17 => {
+            session.smoke_action.push(Action::SetPopulation(99));
+            smoke.step = 21;
+        }
+        21 if !session.busy && session.setup.population == 99 && frame.cars.len() == 99 => {
             let (elapsed, speed, progress, wall) = smoke.motion.unwrap();
             let report = serde_json::json!({
                 "passed":true,"cars":frame.cars.len(),"elapsed":elapsed,"leaderKmh":speed,
                 "leaderMeters":progress,"wallSecondsAfterAssetReady":wall,"comparisonPreservedSession":true,"liveAtlas":true,
-                "screens":["native-scene.png","native-split.png","native-compare.png","native-map-dark.png","native-cockpit.png"],
-                "targetSpeedAfterResume":session.setup.speed,"measuredSpeedAfterResume":session.effective,
+                "screens":["native-scene.png","native-split.png","native-compare.png","native-map-dark.png","native-cockpit.png","native-menu.png"],
+                "testedPopulationValues":[17,99],"diagnostics":["off","straight"],"diagnosticEvolutionBlocked":true,
                 "backend":format!("{:?}",adapter.backend),"adapter":adapter.name,
             });
             fs::write(smoke.directory.join("smoke.json"), report.to_string())

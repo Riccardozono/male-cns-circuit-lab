@@ -189,10 +189,38 @@
     s.verticalVelocityMps=frame.forward[1]*s.u+frame.side[1]*s.v;return frame;
   }
   function placeOnSurface(car,ground){if(ground&&!ground.flat)surfaceState(car.vehicle,ground.sample(car.x,car.y),car.heading);}
+  const STATE_KEYS='u v r rpm gear targetGear gearboxMode shiftRemaining shiftCooldown shifts shiftRejected fuelL massKg absEnabled tcEnabled tcFactor tcActive absActive brakeBias steeringAngle ax ay engineTorqueNm enginePowerKw clutch limiter dragN downforceN pitch roll pitchRate rollRate distanceM speedMps simulationSeconds elevationM roadGradePercent roadPitch roadRoll gravityX gravityY gravityNormal supportAcceleration normalG verticalVelocityMps'.split(' ');
+  const WHEEL_KEYS='omega slip slipAngle fx fy fz grip temperatureC wear pressureBar brakeC absFactor absActive travelM'.split(' ');
+  const CAR_KEYS='x y heading distance lifetime'.split(' ');
+  const RESULT_KEYS='steer longitudinalVelocity lateralVelocity yawRate velocityX velocityY speed longitudinalAcceleration lateralAcceleration longitudinalG lateralG totalG loadTransfer slipAngle'.split(' ');
+  const FLAGS=new Set(['limiter','absEnabled','tcEnabled','tcActive','absActive']);
+  const buffer=typeof nativeVehicleAdvance==='function' ? new Float64Array(STATE_KEYS.length+4*WHEEL_KEYS.length+CAR_KEYS.length+1) : null;
+  function nativeStep(car,s,commands,dt,ppm,ground) {
+    let i=0;
+    for (const key of STATE_KEYS) buffer[i++]=key==='gearboxMode'?Number(s[key]==='auto'):Number(s[key]);
+    for (const wheel of s.wheels) for (const key of WHEEL_KEYS) buffer[i++]=Number(wheel[key]);
+    for (const key of CAR_KEYS) buffer[i++]=car[key];
+    buffer[i]=ppm;
+    const out=nativeVehicleAdvance(buffer,commands,dt,ground?.flat?undefined:ground?.nativeSample);
+    i=0;
+    for (const key of STATE_KEYS) {
+      const value=out[i++];
+      s[key]=key==='gearboxMode'?(value?'auto':'manual'):FLAGS.has(key)?Boolean(value):value;
+    }
+    for (const wheel of s.wheels) for (const key of WHEEL_KEYS) {
+      const value=out[i++];
+      wheel[key]=key==='absActive'?Boolean(value):value;
+    }
+    for (const key of CAR_KEYS) car[key]=out[i++];
+    i++; // Track-unit scale is read-only.
+    for (const key of RESULT_KEYS) car[key]=out[i++];
+    car._physicsSpeed=car.speed;
+  }
   function step(car,commands,dt,ground=null){
     if(!Number.isFinite(dt)||dt<=0||dt>.1)throw Error('Passo fisico non valido');
     const s=car.vehicle||(car.vehicle=createState()),ppm=car.pixelsPerMeter||1;
     if(Math.abs(car.speed-(car._physicsSpeed??car.speed))>1e-7)synchroniseSpeed(s,car.speed/ppm);
+    if(buffer&&(!ground||ground.flat||ground.nativeSample))return nativeStep(car,s,commands,dt,ppm,ground);
     const n=Math.ceil(dt*MODEL.physicsHz-1e-8),h=dt/n;let dx=0,dy=0,heading=car.heading;
     for(let i=0;i<n;i++){
       const tilted=ground&&!ground.flat,frame=tilted?surfaceState(s,ground.sample(car.x+dx*ppm,car.y+dy*ppm),heading):null;

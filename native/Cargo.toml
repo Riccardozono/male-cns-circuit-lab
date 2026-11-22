@@ -6,7 +6,7 @@ publish = false
 
 [features]
 default = ["desktop"]
-desktop = ["dep:bevy", "dep:rfd", "dep:flate2"]
+desktop = ["dep:bevy", "dep:rfd", "dep:flate2", "dep:wgpu", "dep:pollster", "dep:bytemuck"]
 
 [dependencies]
 bevy = { version = "=0.18.1", optional = true, default-features = false, features = [
@@ -14,11 +14,14 @@ bevy = { version = "=0.18.1", optional = true, default-features = false, feature
     "3d_bevy_render", "ui_bevy_render", "bevy_scene", "bevy_gizmos",
     "default_font", "png", "jpeg",
 ] }
+bytemuck = { version = "1.25", optional = true }
 flate2 = { version = "1", optional = true }
+pollster = { version = "0.4", optional = true }
+wgpu = { version = "=27.0.1", default-features = false, features = ["wgsl", "dx12", "vulkan", "std"], optional = true }
 rfd = { version = "0.15", optional = true }
 rquickjs = { version = "=0.14.0", features = ["array-buffer"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["raw_value", "float_roundtrip"] }
 sha2 = "0.10"
 
 [profile.dev]

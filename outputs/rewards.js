@@ -58,15 +58,22 @@
     // Recomputable/idempotent, including manually ending an episode. EACH lap
     // counts: a quick first lap cannot hide a very slow second one.
     const reference=Number.isFinite(previousLap)&&previousLap>0?previousLap:null;
-    const total=reference===null?0:car.lapTimes.reduce((sum,time)=>sum+Math.min(RULES.regressionCapPerLap,RULES.regressionFactor*Math.max(0,time/reference-1)),0);
+    const native=typeof nativeRewardComparison==='function'?nativeRewardComparison(Float64Array.from(car.lapTimes),reference??0):null;
+    const total=native?native[0]:reference===null?0:car.lapTimes.reduce((sum,time)=>sum+Math.min(RULES.regressionCapPerLap,RULES.regressionFactor*Math.max(0,time/reference-1)),0);
     const old=car.lapRegressionPenalty||0;car.previousGenerationLapTime=reference;
-    car.lapRegression=reference===null?0:car.lapTimes.reduce((sum,time)=>sum+Math.max(0,time-reference),0);
+    car.lapRegression=native?native[1]:reference===null?0:car.lapTimes.reduce((sum,time)=>sum+Math.max(0,time-reference),0);
     car.lapRegressionPenalty=total;car.lapRegressionPenaltyApplied=reference!==null;
     car.rewardBreakdown.penalties.regression=total;car.penalty+=total-old;refresh(car);
   }
   function finish(track,car,reason=car.reason||'generazione interrotta'){
     if(!car.rewardState.finalized){
-      if(car.laps<1){
+      if(typeof nativeRewardMissingLaps==='function'){
+        const revision=SUPPORTED_REVISIONS.indexOf(car.rewardRevision);
+        if(car.laps<1||revision>=3&&car.laps<RULES.maxLapsPerGeneration){
+          car.noLapPenalty=nativeRewardMissingLaps(revision,car.laps,car.rewardState.highWater,track.total);
+          car.noLapPenaltyApplied=true;debit(car,'noLap',car.noLapPenalty);
+        }
+      }else if(car.laps<1){
         car.noLapPenalty=RULES.noLapPenalty+RULES.missingLapPenalty*(1-clamp(car.rewardState.highWater/track.total,0,1));
         car.noLapPenaltyApplied=true;debit(car,'noLap',car.noLapPenalty);
       }else if((car.rewardRevision===MISSING_LAP_REVISION||car.rewardRevision===PREVIOUS_PACE_REVISION||car.rewardRevision===REVISION)&&car.laps<RULES.maxLapsPerGeneration){
@@ -83,7 +90,45 @@
     // except the previous-generation comparison). Training uses car.fitness.
     return {fitness:car.baseFitness,bestProgress:car.bestProgress,laps:car.laps,bestLapTime:car.bestLapTime};
   }
+  const nativeReasons=['','urto','fuori pista','progresso non valido','limite 2 giri','ferma / senza progresso','troppo lenta / senza progresso'];
+  const nativeCosts=['','time','slowLap','reverse','risk','slip','collision','offTrack','stall','slowProgress','invalid'];
+  function rustStep(track,car,{along,onRoad,collision,forwardClearance,dt}) {
+    const s=car.rewardState,ppm=track.pixelsPerMeter||1;
+    if(s.finalized)return;
+    const out=nativeRewardStep(new Float64Array([
+      track.total, ppm, referenceLapTime(track), SUPPORTED_REVISIONS.indexOf(car.rewardRevision),
+      car.x, car.y, along, car.vehicle?.speedMps??car.speed??0, car.slipAngle||0,
+      Number(car.outputs?.[1])||0, Number(car.outputs?.[2])||0, car.lifetime,
+      Number(onRoad),Number(collision),forwardClearance,dt,
+      s.x,s.y,s.observedAlong??s.along,s.highWater,s.stallHighWater,s.nextCheckpoint,
+      s.invalidSteps,s.paceTime,s.paceProgress,s.brakeLockSeconds||0,
+      car.progress,car.lastProgressTime,car.lastLapStartTime,car.laps,
+    ]));
+    const [continuous,high,stall,checkpoint,invalid,paceTime,paceProgress,locked,progress,lastProgress,lapStart,reason]=out;
+    s.x=car.x;s.y=car.y;s.observedAlong=along;
+    if(continuous){s.along=along;car.lastAlong=along;}
+    s.invalidSteps=invalid;s.brakeLockSeconds=locked;
+    s.highWater=high;s.stallHighWater=stall;s.nextCheckpoint=checkpoint;s.paceTime=paceTime;s.paceProgress=paceProgress;
+    car.progress=progress;car.lastProgressTime=lastProgress;
+    if(continuous&&onRoad&&!collision)car.bestProgress=high;
+    let lapPending=false;
+    const endLap=()=>{comparisonPenalty(car);lapPending=false;};
+    for(let i=12;i<out.length;i+=2){
+      const kind=out[i],amount=out[i+1];
+      if(lapPending&&![3,4,-2].includes(kind))endLap();
+      if(kind===5){
+        car.laps++;car.lapTimes.push(amount);car.lastLapTime=amount;car.bestLapTime=Math.min(car.bestLapTime,amount);car.lastLapStartTime=lapStart;
+        const terms=lapTerms(track,amount);car.lastLapReward=terms.lap+terms.pace;car.lastLapPenalty=terms.slow;
+        lapPending=true;
+      }else if(kind>0)credit(car,rewardKeys[kind-1],amount);
+      else debit(car,nativeCosts[-kind],amount);
+    }
+    if(lapPending)endLap();
+    if(reason)finish(track,car,nativeReasons[reason]);
+    refresh(car);
+  }
   function step(track,car,{along,onRoad=true,collision=false,forwardClearance=Infinity,dt}){
+    if(typeof nativeRewardStep==='function')return rustStep(track,car,{along,onRoad,collision,forwardClearance,dt});
     const s=car.rewardState,ppm=track.pixelsPerMeter||1,reference=referenceLapTime(track),previousHighWater=s.highWater;
     if(s.finalized)return;
     const travelled=Math.hypot(car.x-s.x,car.y-s.y);let delta=along-(s.observedAlong??s.along);
