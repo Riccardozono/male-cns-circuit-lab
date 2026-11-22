@@ -26,6 +26,7 @@ pub struct Setup {
     pub population: u32,
     pub seed: u32,
     pub speed: f64,
+    pub mutation: f64,
 }
 
 impl Default for Setup {
@@ -36,6 +37,7 @@ impl Default for Setup {
             population: 16,
             seed: 7717,
             speed: 1.0,
+            mutation: 0.32,
         }
     }
 }
@@ -46,6 +48,10 @@ pub struct Car {
     pub z: f64,
     pub elevation: f64,
     pub heading: f64,
+    pub pitch: f32,
+    pub roll: f32,
+    #[serde(rename = "steeringAngle")]
+    pub steering_angle: f32,
     pub alive: bool,
     pub speed: f64,
     pub rpm: f64,
@@ -56,6 +62,21 @@ pub struct Car {
     #[serde(rename = "bestLap")]
     pub best_lap: Option<f64>,
     pub outputs: [f64; 3],
+    #[serde(rename = "longitudinalG")]
+    pub longitudinal_g: f64,
+    #[serde(rename = "lateralG")]
+    pub lateral_g: f64,
+    pub abs: bool,
+    pub tc: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Generation {
+    pub generation: u32,
+    pub best_safe_progress: f64,
+    pub max_laps: u32,
+    pub best_lap_time: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -66,6 +87,9 @@ pub struct Frame {
     pub neurons: usize,
     pub edges: usize,
     pub leader: usize,
+    #[serde(rename = "twoLaps")]
+    pub two_laps: Option<f64>,
+    pub history: Vec<Generation>,
     pub rays: Vec<f64>,
     pub cars: Vec<Car>,
 }
@@ -112,6 +136,38 @@ fn hash_bytes<'js>(
 }
 
 impl Engine {
+    #[cfg(feature = "desktop")]
+    pub fn atlas(&self) -> Result<crate::atlas::Points> {
+        self.context.with(|ctx| {
+            decode(
+                ctx.eval::<String, _>("nativeAtlas()")
+                    .catch(&ctx)
+                    .map_err(|e| e.to_string())?,
+            )
+        })
+    }
+    #[cfg(feature = "desktop")]
+    pub fn atlas_activity(&self, car: usize) -> Result<Vec<f32>> {
+        self.context.with(|ctx| {
+            let sample: Function = ctx.globals().get("nativeAtlasActivity")?;
+            let values: TypedArray<f32> = sample
+                .call((car,))
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            // The array belongs to this worker and stays rooted until after the copy.
+            Ok(unsafe { values.as_slice() }.to_vec())
+        })
+    }
+
+    #[cfg(feature = "desktop")]
+    pub fn track_two_laps(&self) -> Result<()> {
+        self.context.with(|ctx| {
+            ctx.eval::<(), _>("nativeTrackTrial()")
+                .catch(&ctx)
+                .map_err(|error| error.to_string().into())
+        })
+    }
+
     pub fn new() -> Result<Self> {
         let metadata: serde_json::Value = serde_json::from_str(FULL_METADATA)?;
         if metadata["binaryBytes"] != FULL_GRAPH.len()
@@ -134,6 +190,7 @@ impl Engine {
             globals.set("nativeDense", Function::new(ctx.clone(), crate::neural::dense)?)?;
             globals.set("nativeSparse", Function::new(ctx.clone(), crate::neural::sparse)?)?;
             globals.set("nativeTrackGeometry", Function::new(ctx.clone(), crate::geometry::build)?)?;
+            globals.set("MaleCNSNativeTerrain", Function::new(ctx.clone(), crate::surface::build)?)?;
             ctx.eval::<(), _>(
                 "globalThis.TextEncoder = class { encode(value) { return nativeEncode(value); } };
                  globalThis.crypto = { subtle: { digest: (_, bytes) => nativeHash(bytes) } };
@@ -193,7 +250,13 @@ impl Engine {
             let start: Function = ctx.globals().get("nativeStart")?;
             decode(
                 start
-                    .call((&setup.model, &setup.circuit, setup.population, setup.seed))
+                    .call((
+                        &setup.model,
+                        &setup.circuit,
+                        setup.population,
+                        setup.seed,
+                        setup.mutation,
+                    ))
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )
@@ -222,6 +285,23 @@ impl Engine {
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )
+        })
+    }
+
+    pub fn mutation(&self, value: f64) -> Result<()> {
+        self.context.with(|ctx| {
+            let apply: Function = ctx.globals().get("nativeMutation")?;
+            apply
+                .call::<_, ()>((value.clamp(0.0, 0.35),))
+                .catch(&ctx)
+                .map_err(|e| e.to_string().into())
+        })
+    }
+
+    pub fn evolve(&self) -> Result<Frame> {
+        self.context.with(|ctx| {
+            let apply: Function = ctx.globals().get("nativeEvolve")?;
+            decode(apply.call(()).catch(&ctx).map_err(|e| e.to_string())?)
         })
     }
 

@@ -33,11 +33,12 @@
       let best=null,distance=Infinity;for(const s of candidates.size?candidates:segments){const t=clamp(((x-s.a.x)*s.dx+(y-s.a.y)*s.dy)/(s.len*s.len||1),0,1),d=(x-s.a.x-s.dx*t)**2+(y-s.a.y-s.dy*t)**2;if(d<distance){distance=d;best={s,t,distance:Math.sqrt(d)/ppm};}}
       return best;
     }
+    const native=profile.min!==profile.max&&globalThis.MaleCNSNativeTerrain?.(JSON.stringify({segments,cell,ppm,total,anchors:meta.anchors}));
     const sampler={meta,profile,ppm,total,flat:profile.min===profile.max,
       sample(x,y){if(this.flat)return {height:0,gx:0,gy:0,hxx:0,hxy:0,hyy:0};const p=nearest(x,y),q=profile.at(p.s.s+p.t*p.s.len/ppm),tx=p.s.dx/(p.s.len||1),ty=p.s.dy/(p.s.len||1);return {height:q.height-profile.min,gx:q.slope*tx,gy:q.slope*ty,hxx:q.curvature*tx*tx,hxy:q.curvature*tx*ty,hyy:q.curvature*ty*ty,distance:p.distance};},
       visualHeight(x,y){if(this.flat)return 0;const p=nearest(x,y),q=profile.at(p.s.s+p.t*p.s.len/ppm),distance=Math.max(0,p.distance-10);return (q.height-profile.min)*Math.exp(-distance*distance/(95*95));},
       info(){let maxGrade=0,length3D=0;for(let s=0;s<total;s+=2){const a=profile.at(s),b=profile.at(Math.min(total,s+2)),ds=Math.min(2,total-s);maxGrade=Math.max(maxGrade,Math.abs(a.slope));length3D+=Math.hypot(ds,b.height-a.height);}return {revision:Data.revision,estimated:true,rangeM:profile.max-profile.min,maxGradePercent:maxGrade*100,planLengthM:total,surfaceLengthM:length3D,reference:meta.reference,notice:meta.notice};}
-    };cache.set(track,sampler);return sampler;
+    };if(native){sampler.sample=(x,y)=>{const [height,gx,gy,hxx,hxy,hyy,distance]=native.sample(x,y);return {height,gx,gy,hxx,hxy,hyy,distance};};sampler.visualHeight=native.visualHeight;}cache.set(track,sampler);return sampler;
   }
   function frame(sample,heading){const c=Math.cos(heading),s=Math.sin(heading),gx=sample.gx||0,gy=sample.gy||0,p=gx*c+gy*s,l=Math.hypot(1,p),n=Math.hypot(1,gx,gy);
     const forward=[c/l,p/l,s/l],normal=[-gx/n,1/n,-gy/n],side=[forward[1]*normal[2]-forward[2]*normal[1],forward[2]*normal[0]-forward[0]*normal[2],forward[0]*normal[1]-forward[1]*normal[0]];

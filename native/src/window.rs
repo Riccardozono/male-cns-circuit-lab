@@ -1,4 +1,5 @@
 use crate::{
+    atlas, comparison, dashboard,
     engine::{Engine, Frame, Setup, Track},
     scene,
 };
@@ -14,14 +15,18 @@ use std::{
 const CIRCUITS: [&str; 4] = ["monza", "monaco", "le-mans", "lab"];
 const MODELS: [&str; 4] = ["v2", "v3", "v4", "v5"];
 const POPULATIONS: [u32; 5] = [4, 16, 40, 64, 100];
-const SPEEDS: [f64; 8] = [0.5, 1.0, 2.0, 5.0, 10.0, 15.0, 20.0, 30.0];
 
 pub fn run(smoke: Option<PathBuf>) -> AppExit {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "MAL-E CNS Circuit Lab · Rust nativo".into(),
-            resolution: (1320, 800).into(),
+            resolution: (1540, 980).into(),
+            resize_constraints: bevy::window::WindowResizeConstraints {
+                min_width: 1050.0,
+                min_height: 760.0,
+                ..default()
+            },
             ..default()
         }),
         ..default()
@@ -37,19 +42,46 @@ pub fn run(smoke: Option<PathBuf>) -> AppExit {
         Path::new("trees.glb"),
         include_bytes!("../../outputs/assets/trees-supplied-v1.glb").as_slice(),
     );
+    registry.insert_asset(
+        PathBuf::from("porsche-top.png"),
+        Path::new("porsche-top.png"),
+        include_bytes!("../../outputs/assets/porsche-992-gt3r-top-v1.png").as_slice(),
+    );
     let setup = Setup::default();
     let worker = start_worker(setup.clone());
     app.insert_resource(worker)
-        .insert_resource(Session { setup, ..default() })
+        .insert_resource(Session {
+            setup,
+            mutation: 0.32,
+            camera: CameraMode::Follow,
+            zoom: 1.0,
+            comparison_limit: 10,
+            atlas_live: true,
+            ..default()
+        })
         .insert_resource(ClearColor(Color::srgb(0.64, 0.76, 0.85)))
-        .add_systems(Startup, (scene::setup, build_ui))
+        .init_resource::<comparison::Comparison>()
+        .add_systems(Startup, (scene::setup, dashboard::build, atlas::setup))
         .add_systems(
             Update,
-            (read_worker, controls, advance, scene::update, ui_text).chain(),
+            (
+                read_worker,
+                controls,
+                comparison::read,
+                advance,
+                sample_atlas,
+                scene::setup_fleet,
+                scene::view_input,
+                scene::update,
+                atlas::update,
+                dashboard::refresh,
+                dashboard::viewports,
+            )
+                .chain(),
         );
     if let Some(path) = smoke {
         app.insert_resource(scene::Smoke::new(path))
-            .add_systems(Update, scene::verify_window.after(scene::update));
+            .add_systems(Update, scene::verify_window.after(dashboard::refresh));
     }
     app.run()
 }
@@ -64,7 +96,7 @@ pub enum CameraMode {
 }
 
 impl CameraMode {
-    fn label(self) -> &'static str {
+    pub fn label(self) -> &'static str {
         match self {
             Self::Overview => "Panoramica",
             Self::Follow => "Inseguimento",
@@ -78,6 +110,13 @@ impl CameraMode {
 pub struct Session {
     pub setup: Setup,
     pub track: Option<Track>,
+    pub points: Option<crate::atlas::Points>,
+    pub activity: Option<(usize, Vec<f32>)>,
+    pub atlas_live: bool,
+    pub atlas_frozen: bool,
+    pub atlas_center: u64,
+    activity_pending: bool,
+    last_activity: Option<std::time::Instant>,
     pub frame: Option<Frame>,
     pub running: bool,
     pub busy: bool,
@@ -86,6 +125,15 @@ pub struct Session {
     pub camera: CameraMode,
     pub selected: Option<usize>,
     pub rays: bool,
+    pub page: Page,
+    pub dark: bool,
+    pub zoom: f32,
+    pub mutation: f64,
+    pub effective: f64,
+    pub comparison_limit: u32,
+    pub smoke_action: Vec<Action>,
+    sample: Option<(std::time::Instant, u64)>,
+    total_ticks: u64,
     pub message: String,
     ticks_due: f64,
 }
@@ -102,13 +150,17 @@ impl Session {
 enum Request {
     Start(Setup),
     Tick(u32),
+    SampleActivity(usize),
+    Mutation(f64),
+    Evolve,
     Save(f64),
     Load,
 }
 
 enum Update {
-    Ready(Setup, Track, Frame),
-    Frame(Frame),
+    Ready(Setup, Track, Frame, crate::atlas::Points, bool),
+    Frame(Frame, u32),
+    Activity(usize, Option<Vec<f32>>),
     Info(String),
     Error(String),
 }
@@ -136,10 +188,17 @@ fn start_worker(setup: Setup) -> Worker {
             let mut next = Some(Request::Start(setup));
             while let Some(request) = next.take().or_else(|| requests.recv().ok()) {
                 let result = match request {
-                    Request::Start(setup) => engine
-                        .start(&setup)
-                        .map(|(track, frame)| Update::Ready(setup, track, frame)),
-                    Request::Tick(ticks) => engine.advance(ticks).map(Update::Frame),
+                    Request::Start(setup) => engine.start(&setup).and_then(|(track, frame)| {
+                        Ok(Update::Ready(setup, track, frame, engine.atlas()?, true))
+                    }),
+                    Request::Tick(ticks) => engine.advance(ticks).map(|f| Update::Frame(f, ticks)),
+                    Request::SampleActivity(car) => {
+                        Ok(Update::Activity(car, engine.atlas_activity(car).ok()))
+                    }
+                    Request::Mutation(value) => {
+                        engine.mutation(value).map(|_| Update::Info(String::new()))
+                    }
+                    Request::Evolve => engine.evolve().map(|f| Update::Frame(f, 0)),
                     Request::Save(speed) => save_dialog(&engine, speed),
                     Request::Load => load_dialog(&engine),
                 };
@@ -195,36 +254,69 @@ fn load_dialog(engine: &Engine) -> crate::engine::Result<Update> {
         .take(16 * 1024 * 1024 + 1)
         .read_to_string(&mut text)?;
     let (setup, track, frame) = engine.load(&text)?;
-    Ok(Update::Ready(setup, track, frame))
+    Ok(Update::Ready(setup, track, frame, engine.atlas()?, false))
 }
 
 fn read_worker(worker: Res<Worker>, mut session: ResMut<Session>) {
     let responses = worker.rx.lock().expect("Coda della simulazione");
     while let Ok(message) = responses.try_recv() {
-        session.busy = false;
-        session.request = false;
+        if let Update::Activity(car, values) = message {
+            session.activity_pending = false;
+            if !session.atlas_frozen {
+                session.activity = values.map(|sample| (car, sample));
+            }
+            continue;
+        }
+        if matches!(message, Update::Frame(_, ticks) if ticks > 0) {
+            session.request = false;
+        } else {
+            session.busy = false;
+        }
         match message {
-            Update::Ready(setup, track, frame) => {
+            Update::Ready(setup, track, frame, points, allow_run) => {
+                let first = session.track.is_none();
+                session.points = Some(points);
+                session.activity = None;
+                session.last_activity = None;
+                session.effective = 0.0;
+                session.total_ticks = 0;
+                session.sample = None;
+                session.mutation = setup.mutation;
                 session.setup = setup;
                 session.track = Some(track);
                 session.frame = Some(frame);
-                session.running = false;
+                session.running = allow_run && (first || session.running);
                 session.selected = None;
                 session.ticks_due = 0.0;
                 session.revision += 1;
                 session.message.clear();
             }
-            Update::Frame(frame) => session.frame = Some(frame),
+            Update::Frame(frame, ticks) => {
+                session.frame = Some(frame);
+                session.total_ticks += u64::from(ticks);
+                let now = std::time::Instant::now();
+                if let Some((then, base)) = session.sample {
+                    let dt = now.duration_since(then).as_secs_f64();
+                    if dt >= 0.45 {
+                        session.effective = (session.total_ticks - base) as f64 / (60.0 * dt);
+                        session.sample = Some((now, session.total_ticks));
+                    }
+                } else {
+                    session.sample = Some((now, session.total_ticks));
+                }
+            }
             Update::Info(info) => session.message = info,
             Update::Error(error) => {
                 session.running = false;
+                session.request = false;
                 session.message = error;
             }
+            Update::Activity(_, _) => unreachable!(),
         }
     }
 }
 
-fn advance(time: Res<Time>, worker: Res<Worker>, mut session: ResMut<Session>) {
+fn advance(time: Res<Time<Real>>, worker: Res<Worker>, mut session: ResMut<Session>) {
     if !session.running || session.busy || session.frame.is_none() {
         return;
     }
@@ -238,104 +330,65 @@ fn advance(time: Res<Time>, worker: Res<Worker>, mut session: ResMut<Session>) {
     session.request = worker.tx.send(Request::Tick(ticks)).is_ok();
 }
 
-#[derive(Component, Copy, Clone)]
-enum Action {
+fn sample_atlas(worker: Res<Worker>, mut session: ResMut<Session>) {
+    if !matches!(session.page, Page::Brain | Page::Split)
+        || !session.atlas_live
+        || session.atlas_frozen
+        || session.activity_pending
+        || session.busy
+        || session.frame.is_none()
+        || session
+            .last_activity
+            .is_some_and(|t| t.elapsed().as_millis() < 175)
+    {
+        return;
+    }
+    session.activity_pending = worker
+        .tx
+        .send(Request::SampleActivity(session.selected_car()))
+        .is_ok();
+    session.last_activity = Some(std::time::Instant::now());
+}
+
+#[derive(Component, Copy, Clone, PartialEq, Eq)]
+pub enum Action {
     Run,
     Circuit,
     Model,
     Population,
-    Speed,
+    SetSpeed(u8),
+    SetMutation(u8),
     Camera,
     Select,
+    Previous,
     Rays,
     Save,
     Load,
     Reset,
+    Evolve,
+    Map,
+    Scene,
+    Center,
+    ZoomIn,
+    ZoomOut,
+    Page(Page),
+    Theme,
+    AtlasLive,
+    AtlasFreeze,
+    AtlasCenter,
+    Compare,
+    StopComparison,
+    LimitDown,
+    LimitUp,
 }
 
-#[derive(Component)]
-struct Label(Action);
-
-#[derive(Component)]
-struct Telemetry;
-
-const BUTTON: Color = Color::srgb(0.10, 0.18, 0.25);
-const WHITE: Color = Color::srgb(0.88, 0.94, 0.98);
-
-fn build_ui(mut commands: Commands, mut fonts: ResMut<Assets<Font>>) {
-    let font = fonts.add(
-        Font::try_from_bytes(
-            include_bytes!("../../outputs/assets/fonts/Sintony-Bold.ttf").to_vec(),
-        )
-        .expect("Font di interfaccia integrato"),
-    );
-    let text_font = |font_size| TextFont {
-        font: font.clone().into(),
-        font_size,
-        ..default()
-    };
-    commands
-        .spawn((
-            Node {
-                position_type: PositionType::Absolute,
-                left: px(18),
-                top: px(18),
-                width: px(288),
-                flex_direction: FlexDirection::Column,
-                padding: UiRect::all(px(16)),
-                row_gap: px(7),
-                ..default()
-            },
-            BackgroundColor(Color::srgba(0.025, 0.061, 0.101, 0.96)),
-        ))
-        .with_children(|panel| {
-            panel.spawn((Text::new("MAL-E CNS"), text_font(24.0), TextColor(WHITE)));
-            panel.spawn((
-                Text::new("Circuit Lab · Anteprima nativa"),
-                text_font(13.0),
-                TextColor(Color::srgb(0.51, 0.73, 0.80)),
-            ));
-            for (action, text) in [
-                (Action::Run, "Avvia · Spazio"),
-                (Action::Circuit, "Circuito"),
-                (Action::Model, "Controller"),
-                (Action::Population, "Auto"),
-                (Action::Speed, "Velocità"),
-                (Action::Camera, "Camera"),
-                (Action::Select, "Selezione auto"),
-                (Action::Rays, "Sensori"),
-                (Action::Save, "Salva progressi"),
-                (Action::Load, "Carica progressi"),
-                (Action::Reset, "Nuova sessione"),
-            ] {
-                panel
-                    .spawn((
-                        Button,
-                        action,
-                        Node {
-                            min_height: px(30),
-                            align_items: AlignItems::Center,
-                            padding: UiRect::horizontal(px(10)),
-                            ..default()
-                        },
-                        BackgroundColor(BUTTON),
-                    ))
-                    .with_children(|button| {
-                        button.spawn((
-                            Text::new(text),
-                            text_font(14.0),
-                            TextColor(WHITE),
-                            Label(action),
-                        ));
-                    });
-            }
-            panel.spawn((
-                Text::new("Caricamento del connettoma…"),
-                text_font(14.0),
-                TextColor(WHITE),
-                Telemetry,
-            ));
-        });
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
+pub enum Page {
+    #[default]
+    Session,
+    Compare,
+    Brain,
+    Split,
 }
 
 fn next<T: PartialEq + Copy, const N: usize>(choices: [T; N], current: T) -> T {
@@ -347,40 +400,68 @@ fn next<T: PartialEq + Copy, const N: usize>(choices: [T; N], current: T) -> T {
 
 fn controls(
     keys: Res<ButtonInput<KeyCode>>,
-    mut buttons: Query<(&Interaction, &Action, &mut BackgroundColor), Changed<Interaction>>,
+    buttons: Query<(&Interaction, &Action), Changed<Interaction>>,
     worker: Res<Worker>,
     mut session: ResMut<Session>,
+    mut compare: ResMut<comparison::Comparison>,
+    sliders: crate::dashboard::SliderInput,
 ) {
-    let mut actions = Vec::new();
-    for (interaction, action, mut color) in &mut buttons {
-        color.0 = if *interaction == Interaction::None {
-            BUTTON
-        } else {
-            Color::srgb(0.14, 0.32, 0.40)
-        };
-        if *interaction == Interaction::Pressed {
-            actions.push(*action);
-        }
-    }
-    for (key, action) in [
-        (KeyCode::Space, Action::Run),
-        (KeyCode::KeyC, Action::Camera),
-        (KeyCode::Tab, Action::Select),
-        (KeyCode::KeyR, Action::Rays),
-    ] {
-        if keys.just_pressed(key) {
-            actions.push(action);
-        }
-    }
+    let actions = buttons
+        .iter()
+        .filter_map(|(i, a)| (*i == Interaction::Pressed).then_some(*a))
+        .chain(
+            [
+                (KeyCode::Space, Action::Run),
+                (KeyCode::KeyC, Action::Camera),
+                (KeyCode::Tab, Action::Select),
+                (KeyCode::KeyR, Action::Rays),
+            ]
+            .into_iter()
+            .filter_map(|(key, a)| keys.just_pressed(key).then_some(a)),
+        );
+    let actions = actions.chain(sliders.action());
+    let actions = actions.chain(std::mem::take(&mut session.smoke_action));
     for action in actions {
-        if session.busy || session.track.is_none() {
-            return;
+        match action {
+            Action::Theme => {
+                session.dark = !session.dark;
+                continue;
+            }
+            Action::Page(page) => {
+                session.page = page;
+                continue;
+            }
+            Action::StopComparison => {
+                compare.stop();
+                continue;
+            }
+            Action::AtlasLive => {
+                session.atlas_live = !session.atlas_live;
+                continue;
+            }
+            Action::AtlasFreeze => {
+                session.atlas_frozen = !session.atlas_frozen;
+                continue;
+            }
+            Action::AtlasCenter => {
+                session.atlas_center += 1;
+                continue;
+            }
+            _ => {}
+        }
+        if session.track.is_none() {
+            continue;
         }
         let mut setup = session.setup.clone();
+        setup.mutation = session.mutation;
         let request = match action {
             Action::Run => {
-                session.running = !session.running;
-                session.ticks_due = 0.0;
+                if !session.busy && !compare.running {
+                    session.running = !session.running;
+                    session.ticks_due = 0.0;
+                    session.sample = None;
+                    session.effective = 0.0;
+                }
                 continue;
             }
             Action::Camera => {
@@ -389,17 +470,44 @@ fn controls(
                         CameraMode::Overview,
                         CameraMode::Follow,
                         CameraMode::Cockpit,
-                        CameraMode::Map,
                     ],
                     session.camera,
                 );
+                session.zoom = 1.0;
                 continue;
             }
-            Action::Select => {
+            Action::Map => {
+                session.camera = CameraMode::Map;
+                session.zoom = 1.0;
+                continue;
+            }
+            Action::Scene => {
+                session.camera = CameraMode::Follow;
+                session.zoom = 1.0;
+                continue;
+            }
+            Action::Center => {
+                session.camera = CameraMode::Overview;
+                session.zoom = 1.0;
+                continue;
+            }
+            Action::ZoomIn | Action::ZoomOut => {
+                session.zoom = (session.zoom
+                    * if action == Action::ZoomIn {
+                        1.23
+                    } else {
+                        1.0 / 1.23
+                    })
+                .clamp(0.5, 6.0);
+                continue;
+            }
+            Action::Select | Action::Previous => {
                 let count = session.frame.as_ref().map_or(0, |f| f.cars.len());
-                session.selected = match session.selected {
-                    None if count > 0 => Some(0),
-                    Some(i) if i + 1 < count => Some(i + 1),
+                session.selected = match (action, session.selected) {
+                    (Action::Previous, None) if count > 0 => Some(count - 1),
+                    (Action::Previous, Some(i)) if i > 0 => Some(i - 1),
+                    (Action::Select, None) if count > 0 => Some(0),
+                    (Action::Select, Some(i)) if i + 1 < count => Some(i + 1),
                     _ => None,
                 };
                 continue;
@@ -408,8 +516,34 @@ fn controls(
                 session.rays = !session.rays;
                 continue;
             }
-            Action::Speed => {
-                session.setup.speed = next(SPEEDS, setup.speed);
+            Action::SetSpeed(value) => {
+                session.setup.speed = f64::from(value.clamp(1, 60)) * 0.5;
+                continue;
+            }
+            Action::SetMutation(value) => {
+                if session.busy || compare.running {
+                    continue;
+                }
+                let value = f64::from(value.min(35)) / 100.0;
+                if session.mutation == value {
+                    continue;
+                }
+                session.mutation = value;
+                Request::Mutation(value)
+            }
+            Action::LimitDown | Action::LimitUp => {
+                session.comparison_limit = if action == Action::LimitUp {
+                    (session.comparison_limit + 1).min(60)
+                } else {
+                    session.comparison_limit.saturating_sub(1)
+                };
+                continue;
+            }
+            Action::Compare => {
+                if !compare.running {
+                    session.running = false;
+                    compare.start(setup, session.mutation, session.comparison_limit);
+                }
                 continue;
             }
             Action::Circuit => {
@@ -427,83 +561,15 @@ fn controls(
             Action::Reset => Request::Start(setup),
             Action::Save => Request::Save(setup.speed),
             Action::Load => Request::Load,
-        };
-        session.running = false;
-        session.busy = worker.tx.send(request).is_ok();
-        session.message = "Operazione in corso…".into();
-    }
-}
-
-fn ui_text(
-    session: Res<Session>,
-    mut labels: Query<(&Label, &mut Text), Without<Telemetry>>,
-    mut telemetry: Query<&mut Text, With<Telemetry>>,
-) {
-    if !session.is_changed() {
-        return;
-    }
-    for (label, mut text) in &mut labels {
-        let line = match label.0 {
-            Action::Run => if session.running {
-                "Pausa · Spazio"
-            } else {
-                "Avvia · Spazio"
-            }
-            .into(),
-            Action::Circuit => format!(
-                "Circuito   {}",
-                session
-                    .track
-                    .as_ref()
-                    .map_or("…", |track| track.label.as_str())
-            ),
-            Action::Model => format!("MaleCNS   {} · CPU", session.setup.model.to_uppercase()),
-            Action::Population => format!("Popolazione   {}", session.setup.population),
-            Action::Speed => format!("Velocità richiesta   {}×", session.setup.speed),
-            Action::Camera => format!("Camera   {} · C", session.camera.label()),
-            Action::Select => match session.selected {
-                Some(i) => format!("Auto   A-{:02} · Tab", i + 1),
-                None => "Auto   migliore · Tab".into(),
-            },
-            Action::Rays => format!(
-                "Raggi del leader   {} · R",
-                if session.rays { "sì" } else { "no" }
-            ),
+            Action::Evolve => Request::Evolve,
             _ => continue,
         };
-        if text.0 != line {
-            text.0 = line;
-        }
-    }
-    let line = if let Some(frame) = &session.frame {
-        let i = session.selected_car();
-        let car = &frame.cars[i];
-        format!(
-            "GEN {:02}  ·  {:05.1} s  ·  {}/{} attive\nA-{:02}  ·  {:5.1} km/h  ·  M{}\n{:4.0} rpm  ·  giri {}/2  ·  {:.0} m\nGas {:.2}  ·  freno {:.2}\n{} neuroni · {} connessioni\n{}",
-            frame.generation,
-            frame.elapsed,
-            frame.cars.iter().filter(|c| c.alive).count(),
-            frame.cars.len(),
-            i + 1,
-            car.speed * 3.6,
-            car.gear,
-            car.rpm,
-            car.laps,
-            car.progress,
-            car.outputs[1],
-            car.outputs[2],
-            frame.neurons,
-            frame.edges,
-            session.message,
-        )
-    } else if session.message.is_empty() {
-        "Caricamento del connettoma…".into()
-    } else {
-        session.message.clone()
-    };
-    for mut text in &mut telemetry {
-        if text.0 != line {
-            text.0 = line.clone();
+        if !session.busy && !compare.running {
+            if matches!(request, Request::Save(_) | Request::Load | Request::Evolve) {
+                session.running = false;
+            }
+            session.busy = worker.tx.send(request).is_ok();
+            session.message = "Operazione in corso…".into();
         }
     }
 }

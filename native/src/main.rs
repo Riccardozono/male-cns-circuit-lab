@@ -3,11 +3,20 @@
     windows_subsystem = "windows"
 )]
 
+#[cfg(feature = "desktop")]
+mod atlas;
+#[cfg(feature = "desktop")]
+mod comparison;
+#[cfg(feature = "desktop")]
+mod dashboard;
 mod engine;
 mod geometry;
 mod neural;
 #[cfg(feature = "desktop")]
 mod scene;
+#[cfg(feature = "desktop")]
+mod scenery;
+mod surface;
 #[cfg(feature = "desktop")]
 mod window;
 

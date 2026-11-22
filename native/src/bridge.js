@@ -5,6 +5,8 @@
   const base = JSON.parse(nativeReducedGraph);
   const profile = '5.7.1';
   let sim;
+  let twoLaps;
+  let atlasIndices = [];
 
   function source(modelId) {
     if (models.has(modelId)) return models.get(modelId);
@@ -49,12 +51,18 @@
       neurons: sim.graph.n,
       edges: sim.graph.edgeCount,
       leader: leader.id,
+      twoLaps: twoLaps ?? null,
+      history: sim.history.slice(-7).map(({ generation, bestSafeProgress, maxLaps, bestLapTime }) =>
+        ({ generation, bestSafeProgress: bestSafeProgress ?? 0, maxLaps: maxLaps ?? 0, bestLapTime })),
       rays: FlySim.sensorDistances(sim.track, leader),
       cars: sim.cars.map(car => ({
         x: car.x,
         z: car.y,
         elevation: car.vehicle.elevationM || 0,
         heading: car.heading,
+        pitch: car.vehicle.pitch || 0,
+        roll: car.vehicle.roll || 0,
+        steeringAngle: car.vehicle.steeringAngle || 0,
         alive: car.alive,
         speed: car.vehicle.speedMps,
         rpm: car.vehicle.rpm,
@@ -64,6 +72,10 @@
         progress: car.bestProgress,
         bestLap: Number.isFinite(car.bestLapTime) ? car.bestLapTime : null,
         outputs: car.outputs,
+        longitudinalG: car.longitudinalG || 0,
+        lateralG: car.lateralG || 0,
+        abs: car.vehicle.absEnabled,
+        tc: car.vehicle.tcEnabled,
       })),
     });
   }
@@ -82,9 +94,36 @@
     });
   }
 
-  globalThis.nativeStart = (modelId, circuitId, population, seed) => {
-    sim = new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population, seed });
+  globalThis.nativeStart = (modelId, circuitId, population, seed,mutation) => {
+    sim = new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population, seed,mutation });
+    twoLaps = null;
+    atlasIndices = [];
     return circuit();
+  };
+  globalThis.nativeTrackTrial = () => {
+    sim.onTrialTick = state => {
+      if (twoLaps !== null) return;
+      const times = state.cars.filter(car => car.laps === 2)
+        .map(car => car.lapTimes[0] + car.lapTimes[1]);
+      if (times.length) twoLaps = Math.min(...times);
+    };
+  };
+  globalThis.nativeAtlas = () => {
+    const g=sim.graph, data=[], step=Math.max(1,Math.ceil(g.n/9000));
+    atlasIndices = [];
+    for(let i=0;i<g.n;i+=step){
+      const x=g.positions[i*3],y=g.positions[i*3+1],z=g.positions[i*3+2];
+      if(x===g.missingPosition)continue;
+      const cl=g.classNames[g.classCodes[i]]||'';
+      const category=g.outputMask[i]?1:cl.startsWith('descending')?1:cl.startsWith('ascending')?2:cl.includes('visual')?3:0;
+      data.push([x,y,z,category]);
+      atlasIndices.push(i);
+    }
+    return JSON.stringify(data);
+  };
+  globalThis.nativeAtlasActivity = carId => {
+    const activity = sim.cars[carId]?.brain.activity;
+    return activity ? Float32Array.from(atlasIndices, i => activity[i]) : new Float32Array();
   };
   globalThis.nativeTrack = circuit;
   globalThis.nativeSnapshot = snapshot;
@@ -92,6 +131,8 @@
     for (let i = 0; i < ticks; i++) sim.tick();
     return snapshot();
   };
+  globalThis.nativeMutation = value => { sim.mutation = value; };
+  globalThis.nativeEvolve = () => { sim.evolve();return snapshot(); };
   globalThis.nativeSave = speed => {
     sim.speedMultiplier = speed;
     return MaleCNSProgress.encode(MaleCNSProgress.fromSimulation(sim), profile);
@@ -106,9 +147,10 @@
     MaleCNSProgress.validatePayload(payload, { graph: next.graph, circuits: next.circuits, maxWorkers: 1 });
     MaleCNSProgress.restore(next, payload.workers[0].state);
     sim = next;
+    twoLaps = null;
     return JSON.stringify({
       model: modelId, circuit: circuitId, population: sim.population,
-      seed: sim.seed, speed: sim.speedMultiplier,
+      seed: sim.seed, speed: sim.speedMultiplier,mutation:sim.mutation,
     });
   };
 })();
