@@ -6,6 +6,8 @@
 #[cfg(feature = "desktop")]
 mod atlas;
 #[cfg(feature = "desktop")]
+mod atlas_data;
+#[cfg(feature = "desktop")]
 mod comparison;
 #[cfg(feature = "desktop")]
 mod dashboard;
@@ -30,6 +32,8 @@ mod reward;
 mod scene;
 #[cfg(feature = "desktop")]
 mod scenery;
+#[cfg(feature = "desktop")]
+mod sky;
 mod surface;
 mod vehicle;
 #[cfg(feature = "desktop")]

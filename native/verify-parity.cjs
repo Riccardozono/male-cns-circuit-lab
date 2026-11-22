@@ -38,21 +38,25 @@ async function main() {
   try {
     const evolution = process.argv.includes('--evolution');
     const cases = evolution ? [
-      ['v2','monza',4,1080], ['v3','lab',4,1080],
-      ['v4','monza',4,540], ['v5','le-mans',4,540],
+      ['v2', 'monza', 4, 1080], ['v3', 'lab', 4, 1080],
+      ['v4', 'monza', 4, 540], ['v5', 'le-mans', 4, 540],
     ] : [
       ['v2', 'lab', 4, 120], ['v2', 'monza', 16, 180],
       ['v3', 'monaco', 4, 120], ['v4', 'le-mans', 4, 45], ['v5', 'monza', 4, 60],
     ];
-    for (const [modelId, circuitId, population, ticks] of cases) {
-      const text = execFileSync(executable, ['--probe', modelId, circuitId, population, ticks, savePath], {
-        encoding: 'utf8', timeout: 120_000, windowsHide: true,
-      });
-      const native = JSON.parse(text);
+    for (const [modelId, circuitId, population, minimumTicks] of cases) {
       const sim = new simulation.Simulation(sources[modelId], {modelId, circuitId, circuits, population, seed: 7717});
       const begin = performance.now();
-      for (let i = 0; i < ticks; i++) sim.tick();
+      let ticks = 0;
+      while (ticks < minimumTicks || (evolution && sim.generation === 1 && ticks < 3600)) {
+        sim.tick();
+        ticks++;
+      }
       const referenceSeconds = (performance.now() - begin) / 1000;
+      const text = execFileSync(executable, ['--probe', modelId, circuitId, population, ticks, savePath], {
+        encoding: 'utf8', timeout: 180_000, windowsHide: true,
+      });
+      const native = JSON.parse(text);
       const frame = native.snapshot;
       assert.equal(frame.neurons, sim.graph.n);
       assert.equal(frame.edges, sim.graph.edgeCount);
@@ -75,6 +79,19 @@ async function main() {
         assert.equal(actual.alive, expected.alive);
         assert.equal(actual.laps, expected.laps);
       }
+      const rayCar = sim.cars[frame.rayCar];
+      const distances = simulation.sensorDistances(sim.track, rayCar);
+      const terrain = simulation.Vehicle.Terrain.forTrack(sim.track);
+      assert.equal(frame.rayPoints.length, distances.length + 1);
+      distances.forEach((distance, i) => {
+        const heading = rayCar.heading + simulation.ANGLES[i];
+        const x = rayCar.x + Math.cos(heading) * distance;
+        const z = rayCar.y + Math.sin(heading) * distance;
+        close(frame.rays[i], distance);
+        close(frame.rayPoints[i + 1][0], x);
+        close(frame.rayPoints[i + 1][1], (terrain.sample(x, z).height + 0.52) * terrain.ppm);
+        close(frame.rayPoints[i + 1][2], z);
+      });
       const saved = await saves.decode(fs.readFileSync(savePath, 'utf8'), '5.7.1');
       saves.validatePayload(saved.payload, {graph: sim.graph, circuits: sim.circuits});
       assert.equal(saved.payload.workers[0].state.generation, sim.generation);

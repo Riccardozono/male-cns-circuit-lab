@@ -6,7 +6,6 @@
   const profile = '5.7.1';
   let sim;
   let trial;
-  let atlas;
   let inspectionId = null;
   let gpu = { state: 'cpu', adapter: null, dispatches: 0, error: null };
   let gpuReset = true;
@@ -48,8 +47,10 @@
         car.inputs = FlySim.sense(sim.track, car);
         car.physicsInputs = FlySim.physicsSense(car, sim.track);
         car.sensorVector = car.inputs.concat(car.physicsInputs);
-        for (let k = 0; k < width; ++k)
-          request.drives[car.id * width + k] = FlySim.sensorDrive(g, car.genome, car.sensorVector, k, physicsGain);
+        const mapping = car.genome.sensorMappingVersion ?? MaleCNSLearning.LEGACY_SENSOR_MAPPING_VERSION;
+        const drives = nativeLearningInputs(g, Float64Array.from(car.genome.policyWeights),
+          Float64Array.from(car.sensorVector), mapping, physicsGain);
+        request.drives.set(drives, car.id * width);
       }
     }
     const packet = nativeGpu(g, request);
@@ -118,6 +119,13 @@
   function snapshot() {
     const leader = leaderCar();
     const viewCar = sim.cars[inspectionId] ?? leader;
+    const track = sim.track, terrain = MaleCNSVehicle.Terrain.forTrack(track);
+    const rays = FlySim.sensorDistances(track, viewCar), scale = track.pixelsPerMeter || 1;
+    const point = (x, z) => [x, (terrain.sample(x, z).height + .52) * scale, z];
+    const rayPoints = [point(viewCar.x, viewCar.y), ...rays.map((distance, index) => {
+      const angle = viewCar.heading + FlySim.ANGLES[index];
+      return point(viewCar.x + Math.cos(angle) * distance, viewCar.y + Math.sin(angle) * distance);
+    })];
     return JSON.stringify({
       generation: sim.generation,
       ticks: sim.ticks,
@@ -135,7 +143,7 @@
       })),
       stopped: !sim.running,
       rayCar: viewCar.id,
-      rays: FlySim.sensorDistances(sim.track, viewCar),
+      rays, rayPoints,
       cars: sim.cars.map(car => ({
         x: car.x,
         z: car.y,
@@ -194,7 +202,6 @@
     configureGpu(sim, mode);
     trial = null;
     inspectionId = null;
-    atlas = null;
     return circuit();
   };
   globalThis.nativeStartActor = (text, params, generation, previous) => {
@@ -206,7 +213,6 @@
         population, seed:7717, mutation:0, learningEnabled:false});
       if (bundle.actor.footprintSensors === true) sim.graph.sensorProfile = MaleCNSLegacy.V3_CURRENT_SENSOR_PROFILE;
       configureGpu(sim, 'connectome');
-      atlas = null;
     }
     sim.generation = generation;
     sim.spawn(Array.from({length:population}, () => bundle.genome));
@@ -264,26 +270,14 @@
       }
     };
   };
-  globalThis.nativeAtlas = () => {
+  globalThis.nativeAtlasGraph = () => {
     const g = sim.graph;
-    const coords = MaleCNSAtlas.coordinates(g);
-    const rows = new Float64Array(coords.indices.length * 11);
-    const inputs = new Set(g.inputs);
-    const readouts = new Set(FlySim.ensureLearning(g).nodes);
-    coords.indices.forEach((i, j) => {
-      const k = i * 3;
-      const cls = g.classNames[g.classCodes[i]] || '';
-      const flags = Number(inputs.has(i)) | (Number(readouts.has(i)) << 1)
-        | (Number(cls.startsWith('descending')) << 2) | (Number(cls.startsWith('ascending')) << 3);
-      rows.set([i, g.bodyIds[i], coords.positions[k], -coords.positions[k + 1], coords.positions[k + 2],
-        g.classCodes[i], g.sideCodes[i], flags, g.positions[k], g.positions[k+1], g.positions[k+2]], j * 11);
-    });
-    atlas = { coords, inputs, readouts };
-    return [rows, JSON.stringify(g.classNames)];
+    FlySim.ensureLearning(g);
+    return g;
   };
-  globalThis.nativeAtlasActivity = (carId, filter, limit, focus) => {
+  globalThis.nativeAtlasActivity = carId => {
     const car = sim.cars[carId];
-    if (!car || !atlas) return [new Float32Array(), '[]'];
+    if (!car) return null;
     const g = sim.graph;
     // Paused or newly selected agents can be observed without any physics tick.
     let { activity } = car.brain;
@@ -294,16 +288,7 @@
         for (let i = 0; i < packet.active.length; ++i) activity[packet.active[i]] = packet.values[i];
       } catch { /* The retained CPU mirror is still safe to inspect during fallback. */ }
     }
-    const { coords, inputs, readouts } = atlas;
-    const mask = new Uint8Array(g.n);
-    if (limit) for (const i of coords.indices) {
-      mask[i] = Number(filter === 0 || (filter === 1 && Math.abs(activity[i]) > .002)
-        || (filter === 2 && inputs.has(i)) || (filter === 3 && readouts.has(i))
-        || (filter === 4 && g.classNames[g.classCodes[i]]?.startsWith('descending')));
-    }
-    const edges = MaleCNSAtlas.edges(g, activity, coords.valid, mask, limit, focus,
-      FlySim.synapticGains(g, car.genome));
-    return [Float32Array.from(activity), JSON.stringify(edges)];
+    return [activity, FlySim.synapticGains(g, car.genome)];
   };
   globalThis.nativeRaySelection = carId => { inspectionId = carId >= 0 ? carId : null; };
   globalThis.nativeInspect = carId => {
@@ -373,7 +358,6 @@
     sim = next;
     configureGpu(sim, 'connectome');
     inspectionId = null;
-    atlas = null;
     trial = null;
     return { model: modelId, circuit: circuitId, population: sim.population,
       seed: sim.seed, speed: sim.speedMultiplier, mutation: sim.mutation };

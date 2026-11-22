@@ -14,7 +14,6 @@ const SOURCES: &[&str] = &[
     include_str!("../../outputs/model-profiles.js"),
     include_str!("../../outputs/simulation.js"),
     include_str!("../../outputs/progress-save.js"),
-    include_str!("../../outputs/brain-atlas.js"),
     include_str!("../../outputs/desktop-state.js"),
     include_str!("bridge.js"),
 ];
@@ -126,6 +125,8 @@ pub struct Frame {
     pub worker_count: usize,
     pub gpu: GpuStatus,
     pub rays: Vec<f64>,
+    #[serde(rename = "rayPoints")]
+    pub ray_points: Vec<[f64; 3]>,
     pub cars: Vec<Car>,
 }
 
@@ -264,17 +265,11 @@ impl Engine {
     #[cfg(feature = "desktop")]
     pub fn atlas(&self) -> Result<crate::atlas::Points> {
         self.context.with(|ctx| {
-            let result: rquickjs::Array = ctx
-                .eval("nativeAtlas()")
+            let graph: rquickjs::Object = ctx
+                .eval("nativeAtlasGraph()")
                 .catch(&ctx)
                 .map_err(|err| err.to_string())?;
-            let rows: TypedArray<f64> = result.get(0)?;
-            let classes = decode(result.get(1)?)?;
-            // The temporary array belongs to this isolated context until copied.
-            Ok(crate::atlas::Points::from_rows(
-                unsafe { rows.as_slice() },
-                classes,
-            ))
+            Ok(crate::atlas_data::points(&graph)?)
         })
     }
 
@@ -288,17 +283,20 @@ impl Engine {
     ) -> Result<crate::atlas::Activity> {
         self.context.with(|ctx| {
             let sample: Function = ctx.globals().get("nativeAtlasActivity")?;
-            let result: rquickjs::Array = sample
-                .call((car, filter as u8, limit, focus.map_or(-1, |id| id as i32)))
+            let result: Option<rquickjs::Array> = sample
+                .call((car,))
                 .catch(&ctx)
                 .map_err(|error| error.to_string())?;
-            let values: TypedArray<f32> = result.get(0)?;
-            let edges = decode(result.get(1)?)?;
-            Ok(crate::atlas::Activity {
-                car,
-                values: unsafe { values.as_slice() }.to_vec(),
-                edges,
-            })
+            let Some(sample) = result else {
+                return Err("Auto non disponibile nell'atlante".into());
+            };
+            let graph: rquickjs::Object = ctx
+                .eval("nativeAtlasGraph()")
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            Ok(crate::atlas_data::activity(
+                &graph, &sample, car, filter, limit, focus,
+            )?)
         })
     }
 

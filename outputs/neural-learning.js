@@ -85,6 +85,10 @@
     if(!enabled||!edgesEnabled)return [0,0,0];
     const p=graph.learning,values=genome.policyWeights;
     if(genome.adapterVersion!==p.version||!valid(graph,values))throw Error('Policy MaleCNS incompatibile: usare Reset, non il vecchio controller assistito.');
+    if(typeof globalThis.nativeLearningReadout==='function'){
+      const [controls,features]=globalThis.nativeLearningReadout(graph,brain,Float64Array.from(values),Number.isFinite(launchBias)?launchBias:0);
+      brain.policyFeatures=features;return Array.from(controls);
+    }
     const features=brain.policyFeatures?.length===p.nodes.length?brain.policyFeatures:(brain.policyFeatures=new Float64Array(p.nodes.length));
     let signal=0,steering=0,longitudinal=0;
     const norm=1/Math.sqrt(p.normalizationCount??features.length),signalCount=p.signalCount??features.length;

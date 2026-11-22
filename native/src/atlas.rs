@@ -13,7 +13,6 @@ use bevy::{
     prelude::*,
     window::PrimaryWindow,
 };
-use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Preset {
@@ -91,22 +90,6 @@ pub struct Points {
 }
 
 impl Points {
-    pub fn from_rows(rows: &[f64], classes: Vec<String>) -> Self {
-        let nodes = rows
-            .chunks_exact(11)
-            .map(|t| Neuron {
-                index: t[0] as usize,
-                body: t[1] as u64,
-                position: Vec3::new(t[2] as f32, t[3] as f32, t[4] as f32) * 1.1,
-                class: t[5] as usize,
-                side: t[6] as i8,
-                flags: t[7] as u8,
-                coordinates: [t[8] as i32, t[9] as i32, t[10] as i32],
-            })
-            .collect();
-        Self { nodes, classes }
-    }
-
     pub fn len(&self) -> usize {
         self.nodes.len()
     }
@@ -121,11 +104,10 @@ impl Points {
     }
 }
 
-#[derive(Deserialize)]
 pub struct Edge {
-    source: usize,
-    target: usize,
-    contribution: f32,
+    pub source: usize,
+    pub target: usize,
+    pub contribution: f32,
 }
 
 pub struct Activity {
@@ -242,18 +224,13 @@ pub fn setup(
 
 fn color(n: &Neuron, sample: Option<&Activity>, show_activity: bool, selected: bool) -> [f32; 4] {
     if selected {
-        return [1.0, 0.83, 0.32, 1.0];
+        return [1.0, 0.88, 0.63, 1.0];
     }
     if show_activity && let Some(data) = sample {
         let value = data.value(n.index);
-        let brightness = (value.abs() * 14.0).sqrt().clamp(0., 1.);
-        let signal = if value >= 0. {
-            Vec3::new(0.16, 0.94, 0.77)
-        } else {
-            Vec3::new(1.0, 0.22, 0.43)
-        };
-        return Vec3::new(0.08, 0.14, 0.20)
-            .lerp(signal, brightness)
+        let brightness = (value.abs() * 8.).clamp(0., 1.);
+        return (Vec3::new(0.44, 0.56, 0.62) * 0.35)
+            .lerp(Vec3::new(0.41, 0.83, 0.77), brightness)
             .extend(1.)
             .to_array();
     }
@@ -264,7 +241,7 @@ fn color(n: &Neuron, sample: Option<&Activity>, show_activity: bool, selected: b
     } else if n.flags & 8 != 0 {
         [0.65, 0.71, 1., 1.]
     } else {
-        [0.29, 0.40, 0.46, 1.]
+        [0.44, 0.56, 0.62, 1.]
     }
 }
 

@@ -653,18 +653,24 @@
     // depth so the extra adapter sensors do not reduce controller fidelity.
     // V4 reads its sparse pass count from the verified bundle metadata.
     const gains=genome.policyWeights?Learning.synapticGains(graph,genome):null;
+    const drives=typeof globalThis.nativeLearningInputs==='function'&&genome.policyWeights?nativePolicyInputs(graph,genome,sensors,physicsGain):null;
     if(graph.full){
-      graph.inputs.forEach((index,k)=>{brain.inputDrive[k]=sensorDrive(graph,genome,sensors,k,physicsGain);});
+      if(drives)brain.inputDrive.set(drives);else graph.inputs.forEach((index,k)=>{brain.inputDrive[k]=sensorDrive(graph,genome,sensors,k,physicsGain);});
       const iterations=graph.solver?.iterationsPerControlTick??4;
       if(NativeSparse)NativeSparse(graph,brain,iterations,edgesEnabled,gains);
       else for(let iter=0;iter<iterations;iter++)sparseIteration(graph,brain,edgesEnabled,gains);
     }else{
-      const injection=brain.injection;injection.fill(0);graph.inputs.forEach((index,k)=>{injection[index]=sensorDrive(graph,genome,sensors,k,physicsGain);});
+      const injection=brain.injection;injection.fill(0);graph.inputs.forEach((index,k)=>{injection[index]=drives?drives[k]:sensorDrive(graph,genome,sensors,k,physicsGain);});
       const iterations=graph.modelId==='v2'?V2_ITERATIONS_PER_CONTROL_TICK:V3_ITERATIONS_PER_CONTROL_TICK;
       if(Dense&&brain.sum instanceof Float64Array&&brain.activity instanceof Float64Array&&brain.next instanceof Float64Array)Dense.step(graph,brain,iterations,edgesEnabled,gains);
       else for(let iter=0;iter<iterations;iter++){brain.sum.set(injection);if(edgesEnabled)for(let e=0;e<graph.from.length;e++){const source=graph.from[e];brain.sum[graph.to[e]]+=.9*graph.weights[e]*brain.activity[source]*(gains?gains[graph.learning.groups[source]]:1);}for(let i=0;i<graph.n;i++)brain.next[i]=.45*brain.activity[i]+.55*Math.tanh(brain.sum[i]);[brain.activity,brain.next]=[brain.next,brain.activity];}
     }
     return !edgesEnabled&&genome.policyWeights?[0,0,0]:neuralOutputsFromBrain(graph,brain,genome,launchBias);
+  }
+  function nativePolicyInputs(graph,genome,sensors,physicsGain){
+    const mapping=genome.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION;
+    if(genome.adapterVersion!==ensureLearning(graph).version||!Learning.supportedSensorMappingVersion(mapping))throw Error('Versione della policy neurale incompatibile.');
+    return globalThis.nativeLearningInputs(graph,Float64Array.from(genome.policyWeights),Float64Array.from(sensors??[]),mapping,physicsGain);
   }
   function neuralLaunchBias(track,speedMps=0){
     if(Number.isFinite(speedMps)&&Math.abs(speedMps)>NEURAL_MOTOR_LAUNCH_MAX_SPEED_MPS)return 0;

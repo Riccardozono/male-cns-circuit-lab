@@ -7,7 +7,7 @@ use crate::{
     window::{Action, CameraMode, Page, Session},
 };
 use bevy::{
-    camera::Viewport,
+    camera::{Viewport, visibility::RenderLayers},
     ecs::system::SystemParam,
     prelude::*,
     ui::{IsDefaultUiCamera, RelativeCursorPosition},
@@ -395,6 +395,7 @@ pub fn build(mut commands: Commands, mut fonts: ResMut<Assets<Font>>, assets: Re
             ..default()
         },
         IsDefaultUiCamera,
+        RenderLayers::layer(4),
     ));
     commands.spawn((
         Camera2d,
@@ -402,6 +403,7 @@ pub fn build(mut commands: Commands, mut fonts: ResMut<Assets<Font>>, assets: Re
             order: -1,
             ..default()
         },
+        RenderLayers::layer(4),
     ));
     commands.spawn(Node{width:percent(100),height:percent(100),..column()}).with_children(|root|{
         root.spawn((Node{height:px(52),flex_shrink:0.,justify_content:JustifyContent::SpaceBetween,padding:UiRect::horizontal(px(24)),..row()},

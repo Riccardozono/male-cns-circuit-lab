@@ -1,4 +1,4 @@
-use rquickjs::{Ctx, Exception, Function, TypedArray};
+use rquickjs::{Array, Ctx, Exception, Function, Object, TypedArray};
 
 pub(crate) fn install(ctx: Ctx<'_>) -> rquickjs::Result<()> {
     let globals = ctx.globals();
@@ -8,7 +8,111 @@ pub(crate) fn install(ctx: Ctx<'_>) -> rquickjs::Result<()> {
         "nativeLearningExplore",
         Function::new(ctx.clone(), explore)?,
     )?;
+    globals.set(
+        "nativeLearningReadout",
+        Function::new(ctx.clone(), readout)?,
+    )?;
+    globals.set("nativeLearningInputs", Function::new(ctx.clone(), inputs)?)?;
     Ok(())
+}
+
+fn readout<'js>(
+    ctx: Ctx<'js>,
+    graph: Object<'js>,
+    brain: Object<'js>,
+    weights: TypedArray<'js, f64>,
+    launch: f64,
+) -> rquickjs::Result<Array<'js>> {
+    let policy: Object = graph.get("learning")?;
+    let nodes: TypedArray<u32> = policy.get("nodes")?;
+    let count: u32 = policy.get("normalizationCount")?;
+    let signal_count: usize = policy.get("signalCount")?;
+    let offset: usize = policy.get("readoutOffset")?;
+    let norm = 1. / f64::from(count).sqrt();
+    let (nodes, weights) = unsafe { (nodes.as_slice(), weights.as_slice()) };
+    let mut features = Vec::with_capacity(nodes.len());
+    if graph.get::<_, bool>("full")? {
+        let active: TypedArray<f32> = brain.get("activity")?;
+        let active = unsafe { active.as_slice() };
+        features.extend(nodes.iter().map(|&i| f64::from(active[i as usize])));
+    } else {
+        let active: TypedArray<f64> = brain.get("activity")?;
+        let active = unsafe { active.as_slice() };
+        features.extend(nodes.iter().map(|&i| active[i as usize]));
+    }
+    let signal = features
+        .iter()
+        .take(signal_count)
+        .map(|v| v.abs())
+        .fold(0., f64::max);
+    let mut steering = 0.;
+    let mut longitudinal = 0.;
+    for (j, value) in features.iter_mut().enumerate() {
+        *value = (8. * *value).tanh();
+        steering += *value * weights[offset + j * 2] * norm;
+        longitudinal += *value * weights[offset + j * 2 + 1] * norm;
+    }
+    let controls = if signal < 1e-7 {
+        [0.; 3]
+    } else {
+        let steering = (steering + weights[weights.len() - 2]).tanh();
+        let longitudinal =
+            ((longitudinal + weights[weights.len() - 1]).tanh() + launch).clamp(-1., 1.);
+        [steering, longitudinal.max(0.), (-longitudinal).max(0.)]
+    };
+    let result = Array::new(ctx.clone())?;
+    result.set(0, TypedArray::new(ctx.clone(), controls)?)?;
+    result.set(1, TypedArray::new(ctx, features)?)?;
+    Ok(result)
+}
+
+fn inputs<'js>(
+    ctx: Ctx<'js>,
+    graph: Object<'js>,
+    weights: TypedArray<'js, f64>,
+    sensors: TypedArray<'js, f64>,
+    mapping: u8,
+    physics_gain: f64,
+) -> rquickjs::Result<TypedArray<'js, f64>> {
+    const CHANNELS: usize = 28;
+    let visual: TypedArray<u8> = graph.get("inputChannels")?;
+    let physics: TypedArray<i8> = graph.get("physicsChannels")?;
+    let road: TypedArray<i8> = graph.get("roadChannels")?;
+    let (weights, sensors, visual, physics, road) = unsafe {
+        (
+            weights.as_slice(),
+            sensors.as_slice(),
+            visual.as_slice(),
+            physics.as_slice(),
+            road.as_slice(),
+        )
+    };
+    let term = |channel: usize| {
+        let raw = sensors
+            .get(channel)
+            .copied()
+            .filter(|v| v.is_finite())
+            .unwrap_or(0.);
+        let input = if channel < 11 { raw * 2. - 1. } else { raw };
+        input * weights[channel] + weights[CHANNELS + channel]
+    };
+    let mut values = Vec::with_capacity(visual.len());
+    for i in 0..visual.len() {
+        let value = if mapping == 1 {
+            term(i % CHANNELS)
+        } else {
+            let mut value = term(usize::from(visual[i]));
+            if physics[i] >= 11 {
+                value += physics_gain * term(physics[i] as usize);
+            }
+            if road[i] >= 18 {
+                value += physics_gain * term(road[i] as usize);
+            }
+            value
+        };
+        values.push(0.7 * value);
+    }
+    TypedArray::new(ctx, values)
 }
 
 fn update<'js>(

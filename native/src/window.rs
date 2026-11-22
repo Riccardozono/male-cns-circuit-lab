@@ -34,7 +34,13 @@ pub fn run(smoke: Option<PathBuf>) -> AppExit {
         }),
         ..default()
     }));
+    app.add_plugins(MaterialPlugin::<crate::scenery::TrackMaterial>::default());
     let registry = app.world().resource::<EmbeddedAssetRegistry>();
+    registry.insert_asset(
+        PathBuf::from("track_surface.wgsl"),
+        Path::new("track_surface.wgsl"),
+        include_bytes!("track_surface.wgsl").as_slice(),
+    );
     registry.insert_asset(
         PathBuf::from("porsche.glb"),
         Path::new("porsche.glb"),
@@ -85,7 +91,15 @@ pub fn run(smoke: Option<PathBuf>) -> AppExit {
         .insert_resource(ClearColor(Color::srgb(0.64, 0.76, 0.85)))
         .init_resource::<comparison::Comparison>()
         .init_resource::<crate::menus::Overlay>()
-        .add_systems(Startup, (scene::setup, dashboard::build, atlas::setup))
+        .add_systems(
+            Startup,
+            (
+                scene::setup,
+                dashboard::build,
+                atlas::setup,
+                crate::sky::prepare,
+            ),
+        )
         .add_systems(
             Update,
             (
@@ -100,6 +114,7 @@ pub fn run(smoke: Option<PathBuf>) -> AppExit {
                 scene::view_input,
                 scene::decorate,
                 scene::update,
+                crate::sky::camera,
                 atlas::update,
                 dashboard::refresh,
                 crate::menus::refresh,
@@ -188,6 +203,7 @@ pub struct Session {
     pub effective: f64,
     pub comparison_limit: u32,
     pub comparison_limit_edit: Option<String>,
+    select_limit_on_input: bool,
     pub decoder: Option<Bundle>,
     pub smoke_action: Vec<Action>,
     sample: Option<(std::time::Instant, u64)>,
@@ -693,7 +709,9 @@ pub enum Action {
 impl Action {
     pub fn enabled(self, session: &Session, trial: &comparison::Comparison) -> bool {
         match self {
-            Self::Evolve => session.setup.driver == Driver::Connectome && !trial.running,
+            Self::Evolve | Self::Save => {
+                session.setup.driver == Driver::Connectome && !trial.running
+            }
             Self::Compare
             | Self::OpenDecoder
             | Self::TestDecoder(_)
@@ -724,6 +742,7 @@ fn next<T: PartialEq + Copy, const N: usize>(choices: [T; N], current: T) -> T {
 
 fn controls(
     keys: Res<ButtonInput<KeyCode>>,
+    mut key_events: MessageReader<bevy::input::keyboard::KeyboardInput>,
     buttons: Query<(&Interaction, &Action), Changed<Interaction>>,
     worker: Res<Worker>,
     mut session: ResMut<Session>,
@@ -737,19 +756,35 @@ fn controls(
     mut ui_scale: ResMut<UiScale>,
     mut exit: MessageWriter<AppExit>,
 ) {
-    if let Some(edit) = &mut session.comparison_limit_edit {
-        if keys.just_pressed(KeyCode::Escape) {
-            session.comparison_limit_edit = None;
-        } else if keys.just_pressed(KeyCode::Enter) || keys.just_pressed(KeyCode::NumpadEnter) {
-            if let Err(error) = commit_limit(&mut session) {
-                session.message = error.into();
+    let editing = session.comparison_limit_edit.is_some() || session.atlas_typing;
+    for event in key_events.read() {
+        if event.state != bevy::input::ButtonState::Pressed
+            || session.comparison_limit_edit.is_none()
+        {
+            continue;
+        }
+        match event.key_code {
+            KeyCode::Escape => session.comparison_limit_edit = None,
+            KeyCode::Enter | KeyCode::NumpadEnter => {
+                if let Err(error) = commit_limit(&mut session) {
+                    session.message = error.into();
+                }
             }
-        } else {
-            if keys.just_pressed(KeyCode::Backspace) {
-                edit.pop();
-            }
-            for key in keys.get_just_pressed() {
-                if let Some(digit) = digit_key(*key).filter(|_| edit.len() < 4) {
+            key => {
+                let digit = digit_key(key);
+                let backspace = key == KeyCode::Backspace;
+                if digit.is_none() && !backspace {
+                    continue;
+                }
+                let replace = std::mem::take(&mut session.select_limit_on_input);
+                let edit = session.comparison_limit_edit.as_mut().unwrap();
+                if replace {
+                    edit.clear();
+                }
+                if backspace {
+                    edit.pop();
+                }
+                if let Some(digit) = digit.filter(|_| edit.len() < 4) {
                     edit.push(digit);
                 }
             }
@@ -769,7 +804,7 @@ fn controls(
                 (KeyCode::F11, Action::Fullscreen),
             ]
             .into_iter()
-            .filter_map(|(key, a)| keys.just_pressed(key).then_some(a)),
+            .filter_map(|(key, a)| (!editing && keys.just_pressed(key)).then_some(a)),
         );
     let actions = actions.chain(input.p0().action(&mut pending_population));
     if keys.just_pressed(KeyCode::Escape) {
@@ -1059,7 +1094,10 @@ fn controls(
                 Request::Mutation(value)
             }
             Action::LimitEnter => {
-                session.comparison_limit_edit = Some(String::new());
+                if session.comparison_limit_edit.is_none() {
+                    session.comparison_limit_edit = Some(session.comparison_limit.to_string());
+                }
+                session.select_limit_on_input = true;
                 continue;
             }
             Action::LimitDown | Action::LimitUp => {

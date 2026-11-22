@@ -4,7 +4,7 @@ Build di sviluppo della 5.7.1 per Windows x64. Il portable gira offline senza El
 
 ## Guida
 
-Aprire `MAL-E-CNS-Circuit-Lab-native-x64.exe`. Al primo avvio la sessione parte in pausa con 16 auto V5 nel Laboratorio, in panoramica. Le impostazioni permettono di selezionare circuito, modello, camera, popolazione e mutazione. Il controllo della velocità imposta un obiettivo tra 0,5× e 30×. Il pannello mostra separatamente la velocità effettiva.
+Aprire `MAL-E-CNS-Circuit-Lab-native-x64.exe`. Al primo avvio la sessione parte con 16 auto V5 nel Laboratorio, in panoramica. Le impostazioni permettono di selezionare circuito, modello, camera, popolazione e mutazione. Il controllo della velocità imposta un obiettivo tra 0,5× e 30×. Il pannello mostra separatamente la velocità effettiva.
 
 - **Sessione** mostra circuito, telemetria, storico delle generazioni e comandi di salvataggio. Le diagnostiche separano i test di propulsione dall’apprendimento. Sono disponibili cambio sequenziale, ABS e TC. Spazio mette in pausa o riprende, C cambia camera, Tab cambia auto e R mostra i raggi. Alt apre la barra dei menu e F11 attiva lo schermo intero.
 - **Mappa 2D** usa una proiezione ortografica. In **Vista 3D** sono disponibili panoramica, inseguimento e prima persona con volante animato. Usare la rotella per lo zoom e trascinare con il pulsante destro in mappa, panoramica e prima persona.
@@ -16,7 +16,7 @@ Monza, Monaco, Le Mans e il laboratorio riusano i dati geometrici 5.7.1. Il rend
 
 Il solutore neurale V4/V5 usa la GPU quando disponibile e passa a CPU in caso di errore. Il formato 5.7.1 supporta i progressi multiworker con campione globale. Il ripristino valida versione, checksum, modello e stati dei worker e riparte in pausa all’inizio della generazione salvata.
 
-La parità completa con Electron resta aperta. In particolare, il paesaggio Bevy usa materiali diversi e rimangono componenti JavaScript nel runtime.
+La build Bevy usa uno shader nativo per il terreno e l’acqua e riprende cielo e nebbia della 5.7.1. La verifica della parità visiva resta aperta. QuickJS esegue ancora parti del runtime.
 
 ## Compilazione e verifica
 

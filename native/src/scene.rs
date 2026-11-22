@@ -290,10 +290,9 @@ pub fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut gizmo_config: ResMut<GizmoConfigStore>,
 ) {
-    gizmo_config
-        .config_mut::<DefaultGizmoConfigGroup>()
-        .0
-        .render_layers = RenderLayers::layer(0);
+    let (gizmos, _) = gizmo_config.config_mut::<DefaultGizmoConfigGroup>();
+    gizmos.render_layers = RenderLayers::layer(0);
+    gizmos.depth_bias = -1.;
     commands.init_resource::<TrackView>();
     commands.insert_resource(Geometry::default());
     let porsche = assets.load(GltfAssetLabel::Scene(0).from_asset("embedded://porsche.glb"));
@@ -331,37 +330,6 @@ pub fn setup(
             ..default()
         },
         Transform::from_rotation(Quat::from_euler(EulerRot::YXZ, -1.0, -0.75, 0.0)),
-    ));
-    let mut sky = Sphere::new(8000.0).mesh().uv(96, 40);
-    let positions = sky
-        .attribute(Mesh::ATTRIBUTE_POSITION)
-        .and_then(|p| p.as_float3())
-        .unwrap();
-    let colors: Vec<[f32; 4]> = positions
-        .iter()
-        .map(|p| {
-            let [x, y, z] = *p;
-            let elevation = (y / 8000.0).clamp(0.0, 1.0).sqrt();
-            let horizon = Vec3::new(0.65, 0.78, 0.88);
-            let zenith = Vec3::new(0.11, 0.38, 0.67);
-            let blue = horizon.lerp(zenith, elevation);
-            let clouds = (x * 0.0015 + z * 0.0019 + (z * 0.00083).cos()).sin() * 0.55
-                + (x * 0.0021 - z * 0.0012).sin() * 0.27
-                + (z * 0.0041).sin() * 0.16;
-            let cover = ((clouds - 0.32) * 1.6).clamp(0.0, 0.68) * elevation;
-            let c = blue.lerp(Vec3::new(0.96, 0.97, 0.96), cover);
-            Color::srgb(c.x, c.y, c.z).to_linear().to_f32_array()
-        })
-        .collect();
-    sky.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-    commands.spawn((
-        Mesh3d(meshes.add(sky)),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            cull_mode: None,
-            unlit: true,
-            ..default()
-        })),
-        RenderLayers::from_layers(&[1, 3]),
     ));
     cockpit_model(&mut commands, &mut meshes, &mut materials);
     for id in 0..100 {
@@ -453,6 +421,7 @@ pub fn update(
     mut materials: ResMut<Assets<StandardMaterial>>,
     view: Res<TrackView>,
     surfaces: Query<Entity, With<CircuitSurface>>,
+    mut track_materials: ResMut<Assets<crate::scenery::TrackMaterial>>,
     mut transforms: ParamSet<(
         Query<
             (
@@ -500,24 +469,39 @@ pub fn update(
         geometry.view_radius = track.bounds.width.max(track.bounds.height);
         match crate::scenery::load(&session.setup.circuit) {
             Ok(scenery) => {
-                let mat = materials.add(StandardMaterial {
+                let base = StandardMaterial {
                     perceptual_roughness: 0.94,
                     cull_mode: None,
                     double_sided: true,
                     ..default()
-                });
+                };
+                let mat = materials.add(base.clone());
+                let mut styles = HashMap::new();
                 for layer in scenery.layers {
                     let render_layers = match layer.role {
                         0 => RenderLayers::layer(0),
                         1 | 3 => RenderLayers::from_layers(&[1, 3]),
                         _ => RenderLayers::layer(1),
                     };
-                    commands.spawn((
+                    let mut surface = commands.spawn((
                         CircuitSurface,
                         Mesh3d(meshes.add(layer.mesh)),
-                        MeshMaterial3d(mat.clone()),
                         render_layers,
                     ));
+                    if layer.style == 0 {
+                        surface.insert(MeshMaterial3d(mat.clone()));
+                    } else {
+                        let material = styles.entry(layer.style).or_insert_with(|| {
+                            track_materials.add(crate::scenery::TrackMaterial {
+                                base: base.clone(),
+                                extension: crate::scenery::SurfaceDetail {
+                                    style: layer.style,
+                                    scale: scenery.scale,
+                                },
+                            })
+                        });
+                        surface.insert(MeshMaterial3d(material.clone()));
+                    }
                 }
             }
             Err(error) => error!(
@@ -719,15 +703,15 @@ pub fn update(
             }
         }
     }
-    if session.rays && !cockpit && frame.ray_car == selected {
-        let start = point(car, origin) + Vec3::Y * 0.58;
-        for (distance, angle) in frame.rays.iter().zip([
-            -1.25, -0.8, -0.4, 0.0, 0.4, 0.8, 1.25, -1.45, -1.05, 1.05, 1.45,
-        ]) {
-            let direction = angle + car.heading;
-            let end = start
-                + Vec3::new(direction.cos() as f32, 0.0, direction.sin() as f32) * *distance as f32;
-            gizmos.line(start, end, Color::srgb(0.96, 0.49, 0.30));
+    if session.rays
+        && !cockpit
+        && frame.ray_car == selected
+        && let Some((start, ends)) = frame.ray_points.split_first()
+    {
+        let project = |point: &[f64; 3]| Vec3::from_array(point.map(|v| v as f32)) - origin;
+        let start = project(start);
+        for end in ends {
+            gizmos.line(start, project(end), Color::srgb(0.96, 0.49, 0.30));
         }
     }
 }
@@ -765,6 +749,9 @@ pub fn verify_window(
     adapter: Res<RenderAdapterInfo>,
     comparison: Res<crate::comparison::Comparison>,
     clouds: Query<(), With<crate::atlas::Cloud>>,
+    scenery: Query<(), With<PropMesh>>,
+    window: Query<Entity, With<PrimaryWindow>>,
+    mut key_events: MessageWriter<bevy::input::keyboard::KeyboardInput>,
     mut smoke: ResMut<Smoke>,
     mut exit: MessageWriter<AppExit>,
 ) {
@@ -822,10 +809,9 @@ pub fn verify_window(
         }
         3 if session.page == Page::Split
             && !clouds.is_empty()
-            && session
-                .activity
-                .as_ref()
-                .is_some_and(|sample| sample.values.iter().any(|v| v.abs() > 0.002))
+            && session.activity.as_ref().is_some_and(|sample| {
+                !sample.edges.is_empty() && sample.values.iter().any(|v| v.abs() > 0.002)
+            })
             && smoke.phase.elapsed().as_millis() > 750 =>
         {
             capture(&mut commands, "native-split");
@@ -836,6 +822,7 @@ pub fn verify_window(
             smoke.step = 5;
         }
         5 if session.page == Page::Compare => {
+            session.smoke_action.push(Action::LimitEnter);
             session.smoke_action.push(Action::Compare);
             smoke.step = 6;
         }
@@ -861,6 +848,30 @@ pub fn verify_window(
                 exit.write(AppExit::error());
                 return;
             }
+            session.smoke_action.push(Action::LimitEnter);
+            smoke.step = 71;
+        }
+        71 if session.comparison_limit_edit.is_some() => {
+            use bevy::input::{
+                ButtonState,
+                keyboard::{Key, KeyboardInput, NativeKey},
+            };
+            let Ok(window) = window.single() else {
+                return;
+            };
+            for key_code in [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Enter] {
+                key_events.write(KeyboardInput {
+                    key_code,
+                    logical_key: Key::Unidentified(NativeKey::Unidentified),
+                    state: ButtonState::Pressed,
+                    text: None,
+                    repeat: false,
+                    window,
+                });
+            }
+            smoke.step = 72;
+        }
+        72 if session.comparison_limit == 12 && session.comparison_limit_edit.is_none() => {
             capture(&mut commands, "native-compare");
             smoke.step = 8;
         }
@@ -948,12 +959,13 @@ pub fn verify_window(
                 return;
             }
             session.smoke_action.push(Action::Evolve);
+            session.smoke_action.push(Action::Save);
             smoke.phase = Instant::now();
             smoke.step = 61;
         }
         61 if smoke.phase.elapsed().as_millis() > 360 => {
-            if frame.generation != 1 || !frame.history.is_empty() {
-                eprintln!("Evoluzione consentita durante la diagnostica");
+            if session.busy || frame.generation != 1 || !frame.history.is_empty() {
+                eprintln!("Evoluzione o salvataggio consentiti durante la diagnostica");
                 exit.write(AppExit::error());
                 return;
             }
@@ -969,12 +981,33 @@ pub fn verify_window(
             smoke.step = 21;
         }
         21 if !session.busy && session.setup.population == 99 && frame.cars.len() == 99 => {
+            session.smoke_action.push(Action::SetPopulation(4));
+            smoke.step = 22;
+        }
+        22 if !session.busy && session.setup.population == 4 => {
+            session.smoke_action.push(Action::SetCircuit(1));
+            session
+                .smoke_action
+                .push(Action::SetCamera(CameraMode::Overview));
+            session.smoke_action.push(Action::Theme);
+            smoke.phase = Instant::now();
+            smoke.step = 23;
+        }
+        23 if !session.busy
+            && session.setup.circuit == "monaco"
+            && !scenery.is_empty()
+            && smoke.phase.elapsed().as_millis() > 1_400 =>
+        {
+            capture(&mut commands, "native-monaco-coast");
+            smoke.step = 24;
+        }
+        24 if ready("native-monaco-coast") => {
             let (elapsed, speed, progress, wall) = smoke.motion.unwrap();
             let report = serde_json::json!({
-                "passed":true,"cars":frame.cars.len(),"elapsed":elapsed,"leaderKmh":speed,
-                "leaderMeters":progress,"wallSecondsAfterAssetReady":wall,"comparisonPreservedSession":true,"liveAtlas":true,
-                "screens":["native-scene.png","native-split.png","native-compare.png","native-map-dark.png","native-cockpit.png","native-menu.png"],
-                "testedPopulationValues":[17,99],"diagnostics":["off","straight"],"diagnosticEvolutionBlocked":true,
+                "passed":true,"cars":99,"elapsed":elapsed,"leaderKmh":speed,
+                "leaderMeters":progress,"wallSecondsAfterAssetReady":wall,"comparisonPreservedSession":true,"liveAtlas":true,"atlasSignedEdges":true,
+                "screens":["native-scene.png","native-split.png","native-compare.png","native-map-dark.png","native-cockpit.png","native-menu.png","native-monaco-coast.png"],
+                "testedPopulationValues":[17,99],"diagnostics":["off","straight"],"diagnosticEvolutionBlocked":true,"diagnosticSaveBlocked":true,"comparisonFocusedLimitPreserved":true,"comparisonOrderedNumberInput":true,
                 "backend":format!("{:?}",adapter.backend),"adapter":adapter.name,
             });
             fs::write(smoke.directory.join("smoke.json"), report.to_string())

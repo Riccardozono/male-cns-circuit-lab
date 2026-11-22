@@ -1,7 +1,10 @@
 use bevy::{
     asset::RenderAssetUsages,
     mesh::{Indices, PrimitiveTopology},
+    pbr::{ExtendedMaterial, MaterialExtension},
     prelude::*,
+    render::render_resource::AsBindGroup,
+    shader::ShaderRef,
 };
 use flate2::read::GzDecoder;
 use serde::Deserialize;
@@ -10,9 +13,27 @@ use std::io::{self, Read};
 pub struct Layer {
     pub mesh: Mesh,
     pub role: u32,
+    pub style: u32,
 }
 pub struct Scenery {
     pub layers: Vec<Layer>,
+    pub scale: f32,
+}
+
+pub(crate) type TrackMaterial = ExtendedMaterial<StandardMaterial, SurfaceDetail>;
+
+#[derive(Asset, AsBindGroup, Reflect, Clone, Debug)]
+pub(crate) struct SurfaceDetail {
+    #[uniform(100)]
+    pub style: u32,
+    #[uniform(100)]
+    pub scale: f32,
+}
+
+impl MaterialExtension for SurfaceDetail {
+    fn fragment_shader() -> ShaderRef {
+        "embedded://track_surface.wgsl".into()
+    }
 }
 
 #[derive(Deserialize)]
@@ -59,7 +80,7 @@ pub fn load(id: &str) -> io::Result<Scenery> {
     let mut uncompressed = Vec::new();
     GzDecoder::new(bytes).read_to_end(&mut uncompressed)?;
     let mut input = uncompressed.as_slice();
-    if !input.starts_with(b"MLE3") {
+    if !input.starts_with(b"MLE4") {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
             "Dati scena non riconosciuti",
@@ -67,13 +88,15 @@ pub fn load(id: &str) -> io::Result<Scenery> {
     }
     input = &input[4..];
     let count = take_u32(&mut input)?;
-    let _unused = take_u32(&mut input)?;
+    let scale = take_f32(&mut input)?;
     let mut layers = Vec::with_capacity(count as usize);
     for _ in 0..count {
         let size = take_u32(&mut input)?;
         let indexed = take_u32(&mut input)?;
-        let role = take_u32(&mut input)?;
-        let topology = if role & 256 != 0 {
+        let flags = take_u32(&mut input)?;
+        let role = flags & 255;
+        let style = flags >> 16;
+        let topology = if flags & 256 != 0 {
             PrimitiveTopology::LineList
         } else {
             PrimitiveTopology::TriangleList
@@ -82,10 +105,10 @@ pub fn load(id: &str) -> io::Result<Scenery> {
         let mut normals = Vec::with_capacity(size as usize);
         let mut colors = Vec::with_capacity(size as usize);
         for _ in 0..size {
-            let [x, y, z, nx, ny, nz, r, g, b] = read_vector::<9>(&mut input)?;
+            let [x, y, z, nx, ny, nz, r, g, b, water] = read_vector::<10>(&mut input)?;
             points.push([x, y - if role == 1 { 0.13 } else { 0.0 }, z]);
             normals.push([nx, ny, nz]);
-            colors.push([r, g, b, 1.0]);
+            colors.push([r, g, b, if style == 1 { water } else { 1. }]);
         }
         let mut mesh = Mesh::new(topology, RenderAssetUsages::RENDER_WORLD);
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, points);
@@ -98,9 +121,9 @@ pub fn load(id: &str) -> io::Result<Scenery> {
                     .collect::<io::Result<_>>()?,
             ));
         }
-        layers.push(Layer { mesh, role });
+        layers.push(Layer { mesh, role, style });
     }
-    Ok(Scenery { layers })
+    Ok(Scenery { layers, scale })
 }
 
 fn read_vector<const N: usize>(input: &mut &[u8]) -> io::Result<[f32; N]> {

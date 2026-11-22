@@ -34,8 +34,9 @@ function encodeMesh(mesh, kind) {
   const head=Buffer.alloc(12);
   head.writeUInt32LE(positions.count*copies,0);
   head.writeUInt32LE((indices?.count||0)*copies,4);
-  head.writeUInt32LE(mesh.isLineSegments?kind|256:kind,8);
-  const vertices=new Float32Array(positions.count*copies*9),index=new Uint32Array((indices?.count||0)*copies);
+  const style=wet?1:mesh.name==='scenery-asphalt'?2:mesh.name==='scenery-gravel'?3:kind===1||kind===3?4:0;
+  head.writeUInt32LE(kind|(mesh.isLineSegments?256:0)|(style<<16),8);
+  const vertices=new Float32Array(positions.count*copies*10),index=new Uint32Array((indices?.count||0)*copies);
   const matrix=new T.Matrix4(),normalMatrix=new T.Matrix3(),v=new T.Vector3(),axis=new T.Vector3(),color=new T.Color(),instanceColor=new T.Color();
   for(let n=0;n<copies;n++){
     matrix.copy(mesh.matrixWorld);
@@ -47,8 +48,7 @@ function encodeMesh(mesh, kind) {
       if(normals)axis.fromBufferAttribute(normals,i).applyNormalMatrix(normalMatrix);else axis.set(0,1,0);
       color.copy(mesh.material.color??new T.Color('#646d72')).multiply(instanceColor);
       if(tints)color.multiply(new T.Color().fromBufferAttribute(tints,i));
-      if(wet)color.lerp(new T.Color('#327b93'),Math.max(0,Math.min(1,wet.getX(i))));
-      vertices.set([v.x,v.y,v.z,axis.x,axis.y,axis.z,color.r,color.g,color.b],(n*positions.count+i)*9);
+      vertices.set([v.x,v.y,v.z,axis.x,axis.y,axis.z,color.r,color.g,color.b,wet?wet.getX(i):0],(n*positions.count+i)*10);
     }
     if(indices)for(let i=0;i<indices.count;i++)index[n*indices.count+i]=n*positions.count+indices.getX(i);
   }
@@ -132,6 +132,7 @@ function bake(id) {
   const districts=data?createDistrictBuildings(track,scenery.plan,floor,data?origin:undefined,data,facilities.plan.placements):null;
   for(const mesh of scenery.group.children)drape(mesh.geometry,origin,ground);
   const road=new T.Mesh(roadGeometry(track,origin),new T.MeshLambertMaterial({color:model.theme.road}));
+  road.name='scenery-asphalt';
   const paint=new T.Mesh(drape(edgePaintGeometry(track,origin),origin,ground),new T.MeshBasicMaterial({color:0xdedbd1}));
   meshGroups.push([scenery.group,2],[facilities.group,2],[road,0],[paint,0]);
   if(districts)meshGroups.push([districts.group,2]);
@@ -144,7 +145,7 @@ function bake(id) {
   }
   const layout = decorations(track,id,model,scenery,floor,terrain,origin,facilities,districts,data);
   fs.writeFileSync(path.join(process.argv[2],id+'.layout.json.gz'),gzipSync(JSON.stringify(layout),{level:3}));
-  const header=Buffer.alloc(12);header.write('MLE3');header.writeUInt32LE(packed.length,4);
+  const header=Buffer.alloc(12);header.write('MLE4');header.writeUInt32LE(packed.length,4);header.writeFloatLE(ground.ppm,8);
   const result=gzipSync(Buffer.concat([header,...packed.flat()]),{level:3});
   fs.writeFileSync(path.join(process.argv[2],id+'.mle.gz'),result);
   console.log(id,packed.length+' mesh',layout.props.length+' oggetti',result.length+' byte');
