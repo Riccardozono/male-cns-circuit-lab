@@ -36,10 +36,15 @@ async function main() {
   const savePath = path.join(directory, 'probe.malecns-save');
   const report = [];
   try {
-    for (const [modelId, circuitId, population, ticks] of [
+    const evolution = process.argv.includes('--evolution');
+    const cases = evolution ? [
+      ['v2','monza',4,1080], ['v3','lab',4,1080],
+      ['v4','monza',4,540], ['v5','le-mans',4,540],
+    ] : [
       ['v2', 'lab', 4, 120], ['v2', 'monza', 16, 180],
       ['v3', 'monaco', 4, 120], ['v4', 'le-mans', 4, 45], ['v5', 'monza', 4, 60],
-    ]) {
+    ];
+    for (const [modelId, circuitId, population, ticks] of cases) {
       const text = execFileSync(executable, ['--probe', modelId, circuitId, population, ticks, savePath], {
         encoding: 'utf8', timeout: 120_000, windowsHide: true,
       });
@@ -75,8 +80,19 @@ async function main() {
       assert.equal(saved.payload.workers[0].state.generation, sim.generation);
       assert.equal(saved.payload.workers[0].state.population, population);
       assert.equal(native.roundtrip, true);
+      const trained = saved.payload.workers[0].state;
+      if (evolution) {
+        assert.ok(sim.generation > 1, `${modelId} ${circuitId}: nessuna generazione conclusa`);
+        assert.equal(trained.rngState, sim.random.getState());
+        assert.equal(trained.optimizer.updates, sim.optimizer.updates);
+        assert.equal(trained.optimizer.episodes, sim.optimizer.episodes);
+        for (const key of ['mean','sigma']) sim.optimizer[key].forEach((v,i)=>close(v,trained.optimizer[key][i]));
+        for (const [i,car] of sim.cars.entries())
+          car.genome.policyWeights.forEach((v,j)=>close(v,trained.genomes[i].policyWeights[j]));
+      }
       report.push({
         modelId, circuitId, population, ticks, maximumError, saved: true,
+        generationsCompleted: sim.generation - 1, optimizerUpdates: trained.optimizer.updates,
         nativeSeconds: native.seconds, referenceSeconds,
       });
     }
