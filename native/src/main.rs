@@ -28,6 +28,7 @@ mod pool;
 #[cfg(feature = "desktop")]
 mod preferences;
 mod random;
+mod ranking;
 mod reward;
 mod save_file;
 mod save_state;
@@ -35,6 +36,7 @@ mod save_state;
 mod scene;
 #[cfg(feature = "desktop")]
 mod scenery;
+mod session_state;
 #[cfg(feature = "desktop")]
 mod sky;
 mod surface;

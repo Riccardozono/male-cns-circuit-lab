@@ -222,7 +222,7 @@ impl Pool {
             states.push(wait(reply)?);
         }
         self.primary
-            .encode_pool(&serde_json::to_string(&states)?, &self.global_champion)
+            .encode_pool(states, serde_json::from_str(&self.global_champion)?)
     }
 
     pub fn mutation(&self, mutation: f64) -> Result<()> {

@@ -60,7 +60,8 @@ async function poolChecks(directory) {
     if (count === 4) {
       const text = fs.readFileSync(input, 'utf8');
       const rewritten = text.replace('"schema": 1,', '"schema": 1e0,')
-        .replace(/"seed": (\d+),/, '"seed": $1.0,');
+        .replace(/"seed": (\d+),/g, '"seed": $1.0,')
+        .replace(/"population": (\d+),/g, '"population": $1e0,');
       assert.notEqual(rewritten, text);
       const formatted = path.join(directory, 'equivalent-format.malecns-save');
       fs.writeFileSync(formatted, rewritten);

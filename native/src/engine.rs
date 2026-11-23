@@ -1,4 +1,4 @@
-use rquickjs::{ArrayBuffer, CatchResultExt, Context, Ctx, Function, Runtime};
+use rquickjs::{Array, ArrayBuffer, CatchResultExt, Context, Ctx, Function, Object, Runtime};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use sha2::{Digest, Sha256};
 
@@ -13,7 +13,6 @@ const SOURCES: &[&str] = &[
     include_str!("../../outputs/legacy-models.js"),
     include_str!("../../outputs/model-profiles.js"),
     include_str!("../../outputs/simulation.js"),
-    include_str!("../../outputs/progress-save.js"),
     include_str!("../../outputs/desktop-state.js"),
     include_str!("bridge.js"),
 ];
@@ -49,6 +48,15 @@ pub struct Setup {
     pub mutation: f64,
     #[serde(default)]
     pub driver: Driver,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct RestoredSettings {
+    population: f64,
+    seed: f64,
+    speed_multiplier: f64,
+    mutation: f64,
 }
 
 impl Default for Setup {
@@ -240,6 +248,15 @@ pub struct Engine {
     trial: crate::trial::Shared,
 }
 
+fn stringify<'js, T: DeserializeOwned>(ctx: &Ctx<'js>, value: Object<'js>) -> Result<T> {
+    let json = ctx
+        .json_stringify(value)
+        .catch(ctx)
+        .map_err(|error| error.to_string())?
+        .ok_or("Dati di salvataggio mancanti.")?;
+    Ok(serde_json::from_str(&json.to_string()?)?)
+}
+
 fn decode<T: DeserializeOwned>(json: String) -> Result<T> {
     Ok(serde_json::from_str(&json)?)
 }
@@ -338,6 +355,7 @@ impl Engine {
             globals.set("MaleCNSNativeRng", Function::new(ctx.clone(), crate::random::create)?)?;
             globals.set("nativeVehicleAdvance", Function::new(ctx.clone(), crate::vehicle::advance)?)?;
             crate::reward::install(ctx.clone())?;
+            crate::ranking::install(ctx.clone())?;
             crate::learning::install(ctx.clone())?;
             globals.set("nativeDense", Function::new(ctx.clone(), crate::neural::dense)?)?;
             globals.set("nativeSparse", Function::new(ctx.clone(), crate::neural::sparse)?)?;
@@ -583,40 +601,77 @@ impl Engine {
     }
 
     pub fn save(&self, speed: f64) -> Result<String> {
-        let payload = self.context.with(|ctx| -> Result<String> {
-            let capture: Function = ctx.globals().get("nativePayload")?;
-            Ok(capture
-                .call((speed,))
+        self.encode_pool(vec![self.capture(speed)?], serde_json::Value::Null)
+    }
+
+    fn save_compatibility(
+        &self,
+        model: &str,
+        live: bool,
+    ) -> Result<crate::save_state::Compatibility> {
+        self.context.with(|ctx| {
+            let describe: Function = ctx.globals().get("nativeSaveContext")?;
+            let fields: Array = describe
+                .call((model, live))
                 .catch(&ctx)
-                .map_err(|e| e.to_string())?)
-        })?;
-        self.encode_payload(&payload)
-    }
-
-    fn validate_payload(&self, payload: &serde_json::Value, live: bool) -> Result<()> {
-        let model = payload["modelId"]
-            .as_str()
-            .filter(|model| matches!(*model, "v2" | "v3" | "v4" | "v5"))
-            .ok_or("Modello neurale incompatibile.")?;
-        let compatibility: crate::save_state::Compatibility = self.context.with(|ctx| {
-            let describe: Function = ctx.globals().get("nativeSaveCompatibility")?;
-            decode(
-                describe
-                    .call((model, live))
+                .map_err(|err| err.to_string())?;
+            let (graph, policy, constants): (Object, Object, Object) =
+                (fields.get(0)?, fields.get(1)?, fields.get(2)?);
+            let signature =
+                crate::session_state::graph_signature(ctx.clone(), &graph, &policy, model)
                     .catch(&ctx)
-                    .map_err(|error| error.to_string())?,
-            )
-        })?;
-        compatibility.validate(payload)
+                    .map_err(|err| err.to_string())?;
+            constants.set("graph", signature)?;
+            stringify(&ctx, constants)
+        })
     }
 
-    fn encode_payload(&self, json: &str) -> Result<String> {
-        let payload = serde_json::from_str(json)?;
-        self.validate_payload(&payload, true)?;
+    pub(crate) fn capture(&self, speed: f64) -> Result<serde_json::Value> {
+        self.context.with(|ctx| {
+            let current: Function = ctx.globals().get("nativeCurrentSimulation")?;
+            let sim: Object = current
+                .call(())
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            let snapshot = crate::session_state::capture(ctx.clone(), &sim, speed)
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            stringify(&ctx, snapshot)
+        })
+    }
+
+    pub(crate) fn encode_pool(
+        &self,
+        states: Vec<serde_json::Value>,
+        champion: serde_json::Value,
+    ) -> Result<String> {
+        let (model, circuit): (String, String) = self.context.with(|ctx| -> Result<_> {
+            let current: Function = ctx.globals().get("nativeCurrentSimulation")?;
+            let sim: Object = current
+                .call(())
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            Ok((sim.get("modelId")?, sim.get("circuitId")?))
+        })?;
+        let compatibility = self.save_compatibility(&model, true)?;
+        let workers: Vec<_> = states
+            .into_iter()
+            .enumerate()
+            .map(|(index, state)| serde_json::json!({ "index": index, "state": state }))
+            .collect();
+        let payload = serde_json::json!({
+            "modelId": model,
+            "circuitId": circuit,
+            "graph": &compatibility.graph,
+            "vehicleRevision": &compatibility.vehicle_revision,
+            "workers": workers,
+            "globalChampion": champion,
+        });
+        compatibility.validate(&payload)?;
         crate::save_file::write(payload)
     }
 
-    fn checked_payload(&self, text: &str) -> Result<String> {
+    fn checked_payload(&self, text: &str) -> Result<serde_json::Value> {
         let payload = crate::save_file::read(
             text,
             |date| {
@@ -635,70 +690,66 @@ impl Engine {
                 })
             },
         )?;
-        self.validate_payload(&payload, false)?;
-        Ok(serde_json::to_string(&payload)?)
+        let model = payload["modelId"]
+            .as_str()
+            .filter(|model| matches!(*model, "v2" | "v3" | "v4" | "v5"))
+            .ok_or("Modello neurale incompatibile.")?;
+        self.save_compatibility(model, false)?.validate(&payload)?;
+        Ok(payload)
     }
 
     pub fn load(&self, save: &str) -> Result<(Setup, Track, Frame)> {
         let payload = self.checked_payload(save)?;
-        let (setup, track) = self.context.with(|ctx| -> Result<(Setup, Track)> {
-            let load: Function = ctx.globals().get("nativeLoadPayload")?;
-            let setup = decode(
-                load.call((&payload,))
-                    .catch(&ctx)
-                    .map_err(|err| err.to_string())?,
-            )?;
-            let track = decode(
-                ctx.eval::<String, _>("nativeTrack()")
-                    .catch(&ctx)
-                    .map_err(|err| err.to_string())?,
-            )?;
-            Ok((setup, track))
-        })?;
-        self.trial.take();
-        Ok((setup, track, self.snapshot()?))
-    }
-}
-
-#[cfg(feature = "desktop")]
-impl Engine {
-    pub(crate) fn decode_pool(&self, text: &str) -> Result<crate::pool::SavedPool> {
-        decode(self.checked_payload(text)?)
+        let workers = payload["workers"].as_array().ok_or("Worker mancanti")?;
+        if workers.len() != 1 || !payload["globalChampion"].is_null() {
+            return Err(
+                "La prova a riga di comando richiede un worker e nessun campione globale.".into(),
+            );
+        }
+        let model = payload["modelId"].as_str().ok_or("Modello mancante")?;
+        let circuit = payload["circuitId"].as_str().ok_or("Circuito mancante")?;
+        let state = serde_json::to_string(&workers[0]["state"])?;
+        let setup = self.restore_state(model, circuit, &state)?;
+        Ok((setup, self.track()?, self.snapshot()?))
     }
 
     pub(crate) fn restore_state(&self, model: &str, circuit: &str, state: &str) -> Result<Setup> {
-        let setup = self.context.with(|ctx| {
-            let func: Function = ctx.globals().get("nativeRestoreState")?;
-            decode(
-                func.call((model, circuit, state))
-                    .catch(&ctx)
-                    .map_err(|err| err.to_string())?,
-            )
+        // All callers pass worker states already checked by the save validator.
+        // Accept whole JavaScript numbers regardless of their JSON notation.
+        let config: RestoredSettings = serde_json::from_str(state)?;
+        self.context.with(|ctx| -> Result<()> {
+            let globals = ctx.globals();
+            let prepare: Function = globals.get("nativePrepareRestore")?;
+            let commit: Function = globals.get("nativeCommitRestore")?;
+            let candidate: Object = prepare
+                .call((model, circuit))
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            let snapshot = ctx
+                .json_parse(state)
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?
+                .into_object()
+                .ok_or("Stato di ripristino non valido")?;
+            crate::session_state::apply(ctx.clone(), &candidate, &snapshot)
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            commit
+                .call::<_, ()>((candidate,))
+                .catch(&ctx)
+                .map_err(|error| error.to_string())?;
+            Ok(())
         })?;
         self.trial.take();
-        Ok(setup)
-    }
-
-    pub(crate) fn capture(&self, speed: f64) -> Result<Box<serde_json::value::RawValue>> {
-        self.context.with(|ctx| {
-            let func: Function = ctx.globals().get("nativeCaptureState")?;
-            decode(
-                func.call((speed,))
-                    .catch(&ctx)
-                    .map_err(|err| err.to_string())?,
-            )
+        Ok(Setup {
+            model: model.into(),
+            circuit: circuit.into(),
+            population: config.population as u32,
+            seed: config.seed as u32,
+            speed: config.speed_multiplier,
+            mutation: config.mutation,
+            driver: Driver::Connectome,
         })
-    }
-
-    pub(crate) fn encode_pool(&self, workers: &str, champion: &str) -> Result<String> {
-        let payload = self.context.with(|ctx| -> Result<String> {
-            let capture: Function = ctx.globals().get("nativePoolPayload")?;
-            Ok(capture
-                .call((workers, champion))
-                .catch(&ctx)
-                .map_err(|e| e.to_string())?)
-        })?;
-        self.encode_payload(&payload)
     }
 
     pub(crate) fn track(&self) -> Result<Track> {
@@ -709,6 +760,13 @@ impl Engine {
                     .map_err(|err| err.to_string())?,
             )
         })
+    }
+}
+
+#[cfg(feature = "desktop")]
+impl Engine {
+    pub(crate) fn decode_pool(&self, text: &str) -> Result<crate::pool::SavedPool> {
+        decode(serde_json::to_string(&self.checked_payload(text)?)?)
     }
 
     pub(crate) fn champion(&self, index: usize) -> Result<String> {

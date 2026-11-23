@@ -316,21 +316,16 @@
     gpuReset = true;
     return snapshot();
   };
-  globalThis.nativePayload = speed => {
-    sim.speedMultiplier = speed;
-    return JSON.stringify(MaleCNSProgress.fromSimulation(sim));
-  };
-  function restore(modelId, circuitId, state) {
-    const next = new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population: 1 });
-    MaleCNSProgress.restoreValidated(next, state);
+  globalThis.nativeCurrentSimulation = () => sim;
+  globalThis.nativePrepareRestore = (modelId, circuitId) =>
+    new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population: 1 });
+  globalThis.nativeCommitRestore = next => {
     next.running = true;
     sim = next;
     configureGpu(sim, 'connectome');
     inspectionId = null;
     trialDone = false;
-    return { model: modelId, circuit: circuitId, population: sim.population,
-      seed: sim.seed, speed: sim.speedMultiplier, mutation: sim.mutation };
-  }
+  };
 
   globalThis.nativeCanParseDate = value => Number.isFinite(Date.parse(value));
   globalThis.nativeNormalizeLegacyDate = literal => {
@@ -339,40 +334,18 @@
       || !Number.isFinite(Date.parse(date))) return null;
     return JSON.stringify(date);
   };
-  globalThis.nativeSaveCompatibility = (modelId, live) => {
+  globalThis.nativeSaveContext = (modelId, live) => {
     const graph = live ? sim.graph : FlySim.compileGraph(source(modelId));
     const policy = FlySim.ensureLearning(graph);
-    return JSON.stringify({
-      modelId:graph.modelId, graph:MaleCNSProgress.compatibleGraph(graph),
-      vehicleRevision:FlySim.Vehicle.REVISION, sensorCount:FlySim.SENSOR_COUNT,
+    return [graph, policy, {
+      modelId:graph.modelId, vehicleRevision:FlySim.Vehicle.REVISION, sensorCount:FlySim.SENSOR_COUNT,
       modelOutputs:graph.outputs.length, policyVersion:policy.version, policyWidth:policy.length,
       populationLimit:FlySim.MAX_POPULATION, rewardRevisions:FlySim.Rewards.SUPPORTED_REVISIONS,
       rewardKeys:FlySim.Rewards.rewardKeys, penaltyKeys:FlySim.Rewards.penaltyKeys,
       circuits:Object.fromEntries([['lab',1], ...circuits.circuits.map(c => [c.id,c.revision||1])]),
-    });
+    }];
   };
 
-  globalThis.nativeLoadPayload = text => {
-    const p = JSON.parse(text);
-    if (p.workers.length !== 1 || p.globalChampion !== null) {
-      throw Error('La prova a riga di comando richiede un worker e nessun campione globale.');
-    }
-    return JSON.stringify(restore(p.modelId, p.circuitId, p.workers[0].state));
-  };
-
-  globalThis.nativeRestoreState = (model, circuitId, state) =>
-    JSON.stringify(restore(model, circuitId, JSON.parse(state)));
-  globalThis.nativeCaptureState = speed => {
-    sim.speedMultiplier = speed;
-    return JSON.stringify(MaleCNSProgress.capture(sim));
-  };
-  globalThis.nativePoolPayload = (workers, champion) => {
-    const p = {modelId:sim.modelId, circuitId:sim.circuitId,
-      graph:MaleCNSProgress.compatibleGraph(sim.graph), vehicleRevision:MaleCNSVehicle.REVISION,
-      workers:JSON.parse(workers).map((state, index) => ({index, state})),
-      globalChampion:JSON.parse(champion)};
-    return JSON.stringify(p);
-  };
   globalThis.nativeChampion = index => JSON.stringify(sim.champion && sim.championStats
     ? {genome:sim.champion, stats:sim.championStats, workerIndex:index} : null);
   globalThis.nativeBetter = (current, candidate) => {

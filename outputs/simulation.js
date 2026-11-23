@@ -12,6 +12,7 @@
   const Dense=typeof module!=='undefined'&&module.exports?require('./dense-neural.js'):root.MaleCNSDense;
   const NativeSparse=root.MaleCNSNativeSparse;
   const NativeGeometry=root.MaleCNSNativeGeometry;
+  const NativeCompare=root.MaleCNSNativeCompare,NativeSafeOutcome=root.MaleCNSNativeSafeOutcome;
   if(!Vehicle)throw Error('Modello fisico Porsche mancante');
   if(!Rewards)throw Error('Sistema di ricompense mancante');
   const clamp = (x,a,b) => Math.max(a,Math.min(b,x));
@@ -1173,6 +1174,7 @@
       [...g.encoder,...g.readout,g.gain].every(Number.isFinite) && g.gain>0&&!g.fastMotor&&(sim.graph.modelId!=='v5'||g.policyWeights)&&(!g.policyWeights||(saved.graphRevision===sim.graph.revision&&saved.nodes===sim.graph.n&&saved.edges===sim.graph.edgeCount&&g.adapterVersion===ensureLearning(sim.graph).version&&Learning.supportedSensorMappingVersion(g.sensorMappingVersion??Learning.LEGACY_SENSOR_MAPPING_VERSION)&&Learning.valid(sim.graph,g.policyWeights))));
   }
   function compareAgents(a,b){
+    if(NativeCompare)return NativeCompare(0,a,b,0);
     const aFitness=Number.isFinite(a?.fitness)?a.fitness:-Infinity,bFitness=Number.isFinite(b?.fitness)?b.fitness:-Infinity;
     if(aFitness!==bFitness)return aFitness>bFitness?-1:1;
     const aLaps=Number(a?.laps)||0,bLaps=Number(b?.laps)||0;
@@ -1183,10 +1185,12 @@
   }
   const unsafeLearningReasons=new Set(['urto','fuori pista','progresso non valido','collision','off track','invalid progress']);
   function isSafeLearningOutcome(agent){
+    if(NativeSafeOutcome)return NativeSafeOutcome(agent);
     const car=agent?.car||agent,reason=String(car?.reason||'').trim().toLowerCase(),penalties=car?.rewardBreakdown?.penalties||{};
     return !car?.censored&&!car?.overlap&&!unsafeLearningReasons.has(reason)&&!(Number(penalties.collision)>0)&&!(Number(penalties.offTrack)>0)&&!(Number(penalties.invalid)>0);
   }
   function compareLearningAgents(a,b){
+    if(NativeCompare)return NativeCompare(1,a,b,0);
     const aSafe=isSafeLearningOutcome(a),bSafe=isSafeLearningOutcome(b);if(aSafe!==bSafe)return aSafe?-1:1;
     const aLaps=Number(a?.laps)||0,bLaps=Number(b?.laps)||0;if(aLaps!==bLaps)return bLaps-aLaps;
     const aProgress=Number(a?.bestProgress??a?.progress)||0,bProgress=Number(b?.bestProgress??b?.progress)||0;
@@ -1202,6 +1206,7 @@
     return 0;
   }
   function compareOptimizerAgents(a,b){
+    if(NativeCompare)return NativeCompare(2,a,b,0);
     const aSafe=isSafeLearningOutcome(a),bSafe=isSafeLearningOutcome(b);
     if(aSafe!==bSafe)return aSafe?-1:1;
     // Safe no-lap policies still optimize physical progress first. Among
@@ -1210,6 +1215,7 @@
     return aSafe?compareLearningAgents(a,b):compareAgents(a,b);
   }
   function compareSafeFrontier(a,b){
+    if(NativeCompare)return NativeCompare(3,a,b,EVOLUTION_RULES.progressTieTolerance);
     const laps=(Number(b?.laps)||0)-(Number(a?.laps)||0);if(laps)return laps;
     const progress=(Number(b?.bestProgress??b?.progress)||0)-(Number(a?.bestProgress??a?.progress)||0);
     if(Math.abs(progress)>EVOLUTION_RULES.progressTieTolerance)return progress;

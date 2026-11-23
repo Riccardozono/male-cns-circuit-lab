@@ -1,6 +1,6 @@
 # MAL-E CNS Circuit Lab per Windows nativo
 
-Build di sviluppo della 5.7.1 per Windows x64. Il portable gira offline senza Electron, WebView2, Node o server locale. La finestra, l’interfaccia Bevy, i solutori neurali V2–V5, la geometria della pista, la fisica, il calcolo delle ricompense, l’ottimizzatore diagonale, il generatore casuale, il cronometraggio del confronto e la convalida dei file di salvataggio usano Rust. QuickJS resta incorporato per gestire le generazioni, comporre il punteggio e trasferire lo stato da e verso la simulazione.
+Build di sviluppo della 5.7.1 per Windows x64. Il portable gira offline senza Electron, WebView2, Node o server locale. La finestra, l’interfaccia Bevy, i solutori neurali V2–V5, la geometria della pista, la fisica, il calcolo delle ricompense, la classifica degli agenti, l’ottimizzatore diagonale, il generatore casuale, il cronometraggio del confronto e la gestione dei salvataggi usano Rust. QuickJS resta incorporato per il ciclo delle auto, la composizione del punteggio, la riproduzione e il ricambio delle generazioni e il supporto a date storiche dei salvataggi.
 
 ## Guida
 
