@@ -64,12 +64,12 @@ pub struct Tracker {
 }
 
 impl Tracker {
-    pub fn new() -> Self {
+    pub fn new(generation: u64) -> Self {
         Self {
             progress: TrialProgress {
                 ticks: 0,
                 generations: 0,
-                current_generation: 1,
+                current_generation: generation,
                 max_laps: 0,
                 best_progress_meters: 0.,
                 hit: None,
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn waits_for_the_rest_of_the_generation() {
-        let mut tracker = Tracker::new();
+        let mut tracker = Tracker::new(1);
         assert!(!tracker.observe(TICK, [FINISH, MOVING].into_iter(), || (1., 0.)));
         assert!(
             tracker.observe(
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn the_second_lap_after_the_deadline_does_not_count() {
-        let mut tracker = Tracker::new();
+        let mut tracker = Tracker::new(1);
         assert!(tracker.observe(TICK, [FINISH].into_iter(), || (60.01, 60.)));
         assert!(tracker.progress.limit_reached);
         assert!(tracker.progress.hit.is_none());
@@ -268,7 +268,7 @@ mod tests {
 
     #[test]
     fn deadline_censors_a_generation_even_after_both_laps() {
-        let mut tracker = Tracker::new();
+        let mut tracker = Tracker::new(1);
         assert!(!tracker.observe(TICK, [FINISH, MOVING].into_iter(), || (59.9, 60.)));
         assert!(
             tracker.observe(
@@ -298,7 +298,7 @@ mod tests {
 
     #[test]
     fn picks_the_first_crossing_and_excludes_diagnostic_cars() {
-        let mut tracker = Tracker::new();
+        let mut tracker = Tracker::new(1);
         let early_diagnostic = Agent {
             id: 2,
             diagnostic: true,
@@ -324,7 +324,7 @@ mod tests {
 
     #[test]
     fn a_failed_decoder_episode_finishes_without_a_hit() {
-        let mut tracker = Tracker::new();
+        let mut tracker = Tracker::new(1);
         let stopped = Agent {
             alive: false,
             ..MOVING

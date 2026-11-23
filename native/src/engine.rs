@@ -299,9 +299,8 @@ impl Engine {
                 .catch(&ctx)
                 .map_err(|error| error.to_string().into())
         })?;
-        let mut tracker = crate::trial::Tracker::new();
-        tracker.progress.current_generation = generation;
-        self.trial.replace(Some(tracker));
+        self.trial
+            .replace(Some(crate::trial::Tracker::new(generation)));
         Ok(())
     }
 
@@ -632,8 +631,7 @@ impl Engine {
                 self.context.with(|ctx| {
                     let normalize: Function =
                         ctx.globals().get("nativeNormalizeLegacyDate").ok()?;
-                    let json: Option<String> = normalize.call((source,)).catch(&ctx).ok()?;
-                    decode(json?).ok()
+                    normalize.call((source,)).catch(&ctx).ok().flatten()
                 })
             },
         )?;

@@ -333,14 +333,11 @@
   }
 
   globalThis.nativeCanParseDate = value => Number.isFinite(Date.parse(value));
-  globalThis.nativeNormalizeLegacyDate = text => {
-    const file = JSON.parse(text);
-    const date = file?.savedAt;
+  globalThis.nativeNormalizeLegacyDate = literal => {
+    const date = JSON.parse(literal);
     if (typeof date !== 'string' || date.length > 40 || !/[\uD800-\uDFFF]/u.test(date)
       || !Number.isFinite(Date.parse(date))) return null;
-    const literal = JSON.stringify(date);
-    file.savedAt = '2000-01-01T00:00:00.000Z';
-    return JSON.stringify([JSON.stringify(file), literal]);
+    return JSON.stringify(date);
   };
   globalThis.nativeSaveCompatibility = (modelId, live) => {
     const graph = live ? sim.graph : FlySim.compileGraph(source(modelId));

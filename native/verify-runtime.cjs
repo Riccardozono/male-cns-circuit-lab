@@ -88,6 +88,12 @@ async function poolChecks(directory) {
         if (accepted) {
           await save.decode(stamped, version);
           assert.equal(run(['--probe-pool', formatted, output]).workerCount, count);
+          const overflow = stamped.replace('"lapTime":null', '"lapTime":1e999');
+          assert.notEqual(overflow, stamped);
+          const legacy = await save.decode(overflow, version);
+          assert.throws(() => save.validatePayload(legacy.payload, {graph: sims[0].graph, circuits: sims[0].circuits}));
+          fs.writeFileSync(formatted, overflow);
+          assert.throws(() => run(['--probe-pool', formatted, output]));
         } else {
           await assert.rejects(() => save.decode(stamped, version), /Data del salvataggio/);
           assert.throws(() => run(['--probe-pool', formatted, output]), /Data del salvataggio/);

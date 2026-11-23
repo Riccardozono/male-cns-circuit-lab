@@ -563,6 +563,12 @@ fn drive_trial(
             last = Instant::now();
         }
     }
+    if matches!(row.status, Status::Stopped | Status::Limit)
+        && let Some(progress) = &mut row.progress
+    {
+        progress.done = true;
+        progress.limit_reached = row.status == Status::Limit;
+    }
     Ok(row)
 }
 
@@ -658,7 +664,7 @@ mod tests {
 
     #[test]
     fn stopped_round_keeps_the_completed_reference_round() {
-        let mut saved = crate::trial::Tracker::new().progress;
+        let mut saved = crate::trial::Tracker::new(1).progress;
         saved.max_laps = 2;
         saved.best_progress_meters = 6674.;
         saved.hit = Some(TrialHit {
@@ -672,7 +678,7 @@ mod tests {
             progress: Some(saved),
             ..default()
         };
-        let active = crate::trial::Tracker::new().progress;
+        let active = crate::trial::Tracker::new(2).progress;
         let mut stopped = Trial {
             status: Status::Limit,
             progress: Some(active),
@@ -685,6 +691,8 @@ mod tests {
         let stats = stopped.progress.unwrap();
         assert!(stopped.status == Status::Limit);
         assert_eq!(stats.generations, 1);
+        assert_eq!(stats.current_generation, 2);
+        assert_eq!(stats.ticks, 0);
         assert_eq!(stats.hit.unwrap().generation, 1);
         assert_eq!(stopped.lap_time, Some(792.));
         let training = stopped.training.unwrap();

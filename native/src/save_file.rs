@@ -1,8 +1,10 @@
 use crate::engine::Result;
 use chrono::{DateTime, SecondsFormat, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::value::RawValue;
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
+use std::collections::BTreeMap;
 
 pub const MAX_BYTES: usize = 16 * 1024 * 1024;
 const FORMAT: &str = "male-cns-training-save";
@@ -34,7 +36,7 @@ pub fn timestamp() -> String {
 pub fn read(
     text: &str,
     legacy_date: impl FnOnce(&str) -> bool,
-    legacy_unicode: impl FnOnce(&str) -> Option<(String, String)>,
+    legacy_unicode: impl FnOnce(&str) -> Option<String>,
 ) -> Result<Value> {
     if text.len() > MAX_BYTES {
         return Err("File troppo grande: massimo 16 MiB.".into());
@@ -43,8 +45,12 @@ pub fn read(
     // so derive validates the same final object that Electron would see.
     let (fields, date_literal) = match serde_json::from_str::<Value>(text) {
         Ok(value) => (Ok(value), None),
-        Err(error) => match text.contains("\\u").then(|| legacy_unicode(text)).flatten() {
-            Some((normalized, original)) => (serde_json::from_str(&normalized), Some(original)),
+        Err(error) => match text
+            .contains("\\u")
+            .then(|| normalize_date(text, legacy_unicode))
+            .flatten()
+        {
+            Some((normalized, original)) => (Ok(normalized), Some(original)),
             None => (Err(error), None),
         },
     };
@@ -83,6 +89,21 @@ pub fn read(
     Ok(data
         .remove("payload")
         .expect("Il payload è incluso nel digest"))
+}
+
+fn normalize_date(
+    text: &str,
+    legacy: impl FnOnce(&str) -> Option<String>,
+) -> Option<(Value, String)> {
+    // Preserve every other value exactly as it appeared in the source file.
+    // Passing the entire document through JSON.stringify would replace
+    // an out-of-range number with null before validation.
+    let mut fields: BTreeMap<String, Box<RawValue>> = serde_json::from_str(text).ok()?;
+    let original = legacy(fields.get("savedAt")?.get())?;
+    let iso = RawValue::from_string(r#""2000-01-01T00:00:00.000Z""#.into()).ok()?;
+    fields.insert("savedAt".into(), iso);
+    let normalized = serde_json::to_string(&fields).ok()?;
+    Some((serde_json::from_str(&normalized).ok()?, original))
 }
 
 pub fn write(payload: Value) -> Result<String> {
@@ -224,5 +245,24 @@ mod tests {
         )
         .unwrap_err();
         assert!(error.to_string().contains("Data del salvataggio"));
+    }
+
+    #[test]
+    fn legacy_unicode_date_does_not_normalize_the_payload() {
+        const ISO: &str = "2000-01-01T00:00:00.000Z";
+        let raw_date = r#""22 Nov 2026 12:00 GMT (\ud800)""#;
+        let mut document = body(ISO.into(), serde_json::json!({"lapTime":null}));
+        let checksum = digest(&document, Some(raw_date)).unwrap();
+        document.insert(
+            "checksum".into(),
+            serde_json::json!({"algorithm":"SHA-256","value":checksum}),
+        );
+        let legacy = serde_json::to_string(&document)
+            .unwrap()
+            .replace(&format!("\"{ISO}\""), raw_date);
+        let normalize = |raw: &str| (raw == raw_date).then(|| raw_date.into());
+        assert!(read(&legacy, |_| false, normalize).is_ok());
+        let overflow = legacy.replace("\"lapTime\":null", "\"lapTime\":1e999");
+        assert!(read(&overflow, |_| false, normalize).is_err());
     }
 }
