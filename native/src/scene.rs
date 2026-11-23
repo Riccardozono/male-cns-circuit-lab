@@ -776,6 +776,47 @@ pub fn verify_window(
     let Some(frame) = session.frame.as_ref() else {
         return;
     };
+    if session.profile.is_training() {
+        match smoke.step {
+            0 if assets.is_loaded_with_dependencies(model.detailed.id()) => {
+                if session.running || frame.elapsed != 0. {
+                    eprintln!("Avvio del profilo V3 non valido: {}", session.message);
+                    exit.write(AppExit::error());
+                    return;
+                }
+                fs::create_dir_all(&directory).expect("Cartella prova del profilo V3");
+                capture(&mut commands, "native-v3-training");
+                smoke.session_clock = Some((frame.generation, frame.elapsed));
+                smoke.step = 1;
+            }
+            1 if ready("native-v3-training") => {
+                session.smoke_action.push(Action::Run);
+                smoke.step = 2;
+            }
+            2 if session.running && frame.elapsed >= 0.25 => {
+                let (generation, elapsed) = smoke.session_clock.unwrap();
+                let report = serde_json::json!({
+                    "passed": true,
+                    "pausedAtStartup": true,
+                    "generationAtStartup": generation,
+                    "elapsedAtStartup": elapsed,
+                    "startupWarning": session.message,
+                    "elapsedAfterResume": frame.elapsed,
+                    "profile": session.profile.label(),
+                    "modelId": session.setup.model,
+                    "circuitId": session.setup.circuit,
+                    "workerCount": frame.worker_count,
+                    "population": frame.cars.len(),
+                    "backend": format!("{:?}", adapter.backend),
+                });
+                fs::write(directory.join("smoke.json"), report.to_string())
+                    .expect("Rapporto del profilo V3");
+                exit.write(AppExit::Success);
+            }
+            _ => {}
+        }
+        return;
+    }
     match smoke.step {
         0 if assets.is_loaded_with_dependencies(model.detailed.id()) && session.running => {
             smoke.drive = Some((Instant::now(), frame.elapsed));

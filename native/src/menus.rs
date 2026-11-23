@@ -86,6 +86,7 @@ fn model_label(s: &Session) -> &str {
     match s.setup.driver {
         Driver::Off => "Test: cervello spento",
         Driver::Straight => "Test: sterzo zero",
+        Driver::Connectome if s.setup.model == "v3" => s.profile.label(),
         Driver::Connectome => MODELS
             .iter()
             .position(|&m| m == s.setup.model)
@@ -148,7 +149,14 @@ impl Menu {
             Self::Driver => MODEL_NAMES
                 .iter()
                 .enumerate()
-                .map(|(i, name)| ((*name).into(), Action::SetModel(i as u8)))
+                .map(|(i, name)| {
+                    let label = if MODELS[i] == "v3" {
+                        s.profile.label()
+                    } else {
+                        name
+                    };
+                    (label.into(), Action::SetModel(i as u8))
+                })
                 .chain([
                     (
                         "Test: cervello spento".into(),

@@ -2,6 +2,7 @@ use crate::{
     atlas::{Activity, Filter, Points},
     decoder::{Bundle, Coefficients},
     engine::{Driver, Engine, Frame, Inspection, Setup, Track, TrialHit, TrialProgress},
+    profile::V3Profile,
     window::{Page, Session},
 };
 use bevy::prelude::*;
@@ -123,6 +124,7 @@ struct ViewRequest {
 
 struct NormalView {
     setup: Setup,
+    profile: V3Profile,
     mutation: f64,
     track: Option<Track>,
     scene: Option<crate::scenery::Layout>,
@@ -140,6 +142,7 @@ impl NormalView {
     fn take(session: &mut Session) -> Self {
         Self {
             setup: session.setup.clone(),
+            profile: session.profile,
             mutation: session.mutation,
             track: session.track.take(),
             scene: session.decoration.take(),
@@ -156,6 +159,7 @@ impl NormalView {
 
     fn restore(self, session: &mut Session) {
         session.setup = self.setup;
+        session.profile = self.profile;
         session.mutation = self.mutation;
         session.track = self.track;
         session.decoration = self.scene;
@@ -910,6 +914,11 @@ pub fn read(mut state: ResMut<Comparison>, mut session: ResMut<Session>) {
         }
         session.mutation = setup.mutation;
         session.setup = setup;
+        session.profile = if state.single {
+            V3Profile::Wide
+        } else {
+            V3Profile::Standard
+        };
         session.track = Some(track);
         session.frame = Some(frame);
         session.points = Some(atlas);

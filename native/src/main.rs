@@ -27,6 +27,7 @@ mod neural;
 mod pool;
 #[cfg(feature = "desktop")]
 mod preferences;
+mod profile;
 mod random;
 mod ranking;
 mod reward;
@@ -46,6 +47,7 @@ mod vehicle;
 mod window;
 
 use engine::{Engine, Result, Setup};
+use profile::V3Profile;
 use std::{env, path::PathBuf, thread, time::Instant};
 
 fn main() {
@@ -56,7 +58,8 @@ fn main() {
 }
 
 fn run() -> Result<()> {
-    let args: Vec<_> = env::args().skip(1).collect();
+    let mut args: Vec<_> = env::args().skip(1).collect();
+    let profile = V3Profile::extract(&mut args);
     if args.first().is_some_and(|arg| arg == "--probe") {
         let [_, model, circuit, population, ticks, rest @ ..] = args.as_slice() else {
             return Err("Uso: --probe v3 monza 16 120 [file.malecns-save]".into());
@@ -71,7 +74,7 @@ fn run() -> Result<()> {
         let saved_file = rest.first().map(PathBuf::from);
         let outcome = thread::Builder::new()
             .stack_size(8 * 1024 * 1024)
-            .spawn(move || probe(&setup, ticks, saved_file).map_err(|e| e.to_string()))?
+            .spawn(move || probe(&setup, ticks, saved_file, profile).map_err(|e| e.to_string()))?
             .join()
             .map_err(|_| "Worker di prova interrotto")?;
         println!("{}", outcome?);
@@ -104,7 +107,9 @@ fn run() -> Result<()> {
         let ticks: u32 = rest.first().map(|x| x.parse()).transpose()?.unwrap_or(0);
         let report = thread::Builder::new()
             .stack_size(8 * 1024 * 1024)
-            .spawn(move || pool_probe(input, output, ticks).map_err(|error| error.to_string()))?
+            .spawn(move || {
+                pool_probe(input, output, ticks, profile).map_err(|error| error.to_string())
+            })?
             .join()
             .map_err(|_| "Worker multi-worker interrotto")??;
         println!("{report}");
@@ -126,12 +131,20 @@ fn run() -> Result<()> {
     }
     #[cfg(feature = "desktop")]
     {
+        let initial_save = args
+            .iter()
+            .find_map(|arg| arg.strip_prefix("--training-copy-progress="))
+            .map(PathBuf::from);
+        if initial_save.is_some() && !profile.is_training() {
+            return Err("Il salvataggio di avvio richiede un profilo di allenamento V3.".into());
+        }
+        args.retain(|arg| !arg.starts_with("--training-copy-progress="));
         let smoke = match args.as_slice() {
             [] => None,
             [flag, directory] if flag == "--smoke" => Some(PathBuf::from(directory)),
             _ => return Err("Opzioni della finestra non riconosciute".into()),
         };
-        if window::run(smoke).is_success() {
+        if window::run(smoke, profile, initial_save).is_success() {
             Ok(())
         } else {
             Err("L'app nativa si è chiusa con un errore".into())
@@ -141,8 +154,13 @@ fn run() -> Result<()> {
     Err("Usare --probe o compilare con la feature desktop".into())
 }
 
-fn probe(setup: &Setup, ticks: u32, saved_file: Option<PathBuf>) -> Result<String> {
-    let engine = Engine::new()?;
+fn probe(
+    setup: &Setup,
+    ticks: u32,
+    saved_file: Option<PathBuf>,
+    profile: V3Profile,
+) -> Result<String> {
+    let engine = Engine::with_profile(profile, false)?;
     let (track, first) = engine.start(setup)?;
     let time = Instant::now();
     let snapshot = engine.advance(ticks)?;
@@ -188,8 +206,8 @@ fn gpu_probe(setup: Setup, ticks: u32, lose_device: bool) -> Result<String> {
 }
 
 #[cfg(feature = "desktop")]
-fn pool_probe(input: PathBuf, output: PathBuf, ticks: u32) -> Result<String> {
-    let mut pool = crate::pool::Pool::new(true)?;
+fn pool_probe(input: PathBuf, output: PathBuf, ticks: u32, profile: V3Profile) -> Result<String> {
+    let mut pool = crate::pool::Pool::new(true, profile)?;
     let text = std::fs::read_to_string(input)?;
     let draft = pool.primary.decode_pool(&text)?;
     let (settings, _, mut frame, _) = pool.load_checked(draft)?;

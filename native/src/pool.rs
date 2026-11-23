@@ -1,4 +1,5 @@
 use crate::engine::{Engine, Frame, Result, Setup, Track};
+use crate::profile::V3Profile;
 use serde::Deserialize;
 use serde_json::value::RawValue;
 use std::{sync::mpsc, thread};
@@ -32,13 +33,13 @@ struct Island {
 }
 
 impl Island {
-    fn launch(index: usize) -> Result<Self> {
+    fn launch(index: usize, profile: V3Profile) -> Result<Self> {
         let (sender, jobs) = mpsc::channel::<Job>();
         let (ready, startup) = mpsc::sync_channel(1);
         let thread = thread::Builder::new()
             .name(format!("male-cns-worker-{index}"))
             .stack_size(8 * 1024 * 1024)
-            .spawn(move || match Engine::new() {
+            .spawn(move || match Engine::with_profile(profile, false) {
                 Ok(engine) => {
                     if ready.send(Ok(())).is_ok() {
                         while let Ok(job) = jobs.recv() {
@@ -98,12 +99,13 @@ pub(crate) struct Pool {
     resume_due: bool,
     model: String,
     single_for_smoke: bool,
+    profile: V3Profile,
 }
 
 impl Pool {
-    pub fn new(single_for_smoke: bool) -> Result<Self> {
+    pub fn new(single_for_smoke: bool, profile: V3Profile) -> Result<Self> {
         Ok(Self {
-            primary: Engine::new_gpu()?,
+            primary: Engine::with_profile(profile, true)?,
             other: Vec::new(),
             generations: Vec::new(),
             seeds: Vec::new(),
@@ -112,6 +114,7 @@ impl Pool {
             resume_due: false,
             model: String::new(),
             single_for_smoke,
+            profile,
         })
     }
 
@@ -125,7 +128,7 @@ impl Pool {
     }
 
     fn default_count(&self, model: &str) -> usize {
-        if self.single_for_smoke || matches!(model, "v4" | "v5") {
+        if self.single_for_smoke || self.profile.is_training() || matches!(model, "v4" | "v5") {
             1
         } else {
             (thread::available_parallelism().map_or(2, usize::from) / 2)
@@ -140,10 +143,10 @@ impl Pool {
         } else {
             self.default_count(&settings.model)
         };
-        let mut new_pool = Pool::new(self.single_for_smoke)?;
+        let mut new_pool = Pool::new(self.single_for_smoke, self.profile)?;
         let mut waiting = Vec::with_capacity(count.saturating_sub(1));
         for index in 1..count {
-            let peer = Island::launch(index)?;
+            let peer = Island::launch(index, self.profile)?;
             let mut options = settings.clone();
             options.seed = if self.model == settings.model {
                 self.seeds.get(index).copied()
@@ -173,14 +176,14 @@ impl Pool {
         &mut self,
         input: SavedPool,
     ) -> Result<(Setup, Track, Frame, crate::atlas::Points)> {
-        let mut candidate = Pool::new(self.single_for_smoke)?;
+        let mut candidate = Pool::new(self.single_for_smoke, self.profile)?;
         let mut states = input.workers.into_iter();
         let Some(first) = states.next() else {
             return Err("Il file non contiene worker".into());
         };
         let mut waiting = Vec::new();
         for (index, state) in states.enumerate() {
-            let peer = Island::launch(index + 1)?;
+            let peer = Island::launch(index + 1, self.profile)?;
             let (model, circuit) = (input.model_id.clone(), input.circuit_id.clone());
             waiting.push(peer.send(move |engine| {
                 let setup = engine.restore_state(&model, &circuit, state.state.get())?;

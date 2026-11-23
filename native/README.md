@@ -12,6 +12,14 @@ Aprire `MAL-E-CNS-Circuit-Lab-native-x64.exe`. Al primo avvio la sessione parte 
 - **Affiancati** mostra circuito e cervello insieme.
 - **Confronto modelli** prova V2–V5 in sequenza da zero con circuito, popolazione, mutazione e seed condivisi. Registra giri, generazioni finite e tempi, attende la fine naturale della generazione ed esporta il risultato in JSON. Il campo dei minuti accetta interi da 0 a 1440. Impostarlo a zero disattiva il limite. Da qui si possono anche importare, provare e affinare decoder V3 compatibili.
 
+I tre profili di allenamento V3 della 5.7.1 si aprono già in pausa a Monza con 16 auto e un worker. Per sceglierli, avviare l’eseguibile con una delle opzioni seguenti.
+
+- `--male-cns-training-copy-v3` apre Wide Readout con 128 neuroni di lettura.
+- `--male-cns-training-copy-v3-baseline` apre Baseline con sensori centrolinea e 64 neuroni di lettura.
+- `--male-cns-training-copy-v3-current` apre Current con sensori d’ingombro e 64 neuroni di lettura.
+
+Per riprendere direttamente da un file, aggiungere `--training-copy-progress="C:\percorso\sessione.malecns-save"`. Usare un salvataggio V3 della 5.7.1 creato con il profilo selezionato. Il confronto V2–V5 continua a usare i profili standard anche da una sessione di allenamento.
+
 Monza, Monaco, Le Mans e il laboratorio riusano i dati geometrici 5.7.1. Il renderer nativo usa altimetria, vie di fuga, cordoli, barriere, tribune, edifici, alberi e acqua preparati dagli asset esistenti. [Crediti auto](../outputs/assets/PORSCHE-3D-CREDITS.md) · [Crediti ambiente](../outputs/assets/ENVIRONMENT-CREDITS.md) · [Font](../outputs/assets/fonts/PROVENANCE.md).
 
 Il solutore neurale V4/V5 usa la GPU quando disponibile e passa a CPU in caso di errore. Il formato 5.7.1 supporta i progressi multiworker con campione globale. Il ripristino valida versione, checksum, modello e stati dei worker e riparte in pausa all’inizio della generazione salvata.

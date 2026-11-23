@@ -1,3 +1,4 @@
+use crate::profile::V3Profile;
 use rquickjs::{Array, ArrayBuffer, CatchResultExt, Context, Ctx, Function, Object, Runtime};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use sha2::{Digest, Sha256};
@@ -321,16 +322,17 @@ impl Engine {
         Ok(())
     }
 
+    #[cfg(feature = "desktop")]
     pub fn new() -> Result<Self> {
-        Self::with_hardware(false)
+        Self::with_profile(V3Profile::Standard, false)
     }
 
     #[cfg(feature = "desktop")]
     pub fn new_gpu() -> Result<Self> {
-        Self::with_hardware(true)
+        Self::with_profile(V3Profile::Standard, true)
     }
 
-    fn with_hardware(_enable_gpu: bool) -> Result<Self> {
+    pub(crate) fn with_profile(profile: V3Profile, _enable_gpu: bool) -> Result<Self> {
         static VERIFIED: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
         if !VERIFIED.get_or_init(|| {
             serde_json::from_str::<serde_json::Value>(FULL_METADATA).is_ok_and(|meta| {
@@ -350,6 +352,7 @@ impl Engine {
             globals.set("nativeCircuits", include_str!("../../outputs/data/circuits.json"))?;
             globals.set("nativeReducedGraph", include_str!("../../outputs/data/connectome.json"))?;
             globals.set("nativeFullMetadata", FULL_METADATA)?;
+            globals.set("nativeV3GraphBuilder", profile.graph_builder())?;
             globals.set("nativeLoadFullBytes", Function::new(ctx.clone(), full_bytes)?)?;
             crate::trial::install(ctx.clone(), trial.clone())?;
             globals.set("MaleCNSNativeRng", Function::new(ctx.clone(), crate::random::create)?)?;

@@ -132,6 +132,59 @@ async function poolChecks(directory) {
   return report;
 }
 
+async function profileChecks(directory) {
+  const profiles = [
+    ['', legacy.tagV3],
+    ['--male-cns-training-copy-v3', legacy.tagV3WideReadout],
+    ['--male-cns-training-copy-v3-baseline', legacy.tagV3TrainingBaseline],
+    ['--male-cns-training-copy-v3-current', legacy.tagV3TrainingCurrent],
+  ];
+  const results = [];
+  for (const [i, [flag, build]] of profiles.entries()) {
+    const flags = flag ? [flag] : [];
+    const sim = new simulation.Simulation(build(graph), {
+      circuitId: 'monza', circuits, population: 4,
+    });
+    const savePath = path.join(directory, `new-profile-${i}.malecns-save`);
+    const {snapshot} = run(['--probe', 'v3', 'monza', '4', '120', savePath, ...flags]);
+    for (let tick = 0; tick < 120; ++tick) sim.tick();
+    assert.equal(snapshot.generation, sim.generation);
+    for (const [index, car] of snapshot.cars.entries()) {
+      const expected = sim.cars[index];
+      assert.ok(Math.abs(car.x - expected.x) < 1e-5);
+      assert.ok(Math.abs(car.z - expected.y) < 1e-5);
+      assert.ok(Math.abs(car.speed - expected.vehicle.speedMps) < 1e-5);
+      car.outputs.forEach((value, motor) => assert.ok(Math.abs(value - expected.outputs[motor]) < 1e-5));
+    }
+    const native = (await save.decode(fs.readFileSync(savePath, 'utf8'), version)).payload;
+    assert.deepEqual(native.graph, save.compatibleGraph(sim.graph));
+    save.validatePayload(native, {graph: sim.graph, circuits: sim.circuits});
+
+    const input = path.join(directory, `reference-profile-${i}.malecns-save`);
+    const exported = path.join(directory, `roundtrip-profile-${i}.malecns-save`);
+    const expected = save.fromSimulation(sim);
+    const peer = new simulation.Simulation(build(graph), {
+      circuitId: 'monza', circuits, population: 4, seed: 107720,
+    });
+    expected.workers.push({index: 1, state: save.capture(peer)});
+    fs.writeFileSync(input, await save.encode(expected, version));
+    const restored = run(['--probe-pool', input, exported, ...flags]);
+    assert.equal(restored.workerCount, 2);
+    assert.equal(restored.elapsed, 0);
+    expected.workers.forEach(({state}) => { state.elapsedAtSave = 0; });
+    const roundtrip = await save.decode(fs.readFileSync(exported, 'utf8'), version);
+    assert.deepEqual(roundtrip.payload, expected);
+    for (const [other] of profiles) {
+      if (flag === other) continue;
+      assert.throws(() => run(['--probe-pool', input, exported, ...(other ? [other] : [])]),
+        /Dati neurali o fisica incompatibili/);
+    }
+    results.push({profile: flag || 'standard', workers: 2, controlReplay: true, roundtrip: true,
+      rejectedOtherProfiles: true, policyReadouts: sim.graph.learning.nodes.length});
+  }
+  return results;
+}
+
 function gpuChecks() {
   return ['v4', 'v5'].map(model => {
     const {before: gpu, after: cpu} = run(['--probe-gpu', model, '4', '30', '--lose-device']);
@@ -155,8 +208,9 @@ async function main() {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'male-cns-native-qa-'));
   try {
     const pool = await poolChecks(directory);
+    const v3Profiles = await profileChecks(directory);
     const gpu = gpuChecks();
-    console.log(JSON.stringify({passed: true, pool, gpu}, null, 2));
+    console.log(JSON.stringify({passed: true, pool, v3Profiles, gpu}, null, 2));
   } finally {
     for (const file of fs.readdirSync(directory)) fs.unlinkSync(path.join(directory, file));
     fs.rmdirSync(directory);

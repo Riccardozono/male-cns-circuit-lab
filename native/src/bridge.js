@@ -91,7 +91,7 @@
         graph = MaleCNSLegacy.buildV2(base);
         break;
       case 'v3':
-        graph = MaleCNSLegacy.tagV3(base);
+        graph = MaleCNSLegacy[nativeV3GraphBuilder](base);
         break;
       case 'v4':
       case 'v5': {

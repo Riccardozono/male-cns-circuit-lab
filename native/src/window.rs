@@ -3,8 +3,9 @@ use crate::{
     decoder::{Bundle, Coefficients},
     engine::{Driver, Frame, Inspection, Setup, Track, VehicleAction},
     menus::{Menu, Panel},
-    pool::Pool,
+    pool::{Pool, SavedPool},
     preferences::{Preferences, Stored},
+    profile::V3Profile,
     scene,
 };
 use bevy::{asset::io::embedded::EmbeddedAssetRegistry, prelude::*};
@@ -19,7 +20,7 @@ use std::{
 pub(crate) const CIRCUITS: [&str; 4] = ["monza", "monaco", "le-mans", "lab"];
 pub(crate) const MODELS: [&str; 4] = ["v2", "v3", "v4", "v5"];
 
-pub fn run(smoke: Option<PathBuf>) -> AppExit {
+pub fn run(smoke: Option<PathBuf>, profile: V3Profile, initial_save: Option<PathBuf>) -> AppExit {
     let mut app = App::new();
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
@@ -57,16 +58,22 @@ pub fn run(smoke: Option<PathBuf>) -> AppExit {
     );
     let prefs = Preferences::load();
     let is_smoke = smoke.is_some();
-    let setup = if is_smoke {
+    let mut setup = if is_smoke {
         Setup::default()
     } else {
         prefs.setup()
     };
-    let worker = start_worker(setup.clone(), smoke.is_some());
+    if profile.is_training() {
+        setup.model = "v3".into();
+        setup.circuit = "monza".into();
+        setup.population = 16;
+    }
+    let worker = start_worker(setup.clone(), is_smoke, profile, initial_save);
     app.insert_resource(worker)
         .insert_resource(Stored::new(prefs.clone(), !is_smoke))
         .insert_resource(Session {
             setup,
+            profile,
             mutation: 0.32,
             camera: if is_smoke {
                 CameraMode::Follow
@@ -156,6 +163,7 @@ impl CameraMode {
 #[derive(Resource, Default)]
 pub struct Session {
     pub setup: Setup,
+    pub profile: V3Profile,
     pub track: Option<Track>,
     pub points: Option<crate::atlas::Points>,
     pub activity: Option<atlas::Activity>,
@@ -270,26 +278,58 @@ struct Worker {
     rx: std::sync::Mutex<Receiver<Update>>,
 }
 
-fn start_worker(setup: Setup, smoke: bool) -> Worker {
+fn start_worker(
+    setup: Setup,
+    smoke: bool,
+    profile: V3Profile,
+    initial_save: Option<PathBuf>,
+) -> Worker {
     let (tx, requests) = mpsc::channel();
     let (responses, rx) = mpsc::channel();
     thread::Builder::new()
         .name("simulazione-male-cns".into())
         .stack_size(8 * 1024 * 1024)
         .spawn(move || {
-            let mut engine = match Pool::new(smoke) {
+            let mut engine = match Pool::new(smoke, profile) {
                 Ok(engine) => engine,
                 Err(error) => {
                     let _ = responses.send(Update::Error(error.to_string()));
                     return;
                 }
             };
-            let mut next = Some(Request::Start(setup));
-            while let Some(request) = next.take().or_else(|| requests.recv().ok()) {
+            let mut startup_warning = None;
+            let restored = initial_save.as_deref().and_then(|path| {
+                match read_saved_pool(&engine, path).and_then(|saved| {
+                    if saved.model_id != "v3" {
+                        return Err("Il profilo di allenamento richiede un salvataggio V3.".into());
+                    }
+                    restore_saved_pool(&mut engine, saved)
+                }) {
+                    Ok(restored) => Some(restored),
+                    Err(error) => {
+                        startup_warning = Some(format!("Caricamento all’avvio: {error}"));
+                        None
+                    }
+                }
+            });
+            let initial = restored.map_or_else(
+                || start_session(&mut engine, setup, !profile.is_training()),
+                Ok,
+            );
+            if responses
+                .send(initial.unwrap_or_else(|error| Update::Error(error.to_string())))
+                .is_err()
+            {
+                return;
+            }
+            if let Some(warning) = startup_warning {
+                if responses.send(Update::DialogError(warning)).is_err() {
+                    return;
+                }
+            }
+            while let Ok(request) = requests.recv() {
                 let result = match request {
-                    Request::Start(setup) => engine.start(&setup).map(|(track, frame, atlas)| {
-                        Update::Ready(setup, track, frame, atlas, true)
-                    }),
+                    Request::Start(setup) => start_session(&mut engine, setup, true),
                     Request::Tick(ticks) => engine.advance(ticks).map(|f| Update::Frame(f, ticks)),
                     Request::SampleActivity(car, filter, density, focus) => Ok(Update::Activity(
                         engine
@@ -400,6 +440,28 @@ fn export_report(report: serde_json::Value) -> crate::engine::Result<Update> {
     ))
 }
 
+fn start_session(
+    engine: &mut Pool,
+    setup: Setup,
+    allow_run: bool,
+) -> crate::engine::Result<Update> {
+    let (track, frame, atlas) = engine.start(&setup)?;
+    Ok(Update::Ready(setup, track, frame, atlas, allow_run))
+}
+
+fn read_saved_pool(engine: &Pool, path: &Path) -> crate::engine::Result<SavedPool> {
+    let mut text = String::new();
+    fs::File::open(path)?
+        .take(crate::save_file::MAX_BYTES as u64 + 1)
+        .read_to_string(&mut text)?;
+    engine.primary.decode_pool(&text)
+}
+
+fn restore_saved_pool(engine: &mut Pool, saved: SavedPool) -> crate::engine::Result<Update> {
+    let (setup, track, frame, atlas) = engine.load_checked(saved)?;
+    Ok(Update::Ready(setup, track, frame, atlas, false))
+}
+
 fn load_dialog(engine: &mut Pool) -> crate::engine::Result<Update> {
     let Some(path) = rfd::FileDialog::new()
         .add_filter("Progressi MAL-E", &["malecns-save"])
@@ -407,11 +469,7 @@ fn load_dialog(engine: &mut Pool) -> crate::engine::Result<Update> {
     else {
         return Ok(Update::Info("Caricamento annullato".into()));
     };
-    let mut text = String::new();
-    fs::File::open(path)?
-        .take(crate::save_file::MAX_BYTES as u64 + 1)
-        .read_to_string(&mut text)?;
-    let saved = engine.primary.decode_pool(&text)?;
+    let saved = read_saved_pool(engine, &path)?;
     let description = format!(
         "{} · {} · {} worker. Le auto ripartiranno in pausa all’inizio della generazione salvata.",
         saved.model_id.to_uppercase(),
@@ -426,8 +484,7 @@ fn load_dialog(engine: &mut Pool) -> crate::engine::Result<Update> {
     if confirm != rfd::MessageDialogResult::Yes {
         return Ok(Update::Info("Caricamento annullato".into()));
     }
-    let (setup, track, frame, atlas) = engine.load_checked(saved)?;
-    Ok(Update::Ready(setup, track, frame, atlas, false))
+    restore_saved_pool(engine, saved)
 }
 
 fn open_decoder() -> crate::engine::Result<Update> {
