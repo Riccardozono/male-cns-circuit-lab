@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const {createHash} = require('node:crypto');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -56,6 +57,56 @@ async function poolChecks(directory) {
       return {...worker, state: {...worker.state, elapsedAtSave: p.workers[i].state.elapsedAtSave}};
     });
     assert.deepEqual({...roundtrip, workers: details}, p);
+    if (count === 4) {
+      const text = fs.readFileSync(input, 'utf8');
+      const rewritten = text.replace('"schema": 1,', '"schema": 1e0,')
+        .replace(/"seed": (\d+),/, '"seed": $1.0,');
+      assert.notEqual(rewritten, text);
+      const formatted = path.join(directory, 'equivalent-format.malecns-save');
+      fs.writeFileSync(formatted, rewritten);
+      assert.equal(run(['--probe-pool', formatted, output]).workerCount, count);
+      const historical = structuredClone(p);
+      for (const worker of historical.workers) for (const row of worker.state.history) {
+        delete row.bestSafeProgress;
+        delete row.meanSafeProgress;
+      }
+      historical.workers[0].state.generation = 4294967301;
+      save.validatePayload(historical, {graph: sims[0].graph, circuits: sims[0].circuits});
+      fs.writeFileSync(formatted, await save.encode(historical, version));
+      const restoredHistorical = run(['--probe-pool', formatted, output]);
+      assert.equal(restoredHistorical.workerCount, count);
+      assert.equal(restoredHistorical.generation, historical.workers[0].state.generation);
+      const {checksum: _, ...body} = JSON.parse(text);
+      for (const [date, accepted] of [
+        ['22 Nov 2026 12:00 GMT (\ud800)', true],
+        ['2016-12-31T23:59:60.000Z', false],
+      ]) {
+        body.savedAt = date;
+        const checksum = {algorithm: 'SHA-256', value: createHash('sha256').update(JSON.stringify(body)).digest('hex')};
+        const stamped = JSON.stringify({...body, checksum});
+        fs.writeFileSync(formatted, stamped);
+        if (accepted) {
+          await save.decode(stamped, version);
+          assert.equal(run(['--probe-pool', formatted, output]).workerCount, count);
+        } else {
+          await assert.rejects(() => save.decode(stamped, version), /Data del salvataggio/);
+          assert.throws(() => run(['--probe-pool', formatted, output]), /Data del salvataggio/);
+        }
+      }
+      for (const tamper of [
+        p => { p.workers[1].state.circuitRevision++; },
+        p => { delete p.workers[1].state.learningFrontier.lapTime; },
+        p => { p.workers[2].state.optimizer.sigma[0] = 0; },
+        p => { p.workers[0].state.history[0].rewardBreakdown.rewards.progress++; },
+        p => { p.globalChampion.workerIndex = 4; },
+      ]) {
+        const invalid = structuredClone(p);
+        tamper(invalid);
+        assert.throws(() => save.validatePayload(invalid, {graph: sims[0].graph, circuits: sims[0].circuits}));
+        fs.writeFileSync(formatted, await save.encode(invalid, version));
+        assert.throws(() => run(['--probe-pool', formatted, output]));
+      }
+    }
     const replay = run(['--probe-pool', input, output, '12']);
     assert.equal(replay.workerCount, count);
     assert.equal(replay.ticks, 12);

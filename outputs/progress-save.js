@@ -83,7 +83,10 @@
     validateTraining(state,sim.graph,sim.circuits);return state;
   }
   function restore(sim,state){
-    validateTraining(state,sim.graph,sim.circuits);const s=copy(state);
+    validateTraining(state,sim.graph,sim.circuits);return restoreValidated(sim,state);
+  }
+  function restoreValidated(sim,state){
+    const s=copy(state);
     sim.configureCircuit(s.circuitId);sim.rewardRevision=s.rewardRevision;sim.population=s.population;sim.mutation=s.mutation;sim.speedMultiplier=s.speedMultiplier;sim.mode='connectome';sim.running=false;
     sim.seed=s.seed;sim.random=F.rng(s.rngState);sim.generation=s.generation;sim.stagnation=s.stagnation;sim.history=s.history;
     sim.learningFrontier=s.learningFrontier;
@@ -142,5 +145,5 @@
     const state=capture(sim);return {modelId:sim.modelId,circuitId:sim.circuitId,graph:compatibleGraph(sim.graph),vehicleRevision:F.Vehicle.REVISION,workers:[{index:0,state}],globalChampion:null};
   }
   function filename(p,version){return 'Circuit-Lab-'+version+'-'+p.modelId+'-'+p.circuitId+'-gen'+p.workers[0].state.generation+'.'+EXTENSION;}
-  return Object.freeze({FORMAT,SCHEMA,EXTENSION,MAX_BYTES,MAX_WORKERS,compatibleGraph,validateTraining,capture,restore,validatePayload,encode,decode,fromSimulation,filename});
+  return Object.freeze({FORMAT,SCHEMA,EXTENSION,MAX_BYTES,MAX_WORKERS,compatibleGraph,validateTraining,capture,restore,restoreValidated,validatePayload,encode,decode,fromSimulation,filename});
 });

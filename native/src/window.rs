@@ -409,7 +409,7 @@ fn load_dialog(engine: &mut Pool) -> crate::engine::Result<Update> {
     };
     let mut text = String::new();
     fs::File::open(path)?
-        .take(16 * 1024 * 1024 + 1)
+        .take(crate::save_file::MAX_BYTES as u64 + 1)
         .read_to_string(&mut text)?;
     let saved = engine.primary.decode_pool(&text)?;
     let description = format!(

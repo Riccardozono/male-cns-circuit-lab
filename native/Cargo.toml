@@ -15,13 +15,15 @@ bevy = { version = "=0.18.1", optional = true, default-features = false, feature
     "default_font", "png", "jpeg",
 ] }
 bytemuck = { version = "1.25", optional = true }
+chrono = { version = "=0.4.45", default-features = false, features = ["now"] }
 flate2 = { version = "1", optional = true }
 pollster = { version = "0.4", optional = true }
 wgpu = { version = "=27.0.1", default-features = false, features = ["wgsl", "dx12", "vulkan", "std"], optional = true }
 rfd = { version = "0.15", optional = true }
 rquickjs = { version = "=0.14.0", features = ["array-buffer"] }
+ryu-js = "=1.0.3"
 serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1", features = ["raw_value", "float_roundtrip"] }
+serde_json = { version = "1", features = ["raw_value", "float_roundtrip", "preserve_order"] }
 sha2 = "0.10"
 
 [profile.dev]

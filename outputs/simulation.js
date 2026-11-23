@@ -93,7 +93,7 @@
   const VISUAL_SENSOR_COUNT=ANGLES.length,VEHICLE_PHYSICS_SENSOR_COUNT=7,ROAD_PHYSICS_SENSOR_COUNT=4,POWERTRAIN_SENSOR_COUNT=6,PHYSICS_SENSOR_COUNT=VEHICLE_PHYSICS_SENSOR_COUNT+ROAD_PHYSICS_SENSOR_COUNT+POWERTRAIN_SENSOR_COUNT,SENSOR_COUNT=VISUAL_SENSOR_COUNT+PHYSICS_SENSOR_COUNT,PHYSICS_RELAY_PER_SENSOR=16,PHYSICS_RELAY_COUNT=VEHICLE_PHYSICS_SENSOR_COUNT*PHYSICS_RELAY_PER_SENSOR,ROAD_RELAY_COUNT=PHYSICS_RELAY_COUNT,PHYSICS_ADAPTER_GAIN=.35,MAP_PHYSICS_ADAPTER_GAIN=.8;
   const POINTS = [[230,500],[185,355],[270,215],[475,150],[745,165],[950,260],
     [1000,400],[910,520],[795,560],[735,645],[535,655],[350,605]];
-  function rng(seed) { const random=() => { let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; random.getState=()=>seed;return random; }
+  function rng(seed) { if(typeof globalThis.MaleCNSNativeRng==='function')return globalThis.MaleCNSNativeRng(seed);const random=() => { let t=seed+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; random.getState=()=>seed;return random; }
   function normal(random) { return Math.sqrt(-2*Math.log(Math.max(1e-9,random())))*Math.cos(TAU*random()); }
   function cross(ax,ay,bx,by) { return ax*by-ay*bx; }
   function pointSegment(x,y,a,b) {

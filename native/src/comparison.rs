@@ -493,6 +493,7 @@ fn drive_trial(
     let start = Instant::now();
     let mut row = Trial {
         status: Status::Running,
+        progress: engine.trial_progress(),
         ..default()
     };
     let mut last = Instant::now();
@@ -536,7 +537,16 @@ fn drive_trial(
         }
         if complete {
             row.seconds = start.elapsed().as_secs_f64();
-            row.status = Status::Completed;
+            if row.lap_time.is_some() {
+                row.status = Status::Completed;
+            } else {
+                row.status = Status::Failed;
+                row.error = engine
+                    .actor_results()?
+                    .first()
+                    .map(|car| car.reason.clone())
+                    .or_else(|| Some("Due giri non completati.".into()));
+            }
             break;
         }
         if frame.stopped {
@@ -559,7 +569,7 @@ fn drive_trial(
 #[derive(Clone, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CandidateResult {
-    agent_id: usize,
+    pub(crate) agent_id: usize,
     safe: bool,
     laps: u32,
     reason: String,
@@ -567,7 +577,7 @@ pub struct CandidateResult {
     fitness: f64,
     lap_times: Vec<f64>,
     #[serde(skip_serializing)]
-    done_at: Option<f64>,
+    pub(crate) done_at: Option<f64>,
 }
 
 impl CandidateResult {
@@ -583,29 +593,104 @@ impl CandidateResult {
 }
 
 fn population(elite: Coefficients, generation: u32) -> [Coefficients; 4] {
-    let mut seed = 40719 + generation;
-    let mut random = || {
-        seed = seed.wrapping_add(0x6D2B79F5);
-        let mut n = (seed ^ (seed >> 15)).wrapping_mul(seed | 1);
-        n ^= n.wrapping_add((n ^ (n >> 7)).wrapping_mul(n | 61));
-        f64::from(n ^ (n >> 14)) / 4_294_967_296.
-    };
+    let mut rng = crate::random::Random::new(f64::from(40719 + generation));
     std::array::from_fn(|index| {
         if index == 0 {
             return elite;
         }
         Coefficients {
-            steering_scale: (elite.steering_scale + 0.018 * (random() * 2. - 1.)).clamp(0.94, 1.06),
-            pedal_scale: (elite.pedal_scale + 0.035 * (random() * 2. - 1.)).clamp(0.9, 1.18),
+            steering_scale: (elite.steering_scale + 0.018 * (rng.draw() * 2. - 1.))
+                .clamp(0.94, 1.06),
+            pedal_scale: (elite.pedal_scale + 0.035 * (rng.draw() * 2. - 1.)).clamp(0.9, 1.18),
             acceleration_bias: (elite.acceleration_bias
                 + if index == 1 {
                     0.012
                 } else {
-                    0.018 * (random() * 2. - 1.)
+                    0.018 * (rng.draw() * 2. - 1.)
                 })
             .clamp(0., 0.075),
         }
     })
+}
+
+fn refinement_report(baseline: Option<&Value>, rounds: &[Value]) -> Value {
+    let selected = rounds.last().and_then(|last| {
+        let index = last["selected"].as_u64()? as usize;
+        last["candidates"]
+            .as_array()?
+            .iter()
+            .find(|car| car["agentId"].as_u64() == Some(index as u64))
+    });
+    let improvement = baseline
+        .and_then(|car| car["twoLapSimSeconds"].as_f64())
+        .zip(selected.and_then(|car| car["twoLapSimSeconds"].as_f64()))
+        .map(|(a, b)| a - b);
+    json!({"targetUpdates":2,"baseline":baseline,"rounds":rounds,"selected":selected,"improvementSeconds":improvement})
+}
+
+fn keep_completed_refinement(
+    row: &mut Trial,
+    previous: &Trial,
+    baseline: Option<&Value>,
+    rounds: &[Value],
+) {
+    if let Some(progress) = &mut row.progress {
+        if let Some(prior) = &previous.progress {
+            progress.max_laps = progress.max_laps.max(prior.max_laps);
+            progress.best_progress_meters = progress
+                .best_progress_meters
+                .max(prior.best_progress_meters);
+            progress.hit = prior.hit.clone();
+        } else {
+            progress.hit = None;
+        }
+        progress.generations = rounds.len() as u32;
+        progress.generation_sim_seconds = None;
+        row.laps = progress.max_laps;
+        row.lap_time = progress.hit.as_ref().map(|hit| hit.two_lap_sim_seconds);
+    }
+    row.training = Some(refinement_report(baseline, rounds));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn stopped_round_keeps_the_completed_reference_round() {
+        let mut saved = crate::trial::Tracker::new().progress;
+        saved.max_laps = 2;
+        saved.best_progress_meters = 6674.;
+        saved.hit = Some(TrialHit {
+            generation: 1,
+            agent_id: 1,
+            lap_times: [395., 397.],
+            two_lap_sim_seconds: 792.,
+            wall_to_two_laps_seconds: 29.,
+        });
+        let previous = Trial {
+            progress: Some(saved),
+            ..default()
+        };
+        let active = crate::trial::Tracker::new().progress;
+        let mut stopped = Trial {
+            status: Status::Limit,
+            progress: Some(active),
+            ..default()
+        };
+        let baseline = json!({"agentId":0,"completed":true,"twoLapSimSeconds":794.});
+        let rounds = vec![json!({"selected":1,"candidates":[baseline.clone(),
+            {"agentId":1,"completed":true,"twoLapSimSeconds":792.}]})];
+        keep_completed_refinement(&mut stopped, &previous, Some(&baseline), &rounds);
+        let stats = stopped.progress.unwrap();
+        assert!(stopped.status == Status::Limit);
+        assert_eq!(stats.generations, 1);
+        assert_eq!(stats.hit.unwrap().generation, 1);
+        assert_eq!(stopped.lap_time, Some(792.));
+        let training = stopped.training.unwrap();
+        assert_eq!(training["rounds"].as_array().unwrap().len(), 1);
+        assert_eq!(training["improvementSeconds"].as_f64(), Some(2.));
+    }
 }
 
 fn run_decoder(
@@ -669,6 +754,7 @@ fn run_decoder(
             active.elapsed += elapsed;
             active.seconds += wall;
             active.decoder_hash = Some(bundle.hash.clone());
+            keep_completed_refinement(&mut active, &result, baseline.as_ref(), &rounds);
             publish(active);
         })?;
         let prior_wall = wall;
@@ -678,6 +764,7 @@ fn run_decoder(
         row.seconds = wall;
         row.decoder_hash = Some(bundle.hash.clone());
         if matches!(row.status, Status::Stopped | Status::Limit) {
+            keep_completed_refinement(&mut row, &result, baseline.as_ref(), &rounds);
             result = row;
             break;
         }
@@ -711,7 +798,7 @@ fn run_decoder(
             row.lap_time = Some(time);
             let stats = row.progress.as_mut().expect("Metriche episodio V3");
             stats.hit = Some(TrialHit {
-                generation,
+                generation: u64::from(generation),
                 agent_id: car.agent_id,
                 lap_times: [car.lap_times[0], car.lap_times[1]],
                 two_lap_sim_seconds: time,
@@ -735,16 +822,7 @@ fn run_decoder(
             "candidates":view,"selected":selected}),
         );
         if generation == 2 {
-            let chosen = selected.and_then(|i| view.get(i));
-            let improvement = baseline
-                .as_ref()
-                .and_then(|b| b["twoLapSimSeconds"].as_f64())
-                .zip(chosen.and_then(|x| x["twoLapSimSeconds"].as_f64()))
-                .map(|(a, b)| a - b);
-            row.training = Some(
-                json!({"targetUpdates":2,"baseline":baseline,"rounds":rounds,
-                "selected":chosen,"improvementSeconds":improvement}),
-            );
+            row.training = Some(refinement_report(baseline.as_ref(), &rounds));
             row.status = if selected.is_some() {
                 Status::Completed
             } else {

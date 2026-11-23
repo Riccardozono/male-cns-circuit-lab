@@ -1,6 +1,6 @@
 # MAL-E CNS Circuit Lab per Windows nativo
 
-Build di sviluppo della 5.7.1 per Windows x64. Il portable gira offline senza Electron, WebView2, Node o server locale. La finestra, l’interfaccia Bevy, i solutori neurali V2–V5, la geometria della pista, la fisica, il calcolo delle ricompense e l’ottimizzatore diagonale usano Rust. La gestione delle generazioni, la composizione dei punteggi e il codec dei salvataggi usano ancora il codice di riferimento in QuickJS, incorporato nell’eseguibile.
+Build di sviluppo della 5.7.1 per Windows x64. Il portable gira offline senza Electron, WebView2, Node o server locale. La finestra, l’interfaccia Bevy, i solutori neurali V2–V5, la geometria della pista, la fisica, il calcolo delle ricompense, l’ottimizzatore diagonale, il generatore casuale, il cronometraggio del confronto e la convalida dei file di salvataggio usano Rust. QuickJS resta incorporato per gestire le generazioni, comporre il punteggio e trasferire lo stato da e verso la simulazione.
 
 ## Guida
 
@@ -26,7 +26,7 @@ Servono un toolchain Rust per Windows x64, un compilatore C per compilare QuickJ
 cargo build --locked --manifest-path native/Cargo.toml
 node native/verify-parity.cjs native/target/debug/male-cns-native.exe
 node native/verify-parity.cjs native/target/debug/male-cns-native.exe --evolution
-node native/tests-clock.cjs
+cargo test --locked --manifest-path native/Cargo.toml --no-default-features
 node native/verify-runtime.cjs native/target/debug/male-cns-native.exe
 native/target/debug/male-cns-native.exe --smoke .impeccable/review/native-smoke
 ```

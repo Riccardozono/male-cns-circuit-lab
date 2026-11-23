@@ -724,7 +724,7 @@ pub struct Smoke {
     phase: Instant,
     drive: Option<(Instant, f64)>,
     motion: Option<(f64, f64, f64, f64)>,
-    session_clock: Option<(u32, f64)>,
+    session_clock: Option<(u64, f64)>,
 }
 impl Smoke {
     pub fn new(directory: PathBuf) -> Self {

@@ -27,7 +27,10 @@ mod neural;
 mod pool;
 #[cfg(feature = "desktop")]
 mod preferences;
+mod random;
 mod reward;
+mod save_file;
+mod save_state;
 #[cfg(feature = "desktop")]
 mod scene;
 #[cfg(feature = "desktop")]
@@ -35,6 +38,7 @@ mod scenery;
 #[cfg(feature = "desktop")]
 mod sky;
 mod surface;
+mod trial;
 mod vehicle;
 #[cfg(feature = "desktop")]
 mod window;

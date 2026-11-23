@@ -1,4 +1,4 @@
-use rquickjs::{ArrayBuffer, CatchResultExt, Context, Ctx, Function, Promise, Runtime, TypedArray};
+use rquickjs::{ArrayBuffer, CatchResultExt, Context, Ctx, Function, Runtime};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use sha2::{Digest, Sha256};
 
@@ -96,7 +96,7 @@ pub struct Car {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Generation {
-    pub generation: u32,
+    pub generation: u64,
     pub best_safe_progress: f64,
     pub mean_safe_progress: f64,
     pub best_progress: f64,
@@ -110,7 +110,7 @@ pub struct Generation {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Frame {
-    pub generation: u32,
+    pub generation: u64,
     pub ticks: u32,
     pub elapsed: f64,
     pub neurons: usize,
@@ -141,7 +141,7 @@ pub struct GpuStatus {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TrialHit {
-    pub generation: u32,
+    pub generation: u64,
     pub agent_id: usize,
     pub lap_times: [f64; 2],
     pub two_lap_sim_seconds: f64,
@@ -153,7 +153,7 @@ pub struct TrialHit {
 pub struct TrialProgress {
     pub ticks: u32,
     pub generations: u32,
-    pub current_generation: u32,
+    pub current_generation: u64,
     pub max_laps: u32,
     pub best_progress_meters: f64,
     pub hit: Option<TrialHit>,
@@ -237,28 +237,15 @@ pub struct Inspection {
 pub struct Engine {
     context: Context,
     _runtime: Runtime,
+    trial: crate::trial::Shared,
 }
 
 fn decode<T: DeserializeOwned>(json: String) -> Result<T> {
     Ok(serde_json::from_str(&json)?)
 }
 
-fn encode_utf8<'js>(ctx: Ctx<'js>, text: String) -> rquickjs::Result<TypedArray<'js, u8>> {
-    TypedArray::new(ctx, text.into_bytes())
-}
-
 fn full_bytes(ctx: Ctx<'_>) -> rquickjs::Result<ArrayBuffer<'_>> {
     ArrayBuffer::new_copy(ctx, FULL_GRAPH)
-}
-
-fn hash_bytes<'js>(
-    ctx: Ctx<'js>,
-    bytes: TypedArray<'js, u8>,
-) -> rquickjs::Result<TypedArray<'js, u8>> {
-    // The worker owns its JS runtime. No JS runs while we read the array.
-    let input = unsafe { bytes.as_bytes() }.ok_or(rquickjs::Error::Unknown)?;
-    let digest = Sha256::digest(input);
-    TypedArray::new(ctx, digest.to_vec())
 }
 
 impl Engine {
@@ -302,20 +289,20 @@ impl Engine {
 
     #[cfg(feature = "desktop")]
     pub fn iso_now(&self) -> Result<String> {
-        self.context.with(|ctx| {
-            ctx.eval("new Date().toISOString()")
-                .catch(&ctx)
-                .map_err(|e| e.to_string().into())
-        })
+        Ok(crate::save_file::timestamp())
     }
 
     #[cfg(feature = "desktop")]
     pub fn track_two_laps(&self) -> Result<()> {
-        self.context.with(|ctx| {
-            ctx.eval::<(), _>("nativeTrackTrial()")
+        let generation = self.context.with(|ctx| -> Result<u64> {
+            ctx.eval::<u64, _>("nativeTrackTrial()")
                 .catch(&ctx)
                 .map_err(|error| error.to_string().into())
-        })
+        })?;
+        let mut tracker = crate::trial::Tracker::new();
+        tracker.progress.current_generation = generation;
+        self.trial.replace(Some(tracker));
+        Ok(())
     }
 
     pub fn new() -> Result<Self> {
@@ -341,16 +328,15 @@ impl Engine {
         runtime.set_memory_limit(1_600_000_000);
         runtime.set_max_stack_size(4 * 1024 * 1024);
         let context = Context::full(&runtime)?;
+        let trial = crate::trial::Shared::default();
         context.with(|ctx| -> Result<()> {
             let globals = ctx.globals();
             globals.set("nativeCircuits", include_str!("../../outputs/data/circuits.json"))?;
             globals.set("nativeReducedGraph", include_str!("../../outputs/data/connectome.json"))?;
             globals.set("nativeFullMetadata", FULL_METADATA)?;
             globals.set("nativeLoadFullBytes", Function::new(ctx.clone(), full_bytes)?)?;
-            globals.set("nativeEncode", Function::new(ctx.clone(), encode_utf8)?)?;
-            globals.set("nativeHash", Function::new(ctx.clone(), hash_bytes)?)?;
-            let epoch = std::time::Instant::now();
-            globals.set("nativeWallNow", Function::new(ctx.clone(), move || epoch.elapsed().as_secs_f64())?)?;
+            crate::trial::install(ctx.clone(), trial.clone())?;
+            globals.set("MaleCNSNativeRng", Function::new(ctx.clone(), crate::random::create)?)?;
             globals.set("nativeVehicleAdvance", Function::new(ctx.clone(), crate::vehicle::advance)?)?;
             crate::reward::install(ctx.clone())?;
             crate::learning::install(ctx.clone())?;
@@ -365,9 +351,7 @@ impl Engine {
                 crate::gpu::install(ctx.clone())?;
             }
             ctx.eval::<(), _>(
-                "globalThis.TextEncoder = class { encode(value) { return nativeEncode(value); } };
-                 globalThis.crypto = { subtle: { digest: (_, bytes) => nativeHash(bytes) } };
-                 globalThis.MaleCNSDense = { step(graph, brain, iterations, edgesEnabled, gains) {
+                "globalThis.MaleCNSDense = { step(graph, brain, iterations, edgesEnabled, gains) {
                    const result = nativeDense(graph, brain, iterations, edgesEnabled, gains);
                    if (iterations % 2) [brain.activity, brain.next] = [brain.next, brain.activity];
                    brain.activity.set(result[0]);
@@ -406,6 +390,7 @@ impl Engine {
         Ok(Self {
             context,
             _runtime: runtime,
+            trial,
         })
     }
 
@@ -426,7 +411,7 @@ impl Engine {
         generation: u32,
         previous: Option<f64>,
     ) -> Result<()> {
-        self.context.with(|ctx| {
+        self.context.with(|ctx| -> Result<()> {
             let start: Function = ctx.globals().get("nativeStartActor")?;
             start
                 .call((
@@ -437,18 +422,26 @@ impl Engine {
                 ))
                 .catch(&ctx)
                 .map_err(|error| error.to_string().into())
-        })
+        })?;
+        self.trial.take();
+        Ok(())
     }
 
     #[cfg(feature = "desktop")]
     pub fn actor_results(&self) -> Result<Vec<crate::comparison::CandidateResult>> {
-        self.context.with(|ctx| {
+        let mut results: Vec<crate::comparison::CandidateResult> = self.context.with(|ctx| {
             decode(
                 ctx.eval::<String, _>("nativeActorResults()")
                     .catch(&ctx)
                     .map_err(|error| error.to_string())?,
             )
-        })
+        })?;
+        if let Some(trial) = self.trial.borrow().as_ref() {
+            for result in &mut results {
+                result.done_at = trial.finish_time(result.agent_id);
+            }
+        }
+        Ok(results)
     }
 
     pub fn start(&self, setup: &Setup) -> Result<(Track, Frame)> {
@@ -477,11 +470,24 @@ impl Engine {
                     .map_err(|err| err.to_string())?,
             )
         })?;
+        self.trial.take();
         Ok((track, self.snapshot()?))
     }
 
+    pub fn trial_progress(&self) -> Option<TrialProgress> {
+        self.trial
+            .borrow()
+            .as_ref()
+            .map(|tracker| tracker.progress.clone())
+    }
+
+    fn track_progress(&self, mut frame: Frame) -> Frame {
+        frame.trial = self.trial_progress();
+        frame
+    }
+
     pub fn snapshot(&self) -> Result<Frame> {
-        self.context.with(|ctx| {
+        let frame = self.context.with(|ctx| {
             let snapshot: Function = ctx.globals().get("nativeSnapshot")?;
             decode(
                 snapshot
@@ -489,7 +495,8 @@ impl Engine {
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )
-        })
+        })?;
+        Ok(self.track_progress(frame))
     }
 
     pub fn advance(&self, ticks: u32) -> Result<Frame> {
@@ -502,15 +509,19 @@ impl Engine {
         wall_seconds: f64,
         limit_seconds: f64,
     ) -> Result<Frame> {
-        self.context.with(|ctx| {
+        if let Some(trial) = self.trial.borrow_mut().as_mut() {
+            trial.begin_batch(wall_seconds, limit_seconds);
+        }
+        let frame = self.context.with(|ctx| {
             let advance: Function = ctx.globals().get("nativeAdvance")?;
             decode(
                 advance
-                    .call((ticks, wall_seconds, limit_seconds))
+                    .call((ticks,))
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )
-        })
+        })?;
+        Ok(self.track_progress(frame))
     }
 
     #[cfg(feature = "desktop")]
@@ -573,32 +584,69 @@ impl Engine {
     }
 
     pub fn save(&self, speed: f64) -> Result<String> {
-        self.context.with(|ctx| {
-            let save: Function = ctx.globals().get("nativeSave")?;
-            let promise: Promise = save
+        let payload = self.context.with(|ctx| -> Result<String> {
+            let capture: Function = ctx.globals().get("nativePayload")?;
+            Ok(capture
                 .call((speed,))
                 .catch(&ctx)
-                .map_err(|err| err.to_string())?;
-            Ok(promise
-                .finish()
-                .catch(&ctx)
-                .map_err(|err| err.to_string())?)
-        })
+                .map_err(|e| e.to_string())?)
+        })?;
+        self.encode_payload(&payload)
+    }
+
+    fn validate_payload(&self, payload: &serde_json::Value, live: bool) -> Result<()> {
+        let model = payload["modelId"]
+            .as_str()
+            .filter(|model| matches!(*model, "v2" | "v3" | "v4" | "v5"))
+            .ok_or("Modello neurale incompatibile.")?;
+        let compatibility: crate::save_state::Compatibility = self.context.with(|ctx| {
+            let describe: Function = ctx.globals().get("nativeSaveCompatibility")?;
+            decode(
+                describe
+                    .call((model, live))
+                    .catch(&ctx)
+                    .map_err(|error| error.to_string())?,
+            )
+        })?;
+        compatibility.validate(payload)
+    }
+
+    fn encode_payload(&self, json: &str) -> Result<String> {
+        let payload = serde_json::from_str(json)?;
+        self.validate_payload(&payload, true)?;
+        crate::save_file::write(payload)
+    }
+
+    fn checked_payload(&self, text: &str) -> Result<String> {
+        let payload = crate::save_file::read(
+            text,
+            |date| {
+                self.context.with(|ctx| {
+                    ctx.globals()
+                        .get::<_, Function>("nativeCanParseDate")
+                        .and_then(|parse| parse.call((date,)))
+                        .unwrap_or(false)
+                })
+            },
+            |source| {
+                self.context.with(|ctx| {
+                    let normalize: Function =
+                        ctx.globals().get("nativeNormalizeLegacyDate").ok()?;
+                    let json: Option<String> = normalize.call((source,)).catch(&ctx).ok()?;
+                    decode(json?).ok()
+                })
+            },
+        )?;
+        self.validate_payload(&payload, false)?;
+        Ok(serde_json::to_string(&payload)?)
     }
 
     pub fn load(&self, save: &str) -> Result<(Setup, Track, Frame)> {
-        if save.len() > 16 * 1024 * 1024 {
-            return Err("File oltre il limite di 16 MiB".into());
-        }
+        let payload = self.checked_payload(save)?;
         let (setup, track) = self.context.with(|ctx| -> Result<(Setup, Track)> {
-            let load: Function = ctx.globals().get("nativeLoad")?;
-            let promise: Promise = load
-                .call((save,))
-                .catch(&ctx)
-                .map_err(|err| err.to_string())?;
+            let load: Function = ctx.globals().get("nativeLoadPayload")?;
             let setup = decode(
-                promise
-                    .finish()
+                load.call((&payload,))
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )?;
@@ -609,6 +657,7 @@ impl Engine {
             )?;
             Ok((setup, track))
         })?;
+        self.trial.take();
         Ok((setup, track, self.snapshot()?))
     }
 }
@@ -616,30 +665,20 @@ impl Engine {
 #[cfg(feature = "desktop")]
 impl Engine {
     pub(crate) fn decode_pool(&self, text: &str) -> Result<crate::pool::SavedPool> {
-        self.context.with(|ctx| {
-            let func: Function = ctx.globals().get("nativeDecodeSave")?;
-            let pending: Promise = func
-                .call((text,))
-                .catch(&ctx)
-                .map_err(|err| err.to_string())?;
-            decode(
-                pending
-                    .finish()
-                    .catch(&ctx)
-                    .map_err(|err| err.to_string())?,
-            )
-        })
+        decode(self.checked_payload(text)?)
     }
 
     pub(crate) fn restore_state(&self, model: &str, circuit: &str, state: &str) -> Result<Setup> {
-        self.context.with(|ctx| {
+        let setup = self.context.with(|ctx| {
             let func: Function = ctx.globals().get("nativeRestoreState")?;
             decode(
                 func.call((model, circuit, state))
                     .catch(&ctx)
                     .map_err(|err| err.to_string())?,
             )
-        })
+        })?;
+        self.trial.take();
+        Ok(setup)
     }
 
     pub(crate) fn capture(&self, speed: f64) -> Result<Box<serde_json::value::RawValue>> {
@@ -654,17 +693,14 @@ impl Engine {
     }
 
     pub(crate) fn encode_pool(&self, workers: &str, champion: &str) -> Result<String> {
-        self.context.with(|ctx| {
-            let func: Function = ctx.globals().get("nativeSavePool")?;
-            let promise: Promise = func
+        let payload = self.context.with(|ctx| -> Result<String> {
+            let capture: Function = ctx.globals().get("nativePoolPayload")?;
+            Ok(capture
                 .call((workers, champion))
                 .catch(&ctx)
-                .map_err(|err| err.to_string())?;
-            Ok(promise
-                .finish()
-                .catch(&ctx)
-                .map_err(|err| err.to_string())?)
-        })
+                .map_err(|e| e.to_string())?)
+        })?;
+        self.encode_payload(&payload)
     }
 
     pub(crate) fn track(&self) -> Result<Track> {

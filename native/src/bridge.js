@@ -3,9 +3,8 @@
   const models = new Map();
   const circuits = JSON.parse(nativeCircuits);
   const base = JSON.parse(nativeReducedGraph);
-  const profile = '5.7.1';
   let sim;
-  let trial;
+  let trialDone = false;
   let inspectionId = null;
   let gpu = { state: 'cpu', adapter: null, dispatches: 0, error: null };
   let gpuReset = true;
@@ -133,7 +132,6 @@
       neurons: sim.graph.n,
       edges: sim.graph.edgeCount,
       leader: leader.id,
-      trial: trial ?? null,
       gpu,
       history: sim.history.slice(-32).map(h => ({
         generation:h.generation, bestSafeProgress:h.bestSafeProgress ?? h.bestProgress ?? 0,
@@ -200,7 +198,7 @@
     sim = new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population, seed,mutation });
     sim.mode = mode;
     configureGpu(sim, mode);
-    trial = null;
+    trialDone = false;
     inspectionId = null;
     return circuit();
   };
@@ -222,53 +220,31 @@
     sim.motorDecoder = nativeActorDrive;
     sim.running = true;
     inspectionId = null;
-    trial = null;
+    trialDone = false;
+    sim.onTrialTick = null;
   };
   globalThis.nativeActorResults = () => JSON.stringify(sim.cars.map(car => ({
     agentId:car.id, safe: FlySim.isSafeLearningOutcome(car) && !car.diagnosticVehicle,
     laps:car.laps, reason:car.reason || '', progressMeters:car.bestProgress / (sim.track.pixelsPerMeter || 1),
     fitness:car.fitness, lapTimes:car.lapTimes,
-    doneAt:trial?.finishedCars?.[car.id] ?? null,
   })));
   globalThis.nativeTrackTrial = () => {
-    trial = { ticks: 0, generations: 0, currentGeneration: 1, maxLaps: 0,
-      bestProgressMeters: 0, hit: null, generationSimSeconds: null, finishedCars: {}, done: false, limitReached: false };
+    trialDone = false;
+    const packet = new Float64Array(sim.cars.length * 8);
     sim.onTrialTick = state => {
-      if (trial.done) return;
-      trial.ticks++;
-      trial.currentGeneration = state.generation;
-      const eligible = state.cars.filter(car => !car.diagnosticVehicle);
-      for (const car of eligible) {
-        trial.maxLaps = Math.max(trial.maxLaps, car.laps);
-        trial.bestProgressMeters = Math.max(trial.bestProgressMeters,
-          car.bestProgress / (state.track.pixelsPerMeter || 1));
+      if (trialDone) return;
+      for (let index = 0; index < state.cars.length; ++index) {
+        const car = state.cars[index];
+        const flags = Number(car.alive) | (Number(Boolean(car.diagnosticVehicle)) << 1)
+          | (Number(car.reason === 'limite 2 giri') << 2);
+        const offset = index * 8;
+        packet.set([car.id, flags, car.laps, car.bestProgress, car.lapTimes[0],
+          car.lapTimes[1], car.lastLapStartTime, car.lapTimes.length], offset);
       }
-      const elapsed = trialClock();
-      if (trialLimit > 0 && elapsed >= trialLimit) {
-        trial.limitReached = true;
-        trial.done = true;
-        return;
-      }
-      for (const car of eligible) if (state.motorDecoder && car.laps === 2 && car.reason === 'limite 2 giri'
-        && trial.finishedCars[car.id] === undefined) trial.finishedCars[car.id] = elapsed;
-      if (!trial.hit) {
-        const twoLaps = eligible.filter(car => car.laps === 2 && car.reason === 'limite 2 giri'
-          && car.lapTimes.length === 2 && car.lapTimes.every(t => Number.isFinite(t) && t > 0));
-        twoLaps.sort((a, b) => a.lastLapStartTime - b.lastLapStartTime || a.id - b.id);
-        if (twoLaps.length) {
-          const car = twoLaps[0];
-          trial.hit = { generation: state.generation, agentId: car.id, lapTimes: car.lapTimes,
-            twoLapSimSeconds: car.lapTimes[0] + car.lapTimes[1], wallToTwoLapsSeconds: elapsed };
-        }
-      }
-      if (state.cars.every(car => !car.alive)) {
-        trial.generations++;
-        if (trial.hit?.generation === state.generation) {
-          trial.generationSimSeconds = state.elapsed;
-          trial.done = true;
-        }
-      }
+      trialDone = nativeTrialObserve(state.generation, state.elapsed,
+        state.track.pixelsPerMeter || 1, Boolean(state.motorDecoder), packet);
     };
+    return sim.generation;
   };
   globalThis.nativeAtlasGraph = () => {
     const g = sim.graph;
@@ -329,15 +305,8 @@
   };
   globalThis.nativeTrack = circuit;
   globalThis.nativeSnapshot = snapshot;
-  let trialClock = () => 0;
-  let trialLimit = 0;
-  globalThis.nativeAdvance = (ticks, trialSeconds = 0, limitSeconds = 0) => {
-    if (trial) {
-      const start = nativeWallNow();
-      trialClock = () => trialSeconds + nativeWallNow() - start;
-      trialLimit = limitSeconds;
-    }
-    for (let i = 0; i < ticks && sim.running && !trial?.done; i++) tick();
+  globalThis.nativeAdvance = ticks => {
+    for (let i = 0; i < ticks && sim.running && !trialDone; i++) tick();
     return snapshot();
   };
   globalThis.nativeMutation = value => { sim.mutation = value; };
@@ -347,51 +316,65 @@
     gpuReset = true;
     return snapshot();
   };
-  globalThis.nativeSave = speed => {
+  globalThis.nativePayload = speed => {
     sim.speedMultiplier = speed;
-    return MaleCNSProgress.encode(MaleCNSProgress.fromSimulation(sim), profile);
+    return JSON.stringify(MaleCNSProgress.fromSimulation(sim));
   };
   function restore(modelId, circuitId, state) {
     const next = new FlySim.Simulation(source(modelId), { modelId, circuitId, circuits, population: 1 });
-    MaleCNSProgress.restore(next, state);
+    MaleCNSProgress.restoreValidated(next, state);
     next.running = true;
     sim = next;
     configureGpu(sim, 'connectome');
     inspectionId = null;
-    trial = null;
+    trialDone = false;
     return { model: modelId, circuit: circuitId, population: sim.population,
       seed: sim.seed, speed: sim.speedMultiplier, mutation: sim.mutation };
   }
 
-  async function checkedPayload(text) {
-    const { payload } = await MaleCNSProgress.decode(text, profile);
-    const graph = FlySim.compileGraph(source(payload.modelId));
-    MaleCNSProgress.validatePayload(payload, { graph, circuits: [{id:'lab',revision:1}, ...circuits.circuits] });
-    return payload;
-  }
+  globalThis.nativeCanParseDate = value => Number.isFinite(Date.parse(value));
+  globalThis.nativeNormalizeLegacyDate = text => {
+    const file = JSON.parse(text);
+    const date = file?.savedAt;
+    if (typeof date !== 'string' || date.length > 40 || !/[\uD800-\uDFFF]/u.test(date)
+      || !Number.isFinite(Date.parse(date))) return null;
+    const literal = JSON.stringify(date);
+    file.savedAt = '2000-01-01T00:00:00.000Z';
+    return JSON.stringify([JSON.stringify(file), literal]);
+  };
+  globalThis.nativeSaveCompatibility = (modelId, live) => {
+    const graph = live ? sim.graph : FlySim.compileGraph(source(modelId));
+    const policy = FlySim.ensureLearning(graph);
+    return JSON.stringify({
+      modelId:graph.modelId, graph:MaleCNSProgress.compatibleGraph(graph),
+      vehicleRevision:FlySim.Vehicle.REVISION, sensorCount:FlySim.SENSOR_COUNT,
+      modelOutputs:graph.outputs.length, policyVersion:policy.version, policyWidth:policy.length,
+      populationLimit:FlySim.MAX_POPULATION, rewardRevisions:FlySim.Rewards.SUPPORTED_REVISIONS,
+      rewardKeys:FlySim.Rewards.rewardKeys, penaltyKeys:FlySim.Rewards.penaltyKeys,
+      circuits:Object.fromEntries([['lab',1], ...circuits.circuits.map(c => [c.id,c.revision||1])]),
+    });
+  };
 
-  globalThis.nativeLoad = async text => {
-    const p = await checkedPayload(text);
+  globalThis.nativeLoadPayload = text => {
+    const p = JSON.parse(text);
     if (p.workers.length !== 1 || p.globalChampion !== null) {
       throw Error('La prova a riga di comando richiede un worker e nessun campione globale.');
     }
     return JSON.stringify(restore(p.modelId, p.circuitId, p.workers[0].state));
   };
 
-  globalThis.nativeDecodeSave = async text => JSON.stringify(await checkedPayload(text));
   globalThis.nativeRestoreState = (model, circuitId, state) =>
     JSON.stringify(restore(model, circuitId, JSON.parse(state)));
   globalThis.nativeCaptureState = speed => {
     sim.speedMultiplier = speed;
     return JSON.stringify(MaleCNSProgress.capture(sim));
   };
-  globalThis.nativeSavePool = (workers, champion) => {
+  globalThis.nativePoolPayload = (workers, champion) => {
     const p = {modelId:sim.modelId, circuitId:sim.circuitId,
       graph:MaleCNSProgress.compatibleGraph(sim.graph), vehicleRevision:MaleCNSVehicle.REVISION,
       workers:JSON.parse(workers).map((state, index) => ({index, state})),
       globalChampion:JSON.parse(champion)};
-    MaleCNSProgress.validatePayload(p, {graph:sim.graph,circuits:sim.circuits});
-    return MaleCNSProgress.encode(p, profile);
+    return JSON.stringify(p);
   };
   globalThis.nativeChampion = index => JSON.stringify(sim.champion && sim.championStats
     ? {genome:sim.champion, stats:sim.championStats, workerIndex:index} : null);

@@ -91,7 +91,7 @@ fn wait<T>(reply: Reply<T>) -> Result<T> {
 pub(crate) struct Pool {
     pub primary: Engine,
     other: Vec<Island>,
-    generations: Vec<u32>,
+    generations: Vec<u64>,
     seeds: Vec<u32>,
     global_champion: String,
     restored_champion: bool,

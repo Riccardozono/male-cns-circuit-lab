@@ -39,7 +39,7 @@ pub(crate) struct Plot;
 pub(crate) struct Revision {
     size: Vec2,
     session: u64,
-    generation: u32,
+    generation: u64,
     metric: Metric,
     dark: bool,
 }
